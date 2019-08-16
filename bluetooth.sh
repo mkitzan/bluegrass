@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt-get install -y git bc libusb-dev libdbus-1-dev libglib2.0-dev libudev-dev libical-dev libreadline-dev autoconf bluetooth
+sudo apt-get install -y git bc libusb-dev libdbus-1-dev libglib2.0-dev libudev-dev libical-dev libreadline-dev libbluetooth-dev autoconf bluetooth
 wget https://s3.amazonaws.com/json-c_releases/releases/json-c-0.13.tar.gz
 tar -xvf json-c-0.13.tar.gz 
 cd json-c-0.13/ 
