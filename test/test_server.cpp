@@ -20,10 +20,10 @@ void serve(regatta::socket<P>& sk) {
 	WAIT = false;
 }
 
-template<proto_t P>
+template<proto_t P, int N>
 void test() {
 	cout << "\tCreating service_queue" << endl << flush;
-	service_queue<regatta::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
+	service_queue<regatta::socket<P>, ENQUEUE> sq(serve<P>, 4, N);
 	cout << "\tCreating server" << endl << flush;
 	try {
 		server<P> s(sq, 1, 4);
@@ -36,10 +36,10 @@ void test() {
 
 int main() {
 	cout << "Starting L2CAP server test" << endl;
-	test<L2CAP>();
-	cout << "L2CAP server test complete" << endl;
+	test<L2CAP, 0x1001>();
+	cout << "L2CAP server test complete" << endl << endl;
 	cout << "Starting RFCOMM server test" << endl;
-	test<RFCOMM>();
+	test<RFCOMM, 0x1>();
 	cout << "RFCOMM server test complete" << endl;
 	
 	return 0;

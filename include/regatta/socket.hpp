@@ -12,6 +12,8 @@
 #include "regatta/bluetooth.hpp"
 #include "regatta/service_queue.hpp"
 
+#include <iostream>
+
 namespace regatta {
 	
 	/*
@@ -38,8 +40,9 @@ namespace regatta {
 		socket(bdaddr_t addr, int port) 
 		{
 			setup(addr, port);
-			if(c_connect(handle_, (const struct sockaddr*)&addr_.sockaddr, 
-			sizeof(address<P>)) == -1) {
+			std::cout << "Handle: " << handle_ << std::endl;
+			if(handle_ == -1 || c_connect(handle_, 
+			(const struct sockaddr*) &addr_.sockaddr, sizeof(address<P>)) == -1) {
 				c_close(handle_);
 				throw std::runtime_error("Failed creating client_socket");
 			}
@@ -199,15 +202,23 @@ namespace regatta {
 		{
 			int flag = 0;
 			setup(port);
+			std::cout << "Setup: " << handle_ << std::endl;
 			flag |= c_bind(handle_, (struct sockaddr*) &addr_, sizeof(address<P>));
-			flag |= c_listen(handle_, backlog);
+			std::cout << "Bind: " << flag << std::endl;
 			
 			sigio_handler = [this](int signal) { sigio(signal); };
 			action_.sa_handler = signal_handler;
 			flag |= sigaction(SIGIO, &action_, NULL);
+			std::cout << "Sigaction: " << flag << std::endl;
 			flag |= fcntl(handle_, F_SETFL, O_ASYNC);
+			std::cout << "Async: " << flag << std::endl;
 			flag |= fcntl(handle_, F_SETOWN, getpid());
+			std::cout << "Own: " << flag << std::endl;
 			flag |= fcntl(handle_, F_SETSIG, SIGIO);
+			std::cout << "Sigio: " << flag << std::endl;
+			
+			flag |= c_listen(handle_, backlog);
+			std::cout << "Listen: " << flag << std::endl;
 			
 			if(flag == -1) {
 				c_close(handle_);

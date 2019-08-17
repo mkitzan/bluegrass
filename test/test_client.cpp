@@ -7,13 +7,13 @@
 using namespace std;
 using namespace regatta;
 
-template<proto_t P>
+template<proto_t P, int N>
 void test() {
 	bdaddr_t peer = { 0xB8, 0x27, 0xEB, 0x94, 0x33, 0xDA };
 	bdaddr_t self = { 0xB8, 0x27, 0xEB, 0xD5, 0xCD, 0xC8 };
 	cout << "\tCreating client" << endl << flush;
 	try {
-		regatta::socket<P> sk(peer, 1);
+		regatta::socket<P> sk(peer, N);
 		sk.send(&self);
 		sk.receive(&self);
 		cout << '\t' << self << endl << flush;
@@ -24,10 +24,10 @@ void test() {
 
 int main() {
 	cout << "Starting L2CAP client test" << endl;
-	test<L2CAP>();
-	cout << "L2CAP server test complete" << endl;
+	test<L2CAP, 0x1001>();
+	cout << "L2CAP server test complete" << endl << endl;
 	cout << "Starting RFCOMM server test" << endl;
-	test<RFCOMM>();
+	test<RFCOMM, 0x1>();
 	cout << "RFCOMM server test complete" << endl;
 	
 	return 0;
