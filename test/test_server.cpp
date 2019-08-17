@@ -23,10 +23,10 @@ void serve(regatta::socket<P>& sk) {
 template<proto_t P, int N>
 void test() {
 	cout << "\tCreating service_queue" << endl << flush;
-	service_queue<regatta::socket<P>, ENQUEUE> sq(serve<P>, 4, N);
+	service_queue<regatta::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
 	cout << "\tCreating server" << endl << flush;
 	try {
-		server<P> s(sq, 1, 4);
+		server<P> s(sq, N, 4);
 		while(WAIT);
 		WAIT = true;
 	} catch(...) {
