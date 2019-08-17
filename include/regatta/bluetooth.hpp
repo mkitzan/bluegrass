@@ -19,113 +19,47 @@
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
 
-#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 
 namespace regatta {
 	
+	/*
+	 * Description: proto_t is used to specify the Bluteooth protocol used by 
+	 * sockets and address.
+	 */
 	enum proto_t {
 		L2CAP,
 		RFCOMM,
 	};
-
-	enum socket_t {
-		STREAM = SOCK_STREAM,		
-		SEQPACKET = SOCK_SEQPACKET,
-		DGRAM = SOCK_DGRAM,
-		// RAW = SOCK_RAW,
-		// RDM = SOCK_RDM,
+	
+	/*
+	 * Struct template has one template parameter
+	 *     P - the Bluetooth socket protocol 
+	 * 
+	 * Description: address is a simple struct which wraps a socket address
+	 * and int storing the length of the socket address. This struct is used
+	 * to the address of a socket class to capture the address to send data to
+	 * or where data is comming from.
+	 */
+	template <proto_t P>
+	struct address {
+		typename std::conditional_t<P == L2CAP, sockaddr_l2, sockaddr_rc> 
+		sockaddr;
+		socklen_t socklen;
 	};
 
-	class address {
-	public:
-		constexpr address(uint64_t addr) 
-		{
-			for(int i = 0; i < 6; ++i, addr >>= 8) {
-				addr_.b[i] = addr;
-			}
-		}
-
-		constexpr address(const uint8_t* addr) 
-		{
-			for(int i = 0; i < 6; ++i) {
-				addr_.b[i] = addr[i];
-			}
-		}
-
-		constexpr address(bdaddr_t* addr) 
-		{
-			for(int i = 0; i < 6; ++i) {
-				addr_.b[i] = addr->b[i];
-			}
-		}
-		
-		address(std::string addr) { str2ba(addr.data(), &addr_); }
-		address(const char* addr) { str2ba(addr, &addr_); }
-		constexpr address(const address& addr) { addr_ = addr.addr_; }
-		constexpr address(address&& addr) { addr_ = addr.addr_;	}
-
-		constexpr address& operator=(const address& addr) 
-		{
-			addr_ = addr.addr_;
-			return *this;
-		}
-
-		constexpr address& operator=(address&& addr) 
-		{
-			addr_ = addr.addr_;
-			return *this;
-		}
-		
-		constexpr address& operator=(uint64_t addr) 
-		{
-			for(int i = 0; i < 6; ++i, addr >>= 8) {
-				addr_.b[i] = addr;
-			}
-			return *this;
-		}
-		
-		constexpr address& operator=(const uint8_t* addr) 
-		{
-			for(int i = 0; i < 6; ++i) {
-				addr_.b[i] = addr[i];
-			}
-			return *this;
-		}
-		
-		constexpr address& operator=(bdaddr_t* addr) 
-		{
-			for(int i = 0; i < 6; ++i) {
-				addr_.b[i] = addr->b[i];
-			}
-			return *this;
-		}
-		
-		constexpr void copy(bdaddr_t* addr) const { *addr = addr_; }
-
-		std::string string() const 
-		{
-			char temp[18];
-			sprintf(temp, "%2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X",
-			addr_.b[5], addr_.b[4], addr_.b[3], 
-			addr_.b[2], addr_.b[1], addr_.b[0]);
-			return std::string(temp);
-		}
-	
-	private:
-		bdaddr_t addr_ = { 0 };
-	};
-	
-	constexpr address ADDR_ANY((uint64_t) 0x000000000000);
-	constexpr address ADDR_ALL((uint64_t) 0xFFFFFFFFFFFF);
-	constexpr address ADDR_LOC((uint64_t) 0x000000FFFFFF);
-
-	std::ostream& operator<<(std::ostream& out, const address& addr)  
+	/*
+	 * Description: Prints a human readable Bluetooth device address 
+	 */
+	std::ostream& operator<<(std::ostream& out, const bdaddr_t& addr)  
 	{
-		return out << addr.string();
+		std::ios::fmtflags f = out.flags();
+		return out << std::hex << addr.b[5] << ':' << addr.b[4] << ':' 
+		<< addr.b[3] << ':' << addr.b[2] << ':' << addr.b[1] << ':' 
+		<< addr.b[0] << f;
 	}
-
+	
 }
 
 #endif

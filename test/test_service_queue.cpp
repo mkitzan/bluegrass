@@ -36,8 +36,8 @@ bool test_ende_queues()
 {
 	I = 0;
 	char data;
-	service_queue<char, queue_t::DEQUEUE> dq(16, 4, create_test0);
-	service_queue<char, queue_t::ENQUEUE> eq(16, 4, utilize_test);
+	service_queue<char, queue_t::DEQUEUE> dq(create_test0, 16, 4);
+	service_queue<char, queue_t::ENQUEUE> eq(utilize_test, 16, 4);
 	
 	do { 
 		dq.dequeue(data);
@@ -53,8 +53,8 @@ bool test_ende_queues()
 bool test_no_queue() 
 {
 	I = 0;
-	service_queue<char, queue_t::NOQUEUE> no(16, 4, 4, 
-		create_test1, utilize_test);
+	service_queue<char, queue_t::NOQUEUE> no(create_test1, utilize_test, 
+	16, 4, 4);
 	
 	while(STR1[I]);
 	

@@ -49,10 +49,10 @@ namespace regatta {
 		 *     thread_count > 0 - specifies the number of internal threads 
 		 *     service - the function threads execute to create or utilize T
 		 */
-		template<queue_t Q_TYPE = Q, 
+		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != NOQUEUE, bool> = true>
-		service_queue(std::size_t queue_size, std::size_t thread_count, 
-		std::function<void(T&)> service) : max_(queue_size) 
+		service_queue(std::function<void(T&)> service,
+		std::size_t queue_size, std::size_t thread_count) : max_(queue_size) 
 		{		
 			threads_.reserve(thread_count);
 			while(threads_.size() < thread_count) {
@@ -74,11 +74,11 @@ namespace regatta {
 		 *     service_enq - the function threads execute to create T elements
 		 *     service_deq - the function threads execute to utilize T elements
 		 */
-		template<queue_t Q_TYPE = Q, 
+		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == NOQUEUE, bool> = true>
-		service_queue(std::size_t queue_size, std::size_t enq_count, 
-		std::size_t deq_count, std::function<void(T&)> service_enq, 
-		std::function<void(T&)> service_deq) : max_(queue_size) 
+		service_queue(std::function<void(T&)> service_enq, 
+		std::function<void(T&)> service_deq, std::size_t queue_size, 
+		std::size_t enq_count, std::size_t deq_count) : max_(queue_size) 
 		{	
 			threads_.reserve(enq_count + deq_count);
 			for(; enq_count; --enq_count) {
@@ -118,7 +118,7 @@ namespace regatta {
 		 * insert the element if the service_queue is shutdown at the time it
 		 * has mutually exclusive access to the internal queue.
 		 */
-		template<queue_t Q_TYPE = Q, 
+		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == ENQUEUE, bool> = true>
 		bool enqueue(T& element) 
 		{
@@ -145,7 +145,7 @@ namespace regatta {
 		 * remove an element if the service_queue is shutdown and empty at the 
 		 * time it has mutually exclusive access to the internal queue.
 		 */
-		template<queue_t Q_TYPE = Q, 
+		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == DEQUEUE, bool> = true>
 		bool dequeue(T& element) 
 		{
@@ -191,7 +191,7 @@ namespace regatta {
 		 * calls to service return false indicating the service_queue has been
 		 * shutdown (and empty for dequeue calls).
 		 */
-		template<queue_t Q_TYPE = Q, 
+		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != DEQUEUE, bool> = true>
 		void dequeue_service(std::function<void(T&)> service) 
 		{
@@ -211,7 +211,7 @@ namespace regatta {
 		 * calls to service return false indicating the service_queue has been
 		 * shutdown (and empty for dequeue calls).
 		 */
-		template<queue_t Q_TYPE = Q, 
+		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != ENQUEUE, bool> = true>
 		void enqueue_service(std::function<void(T&)> service) 
 		{
@@ -222,7 +222,7 @@ namespace regatta {
 		}
 		
 		// Private redefinition of enqueue instantiated for DEQUEUE
-		template<queue_t Q_TYPE = Q, 
+		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != ENQUEUE, bool> = true>
 		bool enqueue(T& element) 
 		{
@@ -240,7 +240,7 @@ namespace regatta {
 		}
 		
 		// Private redefinition of dequeue instantiated for ENQUEUE
-		template<queue_t Q_TYPE = Q, 
+		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != DEQUEUE, bool> = true>
 		bool dequeue(T& element) 
 		{
