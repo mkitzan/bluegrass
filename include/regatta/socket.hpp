@@ -39,7 +39,6 @@ namespace regatta {
 		 */
 		socket(bdaddr_t addr, int port) 
 		{
-			std::cout << addr << std::endl;
 			setup(addr, port);
 			std::cout << "Handle: " << handle_ << std::endl;
 			if(handle_ == -1 || c_connect(handle_, 
@@ -142,8 +141,8 @@ namespace regatta {
 			addr_.sockaddr.l2_family = AF_BLUETOOTH;
 			addr_.sockaddr.l2_psm = htobs(port);
 			std::cout << addr << std::endl;
-			bacpy(&addr, &addr_.sockaddr.l2_bdaddr);
-			std::cout << addr << std::endl << addr_.sockaddr.l2_bdaddr << std::endl;
+			bacpy(&addr_.sockaddr.l2_bdaddr, &addr);
+			std::cout << addr_.sockaddr.l2_bdaddr << std::endl;
 		}
 		
 		/*
@@ -162,7 +161,7 @@ namespace regatta {
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 			addr_.sockaddr.rc_family = AF_BLUETOOTH;
 			addr_.sockaddr.rc_channel = (uint8_t) port;
-			bacpy(&addr, &addr_.sockaddr.rc_bdaddr);
+			bacpy(&addr_.sockaddr.rc_bdaddr, &addr);
 			std::cout << addr << std::endl << addr_.sockaddr.rc_bdaddr << std::endl;
 		}
 	
