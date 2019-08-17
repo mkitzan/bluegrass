@@ -9,10 +9,11 @@ using namespace regatta;
 
 template<proto_t P, int N>
 void test() {
-	bdaddr_t peer = { 0xB8, 0x27, 0xEB, 0x94, 0x33, 0xDA };
-	bdaddr_t self = { 0xB8, 0x27, 0xEB, 0xD5, 0xCD, 0xC8 };
+	bdaddr_t peer, self;
+	str2ba("BA:27:EB:94:33:DA", &peer);
 	cout << "\tCreating client" << endl << flush;
 	try {
+		cout << '\t' << peer << endl << flush;
 		regatta::socket<P> sk(peer, N);
 		sk.send(&self);
 		sk.receive(&self);

@@ -52,12 +52,12 @@ namespace regatta {
 	/*
 	 * Description: Prints a human readable Bluetooth device address 
 	 */
-	std::ostream& operator<<(std::ostream& out, const bdaddr_t& addr)  
+	std::ostream& operator<<(std::ostream& out, const bdaddr_t& ba)  
 	{
-		std::ios::fmtflags f = out.flags();
-		return out << std::hex << addr.b[5] << ':' << addr.b[4] << ':' 
-		<< addr.b[3] << ':' << addr.b[2] << ':' << addr.b[1] << ':' 
-		<< addr.b[0] << f;
+		char temp[18];
+		sprintf(temp, "%2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X",
+		ba.b[5], ba.b[4], ba.b[3], ba.b[2], ba.b[1], ba.b[0]);
+		return out << temp;
 	}
 	
 }
