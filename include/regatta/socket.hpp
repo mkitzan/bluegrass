@@ -279,9 +279,9 @@ namespace regatta {
 		 */
 		void sigio(int signal) 
 		{
-			socket<P>* s = new socket<P>();
-			s->handle_ = accept(handle_, (struct sockaddr*) &s->addr_.addr, &s->addr_.len);
-			queue_.enqueue(*s);
+			socket<P> temp;
+			temp.handle_ = accept(handle_, (struct sockaddr*) &temp.addr_.addr, &temp.addr_.len);
+			queue_.enqueue(temp);
 		}
 		
 		int handle_{ -1 };

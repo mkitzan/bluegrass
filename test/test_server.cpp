@@ -13,10 +13,18 @@ bool WAIT = true;
 template <proto_t P>
 void serve(regatta::socket<P>& sk) {
 	bdaddr_t addr = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-	sk.receive(&addr);
+	if(sk.receive(&addr)) {
+		cout << "\tReceive worked" << endl;
+	} else {
+		cout << "\tReceive failed" << endl;
+	}
 	cout << '\t' << addr << endl << flush;
 	addr = { 0xDA, 0x33, 0x94, 0xEB, 0x27, 0xB8 };
-	sk.send(&addr);
+	if(sk.send(&addr)) {
+		cout << "\tSend worked" << endl;
+	} else {
+		cout << "\tSend failed" << endl;
+	}
 	WAIT = false;
 }
 

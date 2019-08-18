@@ -14,8 +14,16 @@ void test() {
 	cout << "\tCreating client" << endl << flush;
 	try {
 		regatta::socket<P> sk(peer, N);
-		sk.send(&self);
-		sk.receive(&self);
+		if(sk.send(&self)) {
+			cout << "\tSend worked" << endl;
+		} else {
+			cout << "\tSend failed" << endl;
+		}
+		if(sk.receive(&self)) {
+			cout << "\tReceive worked" << endl;
+		} else {
+			cout << "\tReceive failed" << endl;
+		}
 		cout << '\t' << self << endl << flush;
 	} catch(...) {
 		cout << "\tClient construction failed" << endl;
