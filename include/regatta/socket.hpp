@@ -293,7 +293,7 @@ namespace regatta {
 		 */
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == L2CAP, bool> = true>
-		inline void setup(address<P> addr, int port) 
+		inline void setup(address<P>& addr, int port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
 			addr.addr.l2_family = AF_BLUETOOTH;
@@ -311,7 +311,7 @@ namespace regatta {
 		 */
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == RFCOMM, bool> = true>
-		inline void setup(address<P> addr, int port) 
+		inline void setup(address<P>& addr, int port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 			addr.addr.rc_family = AF_BLUETOOTH;
