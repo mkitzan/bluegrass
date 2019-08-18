@@ -14,8 +14,6 @@
 #include "regatta/bluetooth.hpp"
 #include "regatta/service_queue.hpp"
 
-#include <iostream>
-
 namespace regatta {
 	
 	/*
@@ -170,12 +168,30 @@ namespace regatta {
 		address<P> addr_{ 0, 0 };
 	};
 	
+	/*
+	 * Class template unique_socket has one template parameter
+	 *     P = the Bluetooth socket protocol used by the underlying socket
+	 *
+	 * Description: unique_socket provides an RAII interface to the socket 
+	 * class. On destruction, it automatically closes the held socket. The
+	 * base class socket doesn't perform this because of temp objects 
+	 * destructing and closing valid sockets.
+	 */
+	template<proto_t P>
+	class unique_socket : public socket<P> {
+	public:
+		unique_socket(socket<P>&& s) : socket_(s) {}
+		~unique_socket() { socket_.close(); }
+	private:
+		socket<P> socket_;
+	};
+	
 	// Global functions used to route signal handler call to a member function
 	std::function<void(int)> sigio_handler;
 	void signal_handler(int signal) { sigio_handler(signal); }
 	
 	/*
-	 * Class template server has one parameter
+	 * Class template server has one template parameter
 	 *     P - the Bluetooth socket protocol
 	 *
 	 * Description: server provides asynchronous Bluetooth connection

@@ -13,19 +13,18 @@ bool WAIT = true;
 template <proto_t P>
 void serve(regatta::socket<P>& sk) {
 	bdaddr_t addr = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-	if(sk.receive(&addr)) {
-		cout << "\tReceive worked" << endl;
+	unique_socket us(std::move(sk));
+	if(us.receive(&addr)) {
+		cout << "\tReceived: " << addr << endl << flush;
 	} else {
 		cout << "\tReceive failed" << endl;
 	}
-	cout << '\t' << addr << endl << flush;
 	addr = { 0xDA, 0x33, 0x94, 0xEB, 0x27, 0xB8 };
-	if(sk.send(&addr)) {
-		cout << "\tSend worked" << endl;
+	if(us.send(&addr)) {
+		cout << "\tSent: " << addr << endl << flush;
 	} else {
 		cout << "\tSend failed" << endl;
 	}
-	sk.close();
 	WAIT = false;
 }
 
@@ -46,7 +45,7 @@ void test() {
 int main() {
 	cout << "Starting L2CAP server test" << endl;
 	test<L2CAP, 0x1001>();
-	cout << "L2CAP server test complete" << endl << endl;
+	cout << "L2CAP server test complete" << endl << endl << flush;
 	cout << "Starting RFCOMM server test" << endl;
 	test<RFCOMM, 0x1>();
 	cout << "RFCOMM server test complete" << endl;
