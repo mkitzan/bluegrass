@@ -40,7 +40,6 @@ namespace regatta {
 		socket(bdaddr_t addr, int port) 
 		{
 			setup(addr, port);
-			std::cout << "Handle: " << handle_ << std::endl;
 			if(handle_ == -1 || c_connect(handle_, 
 			(const struct sockaddr*) &(addr_.addr), sizeof(addr_.addr)) == -1) {
 				c_close(handle_);
@@ -140,9 +139,7 @@ namespace regatta {
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
 			addr_.addr.l2_family = AF_BLUETOOTH;
 			addr_.addr.l2_psm = htobs(port);			
-			std::cout << addr << std::endl;
 			bacpy(&addr_.addr.l2_bdaddr, &addr);
-			std::cout << addr_.addr.l2_bdaddr << std::endl;
 		}
 		
 		/*
@@ -162,11 +159,10 @@ namespace regatta {
 			addr_.addr.rc_family = AF_BLUETOOTH;
 			addr_.addr.rc_channel = (uint8_t) port;
 			bacpy(&addr_.addr.rc_bdaddr, &addr);
-			std::cout << addr << std::endl << addr_.addr.rc_bdaddr << std::endl;
 		}
 	
 		int handle_{ -1 };
-		address<P> addr_;
+		address<P> addr_{ 0, 0 };
 	};
 	
 	// Global functions used to route signal handler call to a member function
@@ -205,23 +201,16 @@ namespace regatta {
 		{
 			int flag = 0;
 			setup(port);
-			std::cout << "Setup: " << handle_ << std::endl;
 			flag |= c_bind(handle_, (struct sockaddr*) &addr_, sizeof(addr_.addr));
-			std::cout << "Bind: " << flag << std::endl;
 			
 			sigio_handler = [this](int signal) { sigio(signal); };
 			action_.sa_handler = signal_handler;
 			flag |= sigaction(SIGIO, &action_, NULL);
-			std::cout << "Sigaction: " << flag << std::endl;
 			flag |= fcntl(handle_, F_SETFL, O_ASYNC);
-			std::cout << "Async: " << flag << std::endl;
 			flag |= fcntl(handle_, F_SETOWN, getpid());
-			std::cout << "Own: " << flag << std::endl;
 			flag |= fcntl(handle_, F_SETSIG, SIGIO);
-			std::cout << "Sigio: " << flag << std::endl;
 			
 			flag |= c_listen(handle_, backlog);
-			std::cout << "Listen: " << flag << std::endl;
 			
 			if(flag == -1) {
 				c_close(handle_);
@@ -296,7 +285,7 @@ namespace regatta {
 		}
 		
 		int handle_{ -1 };
-		address<P> addr_{ 0 };
+		address<P> addr_{ 0, 0 };
 		struct sigaction action_{ 0 };
 		connection_queue& queue_;
 	};
