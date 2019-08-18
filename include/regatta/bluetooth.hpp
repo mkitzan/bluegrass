@@ -44,9 +44,8 @@ namespace regatta {
 	 */
 	template <proto_t P>
 	struct address {
-		typename std::conditional_t<P == L2CAP, sockaddr_l2, sockaddr_rc> 
-		sockaddr;
-		socklen_t socklen;
+		typename std::conditional_t<P == L2CAP, sockaddr_l2, sockaddr_rc> addr;
+		socklen_t len;
 	};
 
 	/*

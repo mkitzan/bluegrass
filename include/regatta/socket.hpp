@@ -42,7 +42,7 @@ namespace regatta {
 			setup(addr, port);
 			std::cout << "Handle: " << handle_ << std::endl;
 			if(handle_ == -1 || c_connect(handle_, 
-			(const struct sockaddr*) &addr_.sockaddr, sizeof(address<P>)) == -1) {
+			(const struct sockaddr*) &(addr_.addr), sizeof(addr_.addr)) == -1) {
 				c_close(handle_);
 				throw std::runtime_error("Failed creating client_socket");
 			}
@@ -82,7 +82,7 @@ namespace regatta {
 			int state = -1;
 			if(handle_ != -1) {
 				state = c_recvfrom(handle_, (void*) data, sizeof(T), 0, 
-				(struct sockaddr*)&addr.sockaddr, &addr.socklen);
+				(struct sockaddr*)&addr.addr, &addr.len);
 			}
 			return state != -1;
 		}
@@ -118,7 +118,7 @@ namespace regatta {
 			int state = -1;
 			if(handle_ != -1) {
 				state = c_sendto(handle_, (void*) data, sizeof(T), 0,
-				(const struct sockaddr*) &addr.sockaddr, addr.socklen);
+				(const struct sockaddr*) &addr.addr, addr.len);
 			}
 			return state != -1;
 		}
@@ -138,11 +138,11 @@ namespace regatta {
 		inline void setup(bdaddr_t addr, int port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
-			addr_.sockaddr.l2_family = AF_BLUETOOTH;
-			addr_.sockaddr.l2_psm = htobs(port);
+			addr_.addr.l2_family = AF_BLUETOOTH;
+			addr_.addr.l2_psm = htobs(port);			
 			std::cout << addr << std::endl;
-			bacpy(&addr_.sockaddr.l2_bdaddr, &addr);
-			std::cout << addr_.sockaddr.l2_bdaddr << std::endl;
+			bacpy(&addr_.addr.l2_bdaddr, &addr);
+			std::cout << addr_.addr.l2_bdaddr << std::endl;
 		}
 		
 		/*
@@ -159,10 +159,10 @@ namespace regatta {
 		inline void setup(bdaddr_t addr, int port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-			addr_.sockaddr.rc_family = AF_BLUETOOTH;
-			addr_.sockaddr.rc_channel = (uint8_t) port;
-			bacpy(&addr_.sockaddr.rc_bdaddr, &addr);
-			std::cout << addr << std::endl << addr_.sockaddr.rc_bdaddr << std::endl;
+			addr_.addr.rc_family = AF_BLUETOOTH;
+			addr_.addr.rc_channel = (uint8_t) port;
+			bacpy(&addr_.addr.rc_bdaddr, &addr);
+			std::cout << addr << std::endl << addr_.addr.rc_bdaddr << std::endl;
 		}
 	
 		int handle_{ -1 };
@@ -206,7 +206,7 @@ namespace regatta {
 			int flag = 0;
 			setup(port);
 			std::cout << "Setup: " << handle_ << std::endl;
-			flag |= c_bind(handle_, (struct sockaddr*) &addr_, sizeof(address<P>));
+			flag |= c_bind(handle_, (struct sockaddr*) &addr_, sizeof(addr_.addr));
 			std::cout << "Bind: " << flag << std::endl;
 			
 			sigio_handler = [this](int signal) { sigio(signal); };
@@ -259,9 +259,9 @@ namespace regatta {
 		inline void setup(int port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
-			addr_.sockaddr.l2_family = AF_BLUETOOTH;
-			addr_.sockaddr.l2_psm = htobs((uint16_t) port);
-			addr_.sockaddr.l2_bdaddr = { 0, 0, 0, 0, 0, 0 };
+			addr_.addr.l2_family = AF_BLUETOOTH;
+			addr_.addr.l2_psm = htobs((uint16_t) port);
+			addr_.addr.l2_bdaddr = { 0, 0, 0, 0, 0, 0 };
 		}
 		
 		/*
@@ -277,9 +277,9 @@ namespace regatta {
 		inline void setup(int port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-			addr_.sockaddr.rc_family = AF_BLUETOOTH;
-			addr_.sockaddr.rc_channel = (uint8_t) port;
-			addr_.sockaddr.rc_bdaddr = { 0, 0, 0, 0, 0, 0 };
+			addr_.addr.rc_family = AF_BLUETOOTH;
+			addr_.addr.rc_channel = (uint8_t) port;
+			addr_.addr.rc_bdaddr = { 0, 0, 0, 0, 0, 0 };
 		}
 	
 		/*
@@ -291,7 +291,7 @@ namespace regatta {
 		void sigio(int signal) 
 		{
 			socket<P>* s = new socket<P>();
-			s->handle_ = accept(handle_, (struct sockaddr*) &s->addr_.sockaddr, &s->addr_.socklen);
+			s->handle_ = accept(handle_, (struct sockaddr*) &s->addr_.addr, &s->addr_.len);
 			queue_.enqueue(*s);
 		}
 		

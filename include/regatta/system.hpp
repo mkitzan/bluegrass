@@ -11,14 +11,14 @@ namespace regatta {
 	static inline int c_close(int socket) 
 	{ return close(socket); }
 	
-	static inline int c_bind(int socket, struct sockaddr* addr, size_t len) 
+	static inline int c_bind(int socket, struct sockaddr* addr, socklen_t  len) 
 	{ return bind(socket, addr, len); }
 	
 	static inline int c_listen(int socket, int backlog)
 	{ return listen(socket, backlog); }
 	
 	static inline int c_connect(
-	int socket, const struct sockaddr* addr, size_t len) 
+	int socket, const struct sockaddr* addr, socklen_t  len) 
 	{ return connect(socket, addr, len); }
 	
 	static inline int c_recv(int socket, void* data, size_t size, int flags) 
