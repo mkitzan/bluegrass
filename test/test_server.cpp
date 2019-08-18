@@ -34,7 +34,7 @@ void test() {
 	service_queue<regatta::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
 	cout << "\tCreating server" << endl << flush;
 	try {
-		server<P> s(sq, N, 4);
+		server<P> s(&sq, N, 4);
 		while(WAIT);
 		WAIT = true;
 	} catch(...) {

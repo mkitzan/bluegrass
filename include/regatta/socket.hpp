@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <cstdint>
 #include <functional>
+#include <map>
 #include "regatta/system.hpp"
 #include "regatta/bluetooth.hpp"
 #include "regatta/service_queue.hpp"
@@ -213,10 +214,6 @@ namespace regatta {
 		socket<P> socket_;
 	};
 	
-	// Global functions used to route signal handler call to a member function
-	std::function<void(int)> sigio_handler;
-	void signal_handler(int signal) { sigio_handler(signal); }
-	
 	/*
 	 * Class template server has one template parameter
 	 *     P - the Bluetooth socket protocol
@@ -245,19 +242,19 @@ namespace regatta {
 		 *     port - the port to utilize for the connection
 		 *     backlog - size of internal socket buffer
 		 */
-		server(connection_queue& queue, int port, int backlog) : queue_(queue) 
+		server(connection_queue* queue, int port, int backlog)
 		{
 			int flag = 0;
 			setup(port);
 			flag |= c_bind(handle_, (struct sockaddr*) &addr_, sizeof(addr_.addr));
+			connections_.insert(std::pair<int, connection_queue*>(handle_, queue));
 			
-			sigio_handler = [this](int signal) { sigio(signal); };
-			action_.sa_handler = signal_handler;
+			action_.sa_sigaction = sigio;
+			action_.sa_flags = SA_SIGINFO;
 			flag |= sigaction(SIGIO, &action_, NULL);
 			flag |= fcntl(handle_, F_SETFL, O_ASYNC);
 			flag |= fcntl(handle_, F_SETOWN, getpid());
 			flag |= fcntl(handle_, F_SETSIG, SIGIO);
-			
 			flag |= c_listen(handle_, backlog);
 			
 			if(flag == -1) {
@@ -280,6 +277,7 @@ namespace regatta {
 		{
 			fcntl(handle_, F_SETSIG, 0);
 			c_close(handle_);
+			connections_.erase(handle_);
 		}
 						
 	private:
@@ -325,18 +323,25 @@ namespace regatta {
 		 *
 		 * Description: sigio is the handler installed to SIGIO signals.
 		 */
-		void sigio(int signal) 
-		{
-			socket<P> temp;
-			temp.handle_ = c_accept(handle_, (struct sockaddr*) &temp.addr_.addr, &temp.addr_.len);
-			queue_.enqueue(temp);
-		}
+		static void sigio(int, siginfo_t*, void*);
 		
 		int handle_{ -1 };
 		address<P> addr_{ 0, 0 };
 		struct sigaction action_{ 0 };
-		connection_queue& queue_;
+		static std::map<int, connection_queue*> connections_;
 	};
+	
+	template <proto_t P>
+	std::map<int, service_queue<socket<P>, ENQUEUE>*> server<P>::connections_;
+		
+	template <proto_t P>
+	void server<P>::sigio(int signal, siginfo_t* info, void* context) 
+	{
+		socket<P> temp;
+		temp.handle_ = c_accept(info->si_fd, 
+		(struct sockaddr*) &temp.addr_.addr, &temp.addr_.len);
+		connections_[info->si_fd]->enqueue(temp);
+	}
 	
 }
 
