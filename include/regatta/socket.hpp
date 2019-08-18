@@ -1,15 +1,12 @@
 #ifndef __SOCKET__
 #define __SOCKET__
 
-#include <errno.h>
-#include <string.h>
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
 
 #include <type_traits>
 #include <cstdint>
-#include <functional>
 #include <map>
 #include "regatta/system.hpp"
 #include "regatta/bluetooth.hpp"
@@ -48,10 +45,16 @@ namespace regatta {
 			}
 		}
 		
+		// safely closes socket if active
 		void close() {
 			if(handle_ != -1) {
 				c_close(handle_);
 			}
+		}
+		
+		// returns information about the connection on the socket
+		address<P> sockaddr() const {
+			return addr_;
 		}
 		
 		/*
@@ -245,13 +248,16 @@ namespace regatta {
 		server(connection_queue* queue, int port, int backlog)
 		{
 			int flag = 0;
-			setup(port);
-			flag |= c_bind(handle_, (struct sockaddr*) &addr_, sizeof(addr_.addr));
+			address<P> addr{ 0, 0 };
+			struct sigaction action{ 0 };
+			
+			setup(addr, port);
+			flag |= c_bind(handle_, (struct sockaddr*) &addr, sizeof(addr.addr));
 			connections_.insert(std::pair<int, connection_queue*>(handle_, queue));
 			
-			action_.sa_sigaction = sigio;
-			action_.sa_flags = SA_SIGINFO;
-			flag |= sigaction(SIGIO, &action_, NULL);
+			action.sa_sigaction = sigio;
+			action.sa_flags = SA_SIGINFO;
+			flag |= sigaction(SIGIO, &action, NULL);
 			flag |= fcntl(handle_, F_SETFL, O_ASYNC);
 			flag |= fcntl(handle_, F_SETOWN, getpid());
 			flag |= fcntl(handle_, F_SETSIG, SIGIO);
@@ -270,11 +276,7 @@ namespace regatta {
 		server& operator=(server&&) = delete;
 		
 		// RAII destructor resets the signal handler and c_closes the socket
-		~server() { shutdown(); }
-		
-		// resets the signal handler and c_closes the socket
-		void shutdown() 
-		{
+		~server() {
 			fcntl(handle_, F_SETSIG, 0);
 			c_close(handle_);
 			connections_.erase(handle_);
@@ -291,12 +293,12 @@ namespace regatta {
 		 */
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == L2CAP, bool> = true>
-		inline void setup(int port) 
+		inline void setup(address<P> addr, int port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
-			addr_.addr.l2_family = AF_BLUETOOTH;
-			addr_.addr.l2_psm = htobs((uint16_t) port);
-			addr_.addr.l2_bdaddr = { 0, 0, 0, 0, 0, 0 };
+			addr.addr.l2_family = AF_BLUETOOTH;
+			addr.addr.l2_psm = htobs((uint16_t) port);
+			addr.addr.l2_bdaddr = { 0, 0, 0, 0, 0, 0 };
 		}
 		
 		/*
@@ -309,31 +311,37 @@ namespace regatta {
 		 */
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == RFCOMM, bool> = true>
-		inline void setup(int port) 
+		inline void setup(address<P> addr, int port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-			addr_.addr.rc_family = AF_BLUETOOTH;
-			addr_.addr.rc_channel = (uint8_t) port;
-			addr_.addr.rc_bdaddr = { 0, 0, 0, 0, 0, 0 };
+			addr.addr.rc_family = AF_BLUETOOTH;
+			addr.addr.rc_channel = (uint8_t) port;
+			addr.addr.rc_bdaddr = { 0, 0, 0, 0, 0, 0 };
 		}
 	
-		/*
-		 * Function sigio has one parameter:
-		 *     signal - the signal number which generated the call
-		 *
-		 * Description: sigio is the handler installed to SIGIO signals.
-		 */
+		// sigio signal handler hook
 		static void sigio(int, siginfo_t*, void*);
 		
 		int handle_{ -1 };
-		address<P> addr_{ 0, 0 };
-		struct sigaction action_{ 0 };
 		static std::map<int, connection_queue*> connections_;
 	};
 	
+	// static allocation for the connection map
 	template <proto_t P>
 	std::map<int, service_queue<socket<P>, ENQUEUE>*> server<P>::connections_;
 		
+	/*
+	 * Function sigio has three parameter:
+	 *     signal - the signal number which generated the call
+	 *     info - struct containing extend info on the signal
+	 *     context - unused parameter
+	 *
+	 * Description: sigio is the global handler installed to SIGIO signals
+	 * for sever sockets. server sockets are mapped to service_queues which
+	 * allow for multiple open server sockets at once. However, a single 
+	 * signal handler must be used for all SIGIO signals. The correct queue
+	 * for the signaling socket must be found be traversing the map.
+	 */
 	template <proto_t P>
 	void server<P>::sigio(int signal, siginfo_t* info, void* context) 
 	{

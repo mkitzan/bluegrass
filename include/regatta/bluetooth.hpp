@@ -19,7 +19,6 @@
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
 
-#include <cstdlib>
 #include <iostream>
 
 namespace regatta {
