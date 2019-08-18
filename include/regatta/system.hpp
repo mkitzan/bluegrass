@@ -17,6 +17,9 @@ namespace regatta {
 	static inline int c_listen(int socket, int backlog)
 	{ return listen(socket, backlog); }
 	
+	static inline int c_accept(int socket, struct sockaddr* addr, socklen_t* len)
+	{ return accept(socket, addr, len); }
+	
 	static inline int c_connect(
 	int socket, const struct sockaddr* addr, socklen_t  len) 
 	{ return connect(socket, addr, len); }

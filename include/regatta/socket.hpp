@@ -1,6 +1,8 @@
 #ifndef __SOCKET__
 #define __SOCKET__
 
+#include <errno.h>
+#include <string.h>
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -47,8 +49,11 @@ namespace regatta {
 			}
 		}
 		
-		// RAII destructor c_closes allocated socket
-		~socket() { c_close(handle_); }
+		void close() {
+			if(handle_ != -1) {
+				c_close(handle_);
+			}
+		}
 		
 		/*
 		 * Function template receive takes one template parameter
@@ -280,7 +285,7 @@ namespace regatta {
 		void sigio(int signal) 
 		{
 			socket<P> temp;
-			temp.handle_ = accept(handle_, (struct sockaddr*) &temp.addr_.addr, &temp.addr_.len);
+			temp.handle_ = c_accept(handle_, (struct sockaddr*) &temp.addr_.addr, &temp.addr_.len);
 			queue_.enqueue(temp);
 		}
 		

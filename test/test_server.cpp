@@ -25,6 +25,7 @@ void serve(regatta::socket<P>& sk) {
 	} else {
 		cout << "\tSend failed" << endl;
 	}
+	sk.close();
 	WAIT = false;
 }
 

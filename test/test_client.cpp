@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <mutex>
+#include <unistd.h>
 #include "regatta/bluetooth.hpp"
 #include "regatta/socket.hpp"
 
@@ -25,6 +26,7 @@ void test() {
 			cout << "\tReceive failed" << endl;
 		}
 		cout << '\t' << self << endl << flush;
+		sk.close();
 	} catch(...) {
 		cout << "\tClient construction failed" << endl;
 	}
@@ -34,6 +36,7 @@ int main() {
 	cout << "Starting L2CAP client test" << endl;
 	test<L2CAP, 0x1001>();
 	cout << "L2CAP server test complete" << endl << endl;
+	usleep(750000);
 	cout << "Starting RFCOMM server test" << endl;
 	test<RFCOMM, 0x1>();
 	cout << "RFCOMM server test complete" << endl;
