@@ -174,14 +174,41 @@ namespace regatta {
 	 *
 	 * Description: unique_socket provides an RAII interface to the socket 
 	 * class. On destruction, it automatically closes the held socket. The
-	 * base class socket doesn't perform this because of temp objects 
-	 * destructing and closing valid sockets.
+	 * class socket doesn't perform this because of temp objects destructing
+	 * and closing valid sockets.
 	 */
 	template<proto_t P>
-	class unique_socket : public socket<P> {
+	class unique_socket {
 	public:
 		unique_socket(socket<P>&& s) : socket_(s) {}
 		~unique_socket() { socket_.close(); }
+		
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		inline bool receive(T* data) const {
+			return socket_.receive(data);
+		}
+		
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		inline bool receive(T* data, address<P>* addr) const {
+			return socket_.receive(data, addr);
+		}
+		
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		inline bool send(const T* data) const
+		{
+			return socket_.send(data);
+		}
+		
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		bool send(const T* data, const address<P>* addr) const
+		{
+			return socket_.send(data, addr);
+		}
+		
 	private:
 		socket<P> socket_;
 	};
