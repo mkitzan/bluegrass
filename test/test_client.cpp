@@ -16,7 +16,7 @@ void test() {
 	try {
 		unique_socket us(regatta::socket<P>(peer, N));
 		if(us.send(&self)) {
-			cout << "\tSent: " << self << endl << flush;
+			cout << "\tSent:     " << self << endl << flush;
 		} else {
 			cout << "\tSend failed" << endl;
 		}

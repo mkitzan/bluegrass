@@ -258,7 +258,7 @@ namespace regatta {
 			action.sa_sigaction = sigio;
 			action.sa_flags = SA_SIGINFO;
 			flag |= sigaction(SIGIO, &action, NULL);
-			flag |= fcntl(handle_, F_SETFL, O_ASYNC);
+			flag |= fcntl(handle_, F_SETFL, O_ASYNC | O_NONBLOCK);
 			flag |= fcntl(handle_, F_SETOWN, getpid());
 			flag |= fcntl(handle_, F_SETSIG, SIGIO);
 			flag |= c_listen(handle_, backlog);

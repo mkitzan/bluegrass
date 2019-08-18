@@ -21,7 +21,7 @@ void serve(regatta::socket<P>& sk) {
 	}
 	addr = { 0xDA, 0x33, 0x94, 0xEB, 0x27, 0xB8 };
 	if(us.send(&addr)) {
-		cout << "\tSent: " << addr << endl << flush;
+		cout << "\tSent:     " << addr << endl << flush;
 	} else {
 		cout << "\tSend failed" << endl;
 	}
