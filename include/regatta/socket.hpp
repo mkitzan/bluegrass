@@ -208,7 +208,7 @@ namespace regatta {
 		
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		bool send(const T* data, const address<P>* addr) const
+		inline bool send(const T* data, const address<P>* addr) const
 		{
 			return socket_.send(data, addr);
 		}
