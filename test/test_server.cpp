@@ -1,17 +1,17 @@
 #include <iostream>
 #include <cassert>
 #include <mutex>
-#include "regatta/bluetooth.hpp"
-#include "regatta/service_queue.hpp"
-#include "regatta/socket.hpp"
+#include "bluegrass/bluetooth.hpp"
+#include "bluegrass/service_queue.hpp"
+#include "bluegrass/socket.hpp"
 
 using namespace std;
-using namespace regatta;
+using namespace bluegrass;
 
 bool WAIT = true;
 
 template <proto_t P>
-void serve(regatta::socket<P>& sk) {
+void serve(bluegrass::socket<P>& sk) {
 	bdaddr_t addr = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	unique_socket us(std::move(sk));
 	if(us.receive(&addr)) {
@@ -31,7 +31,7 @@ void serve(regatta::socket<P>& sk) {
 template<proto_t P, int N>
 void test() {
 	cout << "\tCreating service_queue" << endl << flush;
-	service_queue<regatta::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
+	service_queue<bluegrass::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
 	cout << "\tCreating server" << endl << flush;
 	try {
 		server<P> s(&sq, N, 4);

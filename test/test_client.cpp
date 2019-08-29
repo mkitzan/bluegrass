@@ -2,11 +2,11 @@
 #include <cassert>
 #include <mutex>
 #include <unistd.h>
-#include "regatta/bluetooth.hpp"
-#include "regatta/socket.hpp"
+#include "bluegrass/bluetooth.hpp"
+#include "bluegrass/socket.hpp"
 
 using namespace std;
-using namespace regatta;
+using namespace bluegrass;
 
 template<proto_t P, int N>
 void test() {
@@ -14,7 +14,7 @@ void test() {
 	bdaddr_t peer = { 0xDA, 0x33, 0x94, 0xEB, 0x27, 0xB8 };
 	cout << "\tCreating client" << endl << flush;
 	try {
-		unique_socket us(regatta::socket<P>(peer, N));
+		unique_socket us(bluegrass::socket<P>(peer, N));
 		if(us.send(&self)) {
 			cout << "\tSent:     " << self << endl << flush;
 		} else {

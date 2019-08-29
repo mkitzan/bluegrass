@@ -8,11 +8,11 @@
 #include <cstdint>
 #include <map>
 
-#include "regatta/system.hpp"
-#include "regatta/bluetooth.hpp"
-#include "regatta/service_queue.hpp"
+#include "bluegrass/system.hpp"
+#include "bluegrass/bluetooth.hpp"
+#include "bluegrass/service_queue.hpp"
 
-namespace regatta {
+namespace bluegrass {
 	
 	/*
 	 * Class template socket has one template parameter
@@ -69,7 +69,7 @@ namespace regatta {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool receive(T* data) const
 		{
-			int state = -1;
+			int state{ -1 };
 			if(handle_ != -1) {
 				state = c_recv(handle_, (void*) data, sizeof(T), 0);
 			}
@@ -87,7 +87,7 @@ namespace regatta {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool receive(T* data, address<P>* addr) const
 		{
-			int state = -1;
+			int state{ -1 };
 			if(handle_ != -1) {
 				state = c_recvfrom(handle_, (void*) data, sizeof(T), 0, 
 				(struct sockaddr*)&addr.addr, &addr.len);
@@ -105,7 +105,7 @@ namespace regatta {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool send(const T* data) const
 		{
-			int state = -1;
+			int state{ -1 };
 			if(handle_ != -1) {
 				state = c_send(handle_, (void*) data, sizeof(T), 0);
 			}

@@ -1,10 +1,10 @@
 #include <iostream>
 #include <cassert>
 #include <mutex>
-#include "regatta/service_queue.hpp"
+#include "bluegrass/service_queue.hpp"
 
 using namespace std;
-using namespace regatta;
+using namespace bluegrass;
 
 mutex M;
 size_t I;

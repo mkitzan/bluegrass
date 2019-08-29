@@ -4,32 +4,27 @@
 #include <vector>
 #include <string>
 
-#include "regatta/system.hpp"
-#include "regatta/bluetooth.hpp"
+#include "bluegrass/system.hpp"
+#include "bluegrass/bluetooth.hpp"
 
-namespace regatta {
+namespace bluegrass {
 	
 	class hci_controller {
 	public:
 		/*
-		 * Description: hci_controller provides a simplified interface to the
-		 * Bluetooth hardware controller interface. The HCI provides the means
-		 * to search for nearby Bluetooth device addresses and device names.
+		 * Description: hci_controller singleton accessor function. Singleton
+		 * ensures only one socket conncetion exists to the physical HCI.
 		 */
-		hci_controller() 
+		static hci_controller& access() 
 		{
-			device_ = hci_get_route(NULL);
-			socket_ = hci_open_dev(device_);
-			
-			if(device_ < 0 || socket_ < 0) {
-				throw std::runtime_error("Failed creating socket to HCI controller");
-			}
+			static hci_controller hci;
+			return hci;
 		}
 		
-		// hci_controller is copyable and movable
-		hci_controller(const hci_controller& other) = default;
+		// hci_controller is movable but not copyable
+		hci_controller(const hci_controller& other) = delete;
 		hci_controller(hci_controller&& other) = default;
-		hci_controller& operator=(const hci_controller& other) = default;
+		hci_controller& operator=(const hci_controller& other) = delete;
 		hci_controller& operator=(hci_controller&& other) = default;
 		
 		// Performs RAII socket closing
@@ -37,14 +32,14 @@ namespace regatta {
 		
 		/*
 		 * Function address_inquiry has two parameters:
-		 *     addrs - vector storing the addresses discovered during the inquiry
 		 *     max_resps - maximum number of responses to return
+		 *     addrs - vector storing the addresses discovered during the inquiry
 		 *
 		 * Description: address_inquiry makes a blocking call to the physical
 		 * HCI which performs an inquiry of nearby broadcasting Bluetooth devices.
 		 * A vector of Bluetooth addresses are returned which will be <= max_resps.
 		 */
-		void address_inquiry(std::vector<bdaddr_t>& addrs, std::size_t max_resps) 
+		void address_inquiry(std::size_t max_resps, std::vector<bdaddr_t>& addrs) const
 		{
 			addrs.clear();
 			inquiry_info inquiries[max_resps];
@@ -70,7 +65,7 @@ namespace regatta {
 		 * in the addrs vector.
 		 */
 		void remote_names(const std::vector<bdaddr_t>& addrs, 
-		std::vector<std::string>& names) 
+		std::vector<std::string>& names) const
 		{
 			char str[64];			
 			names.clear();
@@ -84,16 +79,45 @@ namespace regatta {
 		}
 	
 	private:
+		/*
+		 * Description: hci_controller provides a simplified interface to the
+		 * Bluetooth hardware controller interface. The HCI provides the means
+		 * to search for nearby Bluetooth device addresses and device names.
+		 */
+		hci_controller() 
+		{
+			device_ = hci_get_route(NULL);
+			socket_ = hci_open_dev(device_);
+			
+			if(device_ < 0 || socket_ < 0) {
+				throw std::runtime_error("Failed creating socket to HCI controller");
+			}
+		}
+		
 		int device_, socket_;
 	};
 	
 	// todo
 	class sdp_controller {
 	public:
+		sdp_controller(bdaddr_t addr) {
+			socket_ = sdp_connect(BDADDR_ANY, &addr, SDP_RETRY_IF_BUSY);
+		}
 		
+		sdp_controller(const sdp_controller& other) = delete;
+		sdp_controller(sdp_controller&& other) = default;
+		sdp_controller& operator=(const sdp_controller& other) = delete;
+		sdp_controller& operator=(sdp_controller&& other) = default;
+		
+		~sdp_controller() { c_close(socket_); }
+		
+		void service_search(uint32_t service) const 
+		{
+			
+		}
 	
 	private:
-		
+		int socket_;
 	};
 	
 }

@@ -9,7 +9,7 @@
 #include <queue>
 #include <vector>
 
-namespace regatta {
+namespace bluegrass {
 	
 	/*
 	 * Description: queue_t is an enum type passed as a template argument to

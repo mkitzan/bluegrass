@@ -21,7 +21,7 @@
 
 #include <iostream>
 
-namespace regatta {
+namespace bluegrass {
 	
 	/*
 	 * Description: proto_t is used to specify the Bluteooth protocol used by 
@@ -46,7 +46,7 @@ namespace regatta {
 		typename std::conditional_t<P == L2CAP, sockaddr_l2, sockaddr_rc> addr;
 		socklen_t len;
 	};
-
+	
 	/*
 	 * Description: Prints a human readable Bluetooth device address 
 	 */
