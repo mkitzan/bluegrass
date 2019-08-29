@@ -47,6 +47,12 @@ namespace bluegrass {
 		socklen_t len;
 	};
 	
+	struct service {
+		uint16_t id;
+		proto_t proto;
+		uint16_t port;
+	};
+	
 	/*
 	 * Description: Prints a human readable Bluetooth device address 
 	 */

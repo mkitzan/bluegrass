@@ -227,7 +227,7 @@ namespace bluegrass {
 		bool enqueue(T& element) 
 		{
 			std::unique_lock<std::mutex> lock(m_);	
-            while(open_ && queue_.size() == max_) { 
+			while(open_ && queue_.size() == max_) { 
 				enqcv_.wait(lock); 
 			}
             

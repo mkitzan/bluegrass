@@ -35,7 +35,7 @@ namespace bluegrass {
 		 *     addr - the Bluetooth address to connect to
 		 *     port - the port to utilize for the connection
 		 */
-		socket(bdaddr_t addr, int port) 
+		socket(bdaddr_t addr, uint16_t port) 
 		{
 			setup(addr, port);
 			if(handle_ == -1 || c_connect(handle_, 
@@ -54,10 +54,7 @@ namespace bluegrass {
 		}
 		
 		// returns information about the connection on the socket
-		address<P> sockaddr() const 
-		{
-			return addr_;
-		}
+		address<P> sockaddr() const { return addr_; }
 		
 		/*
 		 * Function template receive takes one template parameter
@@ -143,7 +140,7 @@ namespace bluegrass {
 		 */
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == L2CAP, bool> = true>
-		inline void setup(bdaddr_t addr, int port) 
+		inline void setup(bdaddr_t addr, uint16_t port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
 			addr_.addr.l2_family = AF_BLUETOOTH;
@@ -162,7 +159,7 @@ namespace bluegrass {
 		 */
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == RFCOMM, bool> = true>
-		inline void setup(bdaddr_t addr, int port) 
+		inline void setup(bdaddr_t addr, uint16_t port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 			addr_.addr.rc_family = AF_BLUETOOTH;
@@ -198,7 +195,8 @@ namespace bluegrass {
 		
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool receive(T* data, address<P>* addr) const {
+		inline bool receive(T* data, address<P>* addr) const 
+		{ 
 			return socket_.receive(data, addr);
 		}
 		
@@ -248,7 +246,7 @@ namespace bluegrass {
 		 *     port - the port to utilize for the connection
 		 *     backlog - size of internal socket buffer
 		 */
-		server(connection_queue* queue, int port, int backlog)
+		server(connection_queue* queue, uint16_t port, int backlog)
 		{
 			int flag{ 0 };
 			address<P> addr{ 0, 0 };
@@ -296,7 +294,7 @@ namespace bluegrass {
 		 */
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == L2CAP, bool> = true>
-		inline void setup(address<P>& addr, int port) 
+		inline void setup(address<P>& addr, uint16_t port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
 			addr.addr.l2_family = AF_BLUETOOTH;
@@ -314,7 +312,7 @@ namespace bluegrass {
 		 */
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == RFCOMM, bool> = true>
-		inline void setup(address<P>& addr, int port) 
+		inline void setup(address<P>& addr, uint16_t port) 
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 			addr.addr.rc_family = AF_BLUETOOTH;
