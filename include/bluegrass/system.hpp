@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-namespace regatta {
+namespace bluegrass {
 	
 	static inline int c_socket(int domain, int type, int protocol) 
 	{ return socket(domain, type, protocol); }
