@@ -1,6 +1,7 @@
 #ifndef __SYSTEM__
 #define __SYSTEM__
 
+#include <unistd.h>
 #include <sys/socket.h>
 
 namespace regatta {

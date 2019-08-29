@@ -58,10 +58,10 @@ namespace regatta {
 			while(threads_.size() < thread_count) {
 				if constexpr(Q == DEQUEUE) {
 					threads_.emplace_back(std::thread(
-					[this, service]{ enqueue_service(service); }));
+					[this, service] { enqueue_service(service); }));
 				} else {
 					threads_.emplace_back(std::thread(
-					[this, service]{ dequeue_service(service); }));
+					[this, service] { dequeue_service(service); }));
 				}
 			}	
 		}
@@ -83,29 +83,29 @@ namespace regatta {
 			threads_.reserve(enq_count + deq_count);
 			for(; enq_count; --enq_count) {
 				threads_.emplace_back(std::thread(
-				[this, service_enq]{ enqueue_service(service_enq); }));
+				[this, service_enq] { enqueue_service(service_enq); }));
 			}
 			for(; deq_count; --deq_count) {
 				threads_.emplace_back(std::thread(
-				[this, service_deq]{ dequeue_service(service_deq); }));
+				[this, service_deq] { dequeue_service(service_deq); }));
 			}	
 		}
 		
 		// service_queue is not copyable or movable
-        service_queue(const service_queue&) = delete;
-        service_queue& operator=(const service_queue&) = delete;
-        service_queue(service_queue&&) = delete;
-        service_queue& operator=(service_queue&&) = delete;
-		
+		service_queue(const service_queue&) = delete;
+		service_queue(service_queue&&) = delete;
+		service_queue& operator=(const service_queue&) = delete;
+		service_queue& operator=(service_queue&&) = delete;
+
 		// RAII destructor performs shutdown and join
 		~service_queue() 
 		{
 			shutdown();
 			for(std::thread &t : threads_) {
-                if(t.joinable()) { 
+				if(t.joinable()) { 
 					t.join(); 
 				}
-            }
+			}
 		}
 		
 		/*
@@ -123,7 +123,7 @@ namespace regatta {
 		bool enqueue(T& element) 
 		{
 			std::unique_lock<std::mutex> lock(m_);
-            while(open_ && queue_.size() == max_) { 
+			while(open_ && queue_.size() == max_) { 
 				enqcv_.wait(lock); 
 			}
             

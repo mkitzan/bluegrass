@@ -4,10 +4,10 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
-
 #include <type_traits>
 #include <cstdint>
 #include <map>
+
 #include "regatta/system.hpp"
 #include "regatta/bluetooth.hpp"
 #include "regatta/service_queue.hpp"
@@ -46,14 +46,16 @@ namespace regatta {
 		}
 		
 		// safely closes socket if active
-		void close() {
+		void close() 
+		{
 			if(handle_ != -1) {
 				c_close(handle_);
 			}
 		}
 		
 		// returns information about the connection on the socket
-		address<P> sockaddr() const {
+		address<P> sockaddr() const 
+		{
 			return addr_;
 		}
 		
@@ -131,7 +133,7 @@ namespace regatta {
 	
 	private:
 		/*
-		 * Function setup has two parameter:
+		 * Function setup has two parameters:
 		 *     addr - the Bluetooth address to connect to
 		 *     port - the port utilized for the connection
 		 *
@@ -150,7 +152,7 @@ namespace regatta {
 		}
 		
 		/*
-		 * Function setup has two parameter:
+		 * Function setup has two parameters:
 		 *     addr - the Bluetooth address to connect to
 		 *     port - the port utilized for the connection
 		 *
@@ -189,7 +191,8 @@ namespace regatta {
 		
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool receive(T* data) const {
+		inline bool receive(T* data) const 
+		{
 			return socket_.receive(data);
 		}
 		
@@ -247,7 +250,7 @@ namespace regatta {
 		 */
 		server(connection_queue* queue, int port, int backlog)
 		{
-			int flag = 0;
+			int flag{ 0 };
 			address<P> addr{ 0, 0 };
 			struct sigaction action{ 0 };
 			
@@ -331,7 +334,7 @@ namespace regatta {
 	std::map<int, service_queue<socket<P>, ENQUEUE>*> server<P>::connections_;
 		
 	/*
-	 * Function sigio has three parameter:
+	 * Function sigio has three parameters:
 	 *     signal - the signal number which generated the call
 	 *     info - struct containing extend info on the signal
 	 *     context - unused parameter
