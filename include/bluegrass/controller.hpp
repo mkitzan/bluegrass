@@ -26,10 +26,10 @@ namespace bluegrass {
 			return hci;
 		}
 		
-		// hci_controller is movable but not copyable
-		hci_controller(const hci_controller& other) = delete;
+		// hci_controller is movable and copyable
+		hci_controller(const hci_controller& other) = default;
 		hci_controller(hci_controller&& other) = default;
-		hci_controller& operator=(const hci_controller& other) = delete;
+		hci_controller& operator=(const hci_controller& other) = default;
 		hci_controller& operator=(hci_controller&& other) = default;
 		
 		// Performs RAII socket closing
@@ -112,8 +112,12 @@ namespace bluegrass {
 	 */
 	class sdp_controller {
 	public:
-		sdp_controller(bdaddr_t addr = BDADDR_LOCAL) {
-			session_ = sdp_connect(BDADDR_ANY, &addr, SDP_RETRY_IF_BUSY);
+		sdp_controller() {
+			session_ = sdp_connect((bdaddr_t *) 0, (bdaddr_t *) 0xFFFFFF, SDP_RETRY_IF_BUSY);
+		}
+	
+		sdp_controller(bdaddr_t addr) {
+			session_ = sdp_connect((bdaddr_t *) 0, &addr, SDP_RETRY_IF_BUSY);
 		}
 		
 		sdp_controller(const sdp_controller& other) = delete;
@@ -138,11 +142,11 @@ namespace bluegrass {
 		void service_search(const service svc, std::vector<service>& resps) const 
 		{
 			uuid_t id;
-			sdp_list_t* resp, search, attr, protos;
+			sdp_list_t *resp, *search, *attr, *proto;
 			uint32_t range = 0x0000FFFF;
 			
 			resps.clear();
-			sdp_uuid16_create(&id, &(svc.id));
+			sdp_uuid16_create(&id, svc.id);
 			search = sdp_list_append(NULL, &id);
 			attr = sdp_list_append(NULL, &range);
 			
@@ -154,7 +158,7 @@ namespace bluegrass {
 			
 			// iteratre list of service records
 			for(sdp_list_t* r = resp; r; r = r->next) {
-				if(sdp_get_access_protos((sdp_record_t*) r->data, &protos) >= 0) {
+				if(sdp_get_access_protos((sdp_record_t*) r->data, &proto) >= 0) {
 					// iterate list of protocol sequences for each service record
 					for(sdp_list_t* p = proto; p; p = p->next) {
 						// iterate through specific protocols for each sequence
@@ -170,22 +174,22 @@ namespace bluegrass {
 									break;
 								case SDP_UINT8:
 									resps.push_back(
-									{ svc.id, (proto_t) pt, pattr->val.int8 });
+									{ svc.id, (proto_t) pt, pattr->val.uint16 });
 									break;
 								}
 							}
 						}
 						
-						sdp_free_list((sdp_list*) p->data, 0);
+						sdp_list_free((sdp_list_t*) p->data, 0);
 					}
 					
-					sdp_free_list(proto, 0);
+					sdp_list_free(proto, 0);
 				}
 				
 				sdp_record_free((sdp_record_t*) resp->data);
 			}
 			
-			sdp_free_list(resp, 0);
+			sdp_list_free(resp, 0);
 		}
 		
 		// todo

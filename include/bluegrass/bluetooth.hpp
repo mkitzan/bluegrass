@@ -47,6 +47,10 @@ namespace bluegrass {
 		socklen_t len;
 	};
 	
+	/*
+	 * Struct to package information about a Bluetooth service. service struct
+	 * has service id, Bluetooth protocol, and port number.
+	 */
 	struct service {
 		uint16_t id;
 		proto_t proto;

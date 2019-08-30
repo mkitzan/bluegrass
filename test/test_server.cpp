@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cassert>
 #include <mutex>
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/service_queue.hpp"

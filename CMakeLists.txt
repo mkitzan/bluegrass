@@ -34,11 +34,18 @@ find_package(Threads)
 add_executable(test_service_queue test/test_service_queue.cpp)
 add_executable(test_server test/test_server.cpp)
 add_executable(test_client test/test_client.cpp)
+add_executable(test_hci test/test_hci_controller.cpp)
+add_executable(test_sdp test/test_sdp_controller.cpp)
 
 target_include_directories(test_service_queue PUBLIC include)
 target_include_directories(test_server PUBLIC include ${BLUEZ_INCLUDE_DIRS})
 target_include_directories(test_client PUBLIC include ${BLUEZ_INCLUDE_DIRS})
+target_include_directories(test_hci PUBLIC include ${BLUEZ_INCLUDE_DIRS})
+target_include_directories(test_sdp PUBLIC include ${BLUEZ_INCLUDE_DIRS})
 
 target_link_libraries(test_service_queue ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(test_server ${CMAKE_THREAD_LIBS_INIT} ${BLUEZ_LIBRARY_DIRS} -lbluetooth)
 target_link_libraries(test_client ${CMAKE_THREAD_LIBS_INIT} ${BLUEZ_LIBRARY_DIRS} -lbluetooth)
+target_link_libraries(test_hci ${BLUEZ_LIBRARY_DIRS} -lbluetooth)
+target_link_libraries(test_sdp ${BLUEZ_LIBRARY_DIRS} -lbluetooth)
+
