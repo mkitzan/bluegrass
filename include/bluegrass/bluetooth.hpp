@@ -28,8 +28,8 @@ namespace bluegrass {
 	 * sockets and address.
 	 */
 	enum proto_t {
-		L2CAP,
-		RFCOMM,
+		L2CAP = L2CAP_UUID,
+		RFCOMM = RFCOMM_UUID,
 	};
 	
 	/*

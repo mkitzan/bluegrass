@@ -9,11 +9,16 @@
 
 namespace bluegrass {
 	
+	/*
+	 * Class hci_controller provides access to the physical hardware controller
+	 * interface on the hardware running the program. hci_controller is a 
+	 * singleton which guarantees a program has one path to physical controller.
+	 */
 	class hci_controller {
 	public:
 		/*
 		 * Description: hci_controller singleton accessor function. Singleton
-		 * ensures only one socket conncetion exists to the physical HCI.
+		 * ensures only one socket connection exists to the physical HCI.
 		 */
 		static hci_controller& access() 
 		{
@@ -59,7 +64,7 @@ namespace bluegrass {
 		 *
 		 * Description: remote_names makes blocking calls to the physical
 		 * HCI which perform queries of a nearby broadcasting Bluetooth devices
-		 * retreiving their human readable device name. If a Bluetooth device 
+		 * retrieving their human readable device name. If a Bluetooth device 
 		 * is unreachable "unknown" will be set for that device. Positions of
 		 * readable names will correspond to the position of the Bluetooth address
 		 * in the addrs vector.
@@ -97,6 +102,14 @@ namespace bluegrass {
 		int device_, socket_;
 	};
 	
+	/*
+	 * Class sdp_controller may be used to access the local device SDP server 
+	 * or to access the SDP server on a remote device. The default argument of
+	 * this class connects to the local device SDP server, but a programmer may
+	 * pass the Bluetooth address of remote device to access the device's SDP
+	 * server. On destruction the class object closes the SDP server session it
+	 * represents.
+	 */
 	class sdp_controller {
 	public:
 		sdp_controller(bdaddr_t addr = BDADDR_LOCAL) {
@@ -110,22 +123,69 @@ namespace bluegrass {
 		
 		~sdp_controller() { sdp_close(session_); }
 		
+		
+		/*
+		 * Function service_search has two parameters:
+		 *     svc - the service ID to search for (proto and port are not used)
+		 *     resps - container to store the found services
+		 *
+		 * Description: service_search performs a search of services matching
+		 * the argument "svc" service on the remote device's SDP server. On 
+		 * return the "resps" vector is filled with matching services. The 
+		 * majority of code was ported from Albert Huang's: "The Use of 
+		 * Bluetooth in Linux and Location aware Computing"
+		 */
 		void service_search(const service svc, std::vector<service>& resps) const 
 		{
 			uuid_t id;
-			sdp_list_t* resp, search, attr;
+			sdp_list_t* resp, search, attr, protos;
 			uint32_t range = 0x0000FFFF;
 			
+			resps.clear();
 			sdp_uuid16_create(&id, &(svc.id));
 			search = sdp_list_append(NULL, &id);
 			attr = sdp_list_append(NULL, &range);
 			
+			// perform search on the remote device's SDP server
 			if(sdp_service_search_attr_req(
 			session_, search, SDP_ATTR_REQ_RANGE, attr, &resp) < 0) {
 				throw std::runtime_error("Failed searching for service");
 			}
 			
-			// parse search results
+			// iteratre list of service records
+			for(sdp_list_t* r = resp; r; r = r->next) {
+				if(sdp_get_access_protos((sdp_record_t*) r->data, &protos) >= 0) {
+					// iterate list of protocol sequences for each service record
+					for(sdp_list_t* p = proto; p; p = p->next) {
+						// iterate through specific protocols for each sequence
+						for(sdp_list_t* pdata = (sdp_list_t*) p->data; 
+						pdata; pdata = pdata->next) {
+							int pt = 0;
+							// iterate through the attributes of a specific protocol
+							for(sdp_data_t* pattr = (sdp_data_t*) pdata->data; 
+							pattr; pattr = pattr->next) {
+								switch(pattr->dtd) {
+								case SDP_UUID16:
+									pt = sdp_uuid_to_proto(&pattr->val.uuid);
+									break;
+								case SDP_UINT8:
+									resps.push_back(
+									{ svc.id, (proto_t) pt, pattr->val.int8 });
+									break;
+								}
+							}
+						}
+						
+						sdp_free_list((sdp_list*) p->data, 0);
+					}
+					
+					sdp_free_list(proto, 0);
+				}
+				
+				sdp_record_free((sdp_record_t*) resp->data);
+			}
+			
+			sdp_free_list(resp, 0);
 		}
 		
 		// todo

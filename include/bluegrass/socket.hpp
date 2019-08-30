@@ -338,7 +338,7 @@ namespace bluegrass {
 	 *     context - unused parameter
 	 *
 	 * Description: sigio is the global handler installed to SIGIO signals
-	 * for sever sockets. server sockets are mapped to service_queues which
+	 * for server sockets. server sockets are mapped to service_queues which
 	 * allow for multiple open server sockets at once. However, a single 
 	 * signal handler must be used for all SIGIO signals. The correct queue
 	 * for the signaling socket must be found be traversing the map.
