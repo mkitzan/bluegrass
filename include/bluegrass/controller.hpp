@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include <iostream>
+
 #include "bluegrass/system.hpp"
 #include "bluegrass/bluetooth.hpp"
 
@@ -47,14 +49,16 @@ namespace bluegrass {
 		void address_inquiry(std::size_t max_resps, std::vector<bdaddr_t>& addrs) const
 		{
 			addrs.clear();
-			inquiry_info inquiries[max_resps];
-			
+			inquiry_info* inquiries = static_cast<inquiry_info*>(
+			::operator new[](max_resps * sizeof(inquiry_info)));
+			//inquiry_info inquiries[max_resps];
 			std::size_t resps = hci_inquiry(device_, 8, max_resps, NULL, 
 			(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 			
 			for(std::size_t i = 0; i < resps; ++i) {
-				addrs.push_back(inquiries[i].bdaddr);
+				addrs.push_back((inquiries+i)->bdaddr);
 			}
+			::operator delete[](inquiries);
 		}
 		
 		/*
@@ -74,7 +78,7 @@ namespace bluegrass {
 		{
 			char str[64];			
 			names.clear();
-			for(auto& addr : addrs) {
+			for(auto addr : addrs) {
 				if(hci_read_remote_name(socket_, &addr, sizeof(str), str, 0) < 0) {
 					names.push_back(std::string("unknown"));
 				} else {
