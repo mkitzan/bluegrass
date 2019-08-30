@@ -51,13 +51,13 @@ namespace bluegrass {
 			addrs.clear();
 			inquiry_info* inquiries = static_cast<inquiry_info*>(
 			::operator new[](max_resps * sizeof(inquiry_info)));
-			//inquiry_info inquiries[max_resps];
 			std::size_t resps = hci_inquiry(device_, 8, max_resps, NULL, 
 			(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 			
 			for(std::size_t i = 0; i < resps; ++i) {
 				addrs.push_back((inquiries+i)->bdaddr);
 			}
+			
 			::operator delete[](inquiries);
 		}
 		
