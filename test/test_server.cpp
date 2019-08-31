@@ -13,17 +13,20 @@ template <proto_t P>
 void serve(bluegrass::socket<P>& sk) {
 	bdaddr_t addr = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	unique_socket us(std::move(sk));
+	
 	if(us.receive(&addr)) {
 		cout << "\tReceived: " << addr << endl << flush;
 	} else {
 		cout << "\tReceive failed" << endl;
 	}
-	addr = { 0xDA, 0x33, 0x94, 0xEB, 0x27, 0xB8 };
+	
+	addr = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 	if(us.send(&addr)) {
 		cout << "\tSent:     " << addr << endl << flush;
 	} else {
 		cout << "\tSend failed" << endl;
 	}
+	
 	WAIT = false;
 }
 

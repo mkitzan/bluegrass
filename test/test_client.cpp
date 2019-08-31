@@ -1,32 +1,39 @@
 #include <iostream>
+#include <vector>
 #include <cassert>
 #include <mutex>
 #include <unistd.h>
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/socket.hpp"
+#include "bluegrass/controller.hpp"
 
 using namespace std;
 using namespace bluegrass;
 
 template<proto_t P, int N>
 void test() {
-	bdaddr_t self = { 0xC8, 0xCD, 0xD5, 0xEB, 0x27, 0xB8 };
-	bdaddr_t peer = { 0xDA, 0x33, 0x94, 0xEB, 0x27, 0xB8 };
-	cout << "\tCreating client" << endl << flush;
-	try {
-		unique_socket us(bluegrass::socket<P>(peer, N));
-		if(us.send(&self)) {
-			cout << "\tSent:     " << self << endl << flush;
-		} else {
-			cout << "\tSend failed" << endl;
+	vector<bdaddr_t> devices;
+	bdaddr_t self = { 0xDA, 0x33, 0x94, 0xEB, 0x27, 0xB8 }, ret;
+	hci_controller hci = hci_controller::access();
+	hci.address_inquiry(8, devices);
+	
+	for(auto peer : devices) {
+		cout << "\tCreating client" << endl << flush;
+		try {
+			unique_socket us(bluegrass::socket<P>(peer, N));
+			if(us.send(&self)) {
+				cout << "\tSent:     " << self << endl << flush;
+			} else {
+				cout << "\tSend failed" << endl;
+			}
+			if(us.receive(&ret)) {
+				cout << "\tReceived: " << ret << endl << flush;
+			} else {
+				cout << "\tReceive failed" << endl;
+			}
+		} catch(...) {
+			cout << "\tClient construction failed" << endl;
 		}
-		if(us.receive(&self)) {
-			cout << "\tReceived: " << self << endl << flush;
-		} else {
-			cout << "\tReceive failed" << endl;
-		}
-	} catch(...) {
-		cout << "\tClient construction failed" << endl;
 	}
 }
 
