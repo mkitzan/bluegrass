@@ -15,9 +15,10 @@ int main() {
 	hci.address_inquiry(8, devices);
 	
 	for(auto peer : devices) {
-		cout << "Creating client" << endl << flush;
 		try {
+			cout << "Creating client socket to " << peer << endl << flush;
 			unique_socket us(bluegrass::socket<L2CAP>(peer, 0x1001));
+			cout << "Client construction succeeded" << endl << flush;
 			
 			while(us.receive(&packet)) {
 				cout << '[' << peer << ']' << " packet " << count << " recieved" 

@@ -6,14 +6,16 @@
 using namespace std;
 using namespace bluegrass;
 
-void transfer(bluegrass::socket<L2CAP>& conn) {
+void transfer(bluegrass::socket<L2CAP>& conn) {	
 	unique_socket us(std::move(conn));
 	
 	bdaddr_t peer{ us.sockaddr().addr.l2_bdaddr };
 	struct packet_t packet{ 0, 0 };
 	uint8_t count{ 1 };
-		
+	
+	cout << "Connection recieved from " << peer << endl << flush;
 	std::ifstream file("../../test_files/zimmermann.txt", std::ios::binary);
+	cout << "File stream opened to \"zimmermann.txt\"" << endl << flush;
 	
 	while(file.good()) {
 		file.read((char*) packet.data, sizeof packet.data);

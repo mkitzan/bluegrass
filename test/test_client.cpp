@@ -42,7 +42,7 @@ int main() {
 	test<L2CAP, 0x1001>();
 	cout << "L2CAP server test complete" << endl << endl << flush;
 	usleep(100000);
-	cout << "Starting RFCOMM server test" << endl;
+	cout << "Starting RFCOMM client test" << endl;
 	test<RFCOMM, 0x1>();
 	cout << "RFCOMM server test complete" << endl;
 	
