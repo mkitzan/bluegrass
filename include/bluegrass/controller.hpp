@@ -116,10 +116,21 @@ namespace bluegrass {
 	 */
 	class sdp_controller {
 	public:
+		/*
+		 * Description: sdp_controller() constructs an SDP session with the 
+		 * local SDP server of the device running the program. Only 
+		 * register_service (will be) invokable by an sdp_controller constructed
+		 * in this way.
+		 */
 		sdp_controller() {
 			session_ = sdp_connect((bdaddr_t *) 0, (bdaddr_t *) 0xFFFFFF, SDP_RETRY_IF_BUSY);
 		}
-	
+		
+		/*
+		 * Description: sdp_controller(bdaddr_t) constructs an SDP session with 
+		 * a remote Bluetooth device's SDP server. Only service_search (will be)
+		 * invokable by an sdp_controller object constructed in this way.
+		 */
 		sdp_controller(bdaddr_t addr) {
 			session_ = sdp_connect((bdaddr_t *) 0, &addr, SDP_RETRY_IF_BUSY);
 		}
@@ -129,8 +140,8 @@ namespace bluegrass {
 		sdp_controller& operator=(const sdp_controller& other) = delete;
 		sdp_controller& operator=(sdp_controller&& other) = default;
 		
+		// will also unregister all services associated with this sdp session
 		~sdp_controller() { sdp_close(session_); }
-		
 		
 		/*
 		 * Function service_search has two parameters:
@@ -198,12 +209,18 @@ namespace bluegrass {
 		
 		// todo
 		void register_service(const service svc, const std::string name, 
-		const std::string description, const std::string provider) const {
+		const std::string description, const std::string provider) {
 			
 		}
 	
 	private:
+		// todo
+		void unregister_service(/* ??? */) {
+			
+		}
+	
 		sdp_session_t* session_;
+		// vector storing services registered to the sdp session
 	};
 	
 }
