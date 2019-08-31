@@ -30,13 +30,13 @@ void serve(bluegrass::socket<P>& sk) {
 	WAIT = false;
 }
 
-template<proto_t P, int N>
-void test() {
+template<proto_t P>
+void test(uint16_t n) {
 	cout << "\tCreating service_queue" << endl << flush;
 	service_queue<bluegrass::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
 	cout << "\tCreating server" << endl << flush;
 	try {
-		server<P> s(&sq, N, 4);
+		server<P> s(&sq, n, 4);
 		while(WAIT);
 		WAIT = true;
 	} catch(...) {
@@ -46,10 +46,10 @@ void test() {
 
 int main() {
 	cout << "Starting L2CAP server test" << endl;
-	test<L2CAP, 0x1001>();
+	test<L2CAP>(0x1001);
 	cout << "L2CAP server test complete" << endl << endl << flush;
 	cout << "Starting RFCOMM server test" << endl;
-	test<RFCOMM, 0x1>();
+	test<RFCOMM>(0x1);
 	cout << "RFCOMM server test complete" << endl;
 	
 	return 0;

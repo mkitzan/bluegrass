@@ -301,7 +301,7 @@ namespace bluegrass {
 		{
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
 			addr.addr.l2_family = AF_BLUETOOTH;
-			addr.addr.l2_psm = htobs((uint16_t) port);
+			addr.addr.l2_psm = htobs(port);
 			addr.addr.l2_bdaddr = { 0, 0, 0, 0, 0, 0 };
 		}
 		

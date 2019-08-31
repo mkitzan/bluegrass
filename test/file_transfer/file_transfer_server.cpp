@@ -6,7 +6,7 @@
 using namespace std;
 using namespace bluegrass;
 
-void transfer(bluegrass::socket<L2CAP>& conn) {	
+void transfer(bluegrass::socket<RFCOMM>& conn) {	
 	unique_socket us(std::move(conn));
 	
 	bdaddr_t peer{ us.sockaddr().addr.l2_bdaddr };
@@ -40,11 +40,11 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 
 int main() {
 	cout << "Creating service_queue" << endl << flush;
-	service_queue<bluegrass::socket<L2CAP>, ENQUEUE> sq(transfer, 4, 2);
+	service_queue<bluegrass::socket<RFCOMM>, ENQUEUE> sq(transfer, 4, 2);
 	
 	try {
 		cout << "Creating server" << endl << flush;
-		server<L2CAP> s(&sq, 0x1001, 4);
+		server<RFCOMM> s(&sq, 0x1, 4);
 	} catch(...) {
 		cout << "Server construction failed" << endl;
 		return 0;
