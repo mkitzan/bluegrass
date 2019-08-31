@@ -186,6 +186,9 @@ namespace bluegrass {
 		unique_socket(socket<P>&& s) : socket_(s) {}
 		~unique_socket() { socket_.close(); }
 		
+		// returns information about the connection on the socket
+		inline address<P> sockaddr() const { return socket_.sockaddr(); }
+		
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		inline bool receive(T* data) const 
