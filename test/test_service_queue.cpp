@@ -69,4 +69,6 @@ int main()
 	cout << endl << flush;
 	assert(test_no_queue());
 	cout << endl << flush;
+	
+	return 0;
 }
