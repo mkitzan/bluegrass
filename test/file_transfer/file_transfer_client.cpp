@@ -17,7 +17,7 @@ int main() {
 	for(auto peer : devices) {
 		try {
 			cout << "Creating client socket to " << peer << endl << flush;
-			unique_socket us(bluegrass::socket<RFCOMM>(peer, 0x1));
+			unique_socket us(bluegrass::socket<L2CAP>(peer, 0x1001));
 			cout << "Client construction succeeded" << endl << flush;
 			
 			while(us.receive(&packet)) {
