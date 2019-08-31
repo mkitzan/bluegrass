@@ -51,7 +51,7 @@ namespace bluegrass {
 			addrs.clear();
 			inquiry_info* inquiries = static_cast<inquiry_info*>(
 			::operator new[](max_resps * sizeof(inquiry_info)));
-			std::size_t resps = hci_inquiry(device_, 8, max_resps, NULL, 
+			std::size_t resps = hci_inquiry(device_, 16, max_resps, NULL, 
 			(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 			
 			for(std::size_t i = 0; i < resps; ++i) {
@@ -62,7 +62,7 @@ namespace bluegrass {
 		}
 		
 		/*
-		 * Function address_inquiry has two parameters:
+		 * Function remote_names has two parameters:
 		 *     addrs - vector storing the Bluetooth addresses translate
 		 *     names - vector storing the human readable remote device names
 		 *

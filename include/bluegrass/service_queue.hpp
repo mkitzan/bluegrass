@@ -76,9 +76,8 @@ namespace bluegrass {
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == NOQUEUE, bool> = true>
-		service_queue(std::function<void(T&)> service_enq, 
-		std::function<void(T&)> service_deq, std::size_t queue_size, 
-		std::size_t enq_count, std::size_t deq_count) : max_(queue_size) 
+		service_queue(std::function<void(T&)> service_enq, std::function<void(T&)> service_deq,
+		std::size_t queue_size, std::size_t enq_count, std::size_t deq_count) : max_(queue_size) 
 		{	
 			threads_.reserve(enq_count + deq_count);
 			for(; enq_count; --enq_count) {

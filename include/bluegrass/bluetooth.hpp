@@ -62,10 +62,11 @@ namespace bluegrass {
 	 */
 	std::ostream& operator<<(std::ostream& out, const bdaddr_t& ba)  
 	{
-		char temp[18];
-		sprintf(temp, "%2.2X:%2.2X:%2.2X:%2.2X:%2.2X:%2.2X",
-		ba.b[5], ba.b[4], ba.b[3], ba.b[2], ba.b[1], ba.b[0]);
-		return out << temp;
+		std::ios_base::fmtflags ff(out.flags());
+		out << ba.b[5] << ':' << ba.b[4] << ':' << ba.b[3] << ':' 
+			<< ba.b[2] << ':' << ba.b[1] << ':' << ba.b[0];
+		out.flags(ff);
+		return out;
 	}
 	
 }
