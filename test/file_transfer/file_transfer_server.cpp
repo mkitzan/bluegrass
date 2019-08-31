@@ -9,7 +9,7 @@ using namespace bluegrass;
 void transfer(bluegrass::socket<RFCOMM>& conn) {	
 	unique_socket us(std::move(conn));
 	
-	bdaddr_t peer{ us.sockaddr().addr.l2_bdaddr };
+	bdaddr_t peer{ us.sockaddr().addr.rc_bdaddr };
 	struct packet_t packet{ 0, 0 };
 	uint8_t count{ 1 };
 	
