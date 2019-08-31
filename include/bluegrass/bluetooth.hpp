@@ -63,8 +63,8 @@ namespace bluegrass {
 	std::ostream& operator<<(std::ostream& out, const bdaddr_t& ba)  
 	{
 		std::ios_base::fmtflags ff(out.flags());
-		out << ba.b[5] << ':' << ba.b[4] << ':' << ba.b[3] << ':' 
-			<< ba.b[2] << ':' << ba.b[1] << ':' << ba.b[0];
+		out << std::hex << std::uppercase << ba.b[5] << ':' << ba.b[4] << ':' 
+			<< ba.b[3] << ':' << ba.b[2] << ':' << ba.b[1] << ':' << ba.b[0];
 		out.flags(ff);
 		return out;
 	}
