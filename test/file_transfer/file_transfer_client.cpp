@@ -20,12 +20,13 @@ int main() {
 			unique_socket us(bluegrass::socket<L2CAP>(peer, 0x1001));
 			cout << "Client construction succeeded" << endl << flush;
 			
-			while(us.receive(&packet)) {
+			do {
+				us.receive(&packet);
 				cout << '[' << peer << ']' << " packet " << count << " recieved" 
 				<< endl << flush;
 				cout.write((const char*) packet.data, packet.size) << endl << flush;
 				++count;
-			}
+			} while(packet.size == sizeof packet.data);
 		} catch(...) {
 			cout << "Client construction failed" << endl;
 		}
