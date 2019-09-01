@@ -21,11 +21,13 @@ int main() {
 			unique_socket us(bluegrass::socket<L2CAP>(peer, 0x1001));
 			cout << "Client construction succeeded" << endl << flush;
 			
+			cout << "Sending local device address to server" << endl << flush;
 			us.send(&local);
 			
+			cout << "Receiving file from server" << endl << flush;
 			do {
 				us.receive(&packet);
-				cout.write((const char*) packet.data, packet.size) << endl << flush;
+				cout.write((const char*) packet.data, packet.size) << flush;
 				++count;
 			} while(packet.size == sizeof packet.data);
 		} catch(...) {

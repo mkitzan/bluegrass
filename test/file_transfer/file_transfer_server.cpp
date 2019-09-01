@@ -11,13 +11,13 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 	
 	bdaddr_t peer{ 0 };
 	struct packet_t packet{ 0, 0 };
-	uint8_t count{ 1 };
+	uint8_t count{ '1' };
 	
+	cout << "Receiving address of client" << endl << flush;
 	us.receive(&peer);
-	
-	cout << "Connection recieved from " << peer << endl << flush;
+	cout << "Connection received from " << peer << endl << flush;
 	std::ifstream file("../../test_files/zimmermann.txt", std::ios::binary);
-	cout << "File stream opened to \"zimmermann.txt\"" << endl << flush;
+	cout << "Transfering file \"zimmermann.txt\" to client" << endl << flush;
 	
 	while(file.good()) {
 		file.read((char*) packet.data, sizeof packet.data);
