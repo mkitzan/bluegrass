@@ -86,6 +86,10 @@ namespace bluegrass {
 				}
 			}
 		}
+		
+		inline bdaddr_t local_address() const {
+			return self_;
+		}
 	
 	private:
 		/*
@@ -97,6 +101,7 @@ namespace bluegrass {
 		{
 			device_ = hci_get_route(NULL);
 			socket_ = hci_open_dev(device_);
+			hci_devba(device_, &self_);
 			
 			if(device_ < 0 || socket_ < 0) {
 				throw std::runtime_error("Failed creating socket to HCI controller");
@@ -104,6 +109,7 @@ namespace bluegrass {
 		}
 		
 		int device_, socket_;
+		bdaddr_t self_;
 	};
 	
 	/*

@@ -6,7 +6,7 @@
 
 struct packet_t {
 	uint8_t size;
-	uint8_t data[128];
+	uint8_t data[255];
 } packet_t;
 
 #endif

@@ -13,6 +13,7 @@ int main() {
 	
 	hci_controller hci = hci_controller::access();
 	hci.address_inquiry(8, devices);
+	bdaddr_t local{ hci.local_address() };
 	
 	for(auto peer : devices) {
 		try {
@@ -20,10 +21,10 @@ int main() {
 			unique_socket us(bluegrass::socket<L2CAP>(peer, 0x1001));
 			cout << "Client construction succeeded" << endl << flush;
 			
+			us.send(&local);
+			
 			do {
 				us.receive(&packet);
-				cout << '[' << peer << ']' << " packet " << count << " recieved" 
-				<< endl << flush;
 				cout.write((const char*) packet.data, packet.size) << endl << flush;
 				++count;
 			} while(packet.size == sizeof packet.data);
