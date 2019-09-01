@@ -16,7 +16,7 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 	cout << "Receiving address of client" << endl << flush;
 	us.receive(&peer);
 	cout << "Connection received from " << peer << endl << flush;
-	std::ifstream file("../../test_files/zimmermann.txt", std::ios::binary);
+	ifstream file("../../test_files/zimmermann.txt", ios::binary);
 	cout << "Transfering file \"zimmermann.txt\" to client" << endl << flush;
 	
 	while(file.good()) {
@@ -48,7 +48,6 @@ int main() {
 		for(;;);
 	} catch(...) {
 		cout << "Server construction failed" << endl;
-		return 0;
 	}
 	
 	return 0;

@@ -12,7 +12,7 @@
 namespace bluegrass {
 	
 	/*
-	 * Class hci_controller provides access to the physical hardware controller
+	 * Class hci_controller provides access to the physical host controller
 	 * interface on the hardware running the program. hci_controller is a 
 	 * singleton which guarantees a program has one path to physical controller.
 	 */
@@ -94,8 +94,8 @@ namespace bluegrass {
 	private:
 		/*
 		 * Description: hci_controller provides a simplified interface to the
-		 * Bluetooth hardware controller interface. The HCI provides the means
-		 * to search for nearby Bluetooth device addresses and device names.
+		 * Bluetooth host controller interface. The HCI provides the means to
+		 * search for nearby Bluetooth device addresses and device names.
 		 */
 		hci_controller() 
 		{

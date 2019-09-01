@@ -1,8 +1,10 @@
 #include <iostream>
 #include <mutex>
+
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/service_queue.hpp"
 #include "bluegrass/socket.hpp"
+#include "bluegrass/controller.hpp"
 
 using namespace std;
 using namespace bluegrass;
@@ -11,7 +13,7 @@ bool WAIT = true;
 
 template <proto_t P>
 void serve(bluegrass::socket<P>& sk) {
-	bdaddr_t addr = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	bdaddr_t addr = { 0 };
 	unique_socket us(std::move(sk));
 	
 	if(us.receive(&addr)) {
@@ -20,7 +22,7 @@ void serve(bluegrass::socket<P>& sk) {
 		cout << "\tReceive failed" << endl;
 	}
 	
-	addr = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+	addr = hci_controller::access().local_address();
 	if(us.send(&addr)) {
 		cout << "\tSent:     " << addr << endl << flush;
 	} else {

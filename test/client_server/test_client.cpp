@@ -2,7 +2,7 @@
 #include <vector>
 #include <cassert>
 #include <mutex>
-#include <unistd.h>
+
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/socket.hpp"
 #include "bluegrass/controller.hpp"
@@ -13,9 +13,9 @@ using namespace bluegrass;
 template<proto_t P>
 void test(uint16_t n) {
 	vector<bdaddr_t> devices;
-	bdaddr_t self = { 0xDA, 0x33, 0x94, 0xEB, 0x27, 0xB8 }, ret;
 	hci_controller hci = hci_controller::access();
 	hci.address_inquiry(8, devices);
+	bdaddr_t self{ hci.local_address() }, ret;
 	
 	for(auto peer : devices) {
 		cout << "\tCreating client" << endl << flush;
