@@ -9,7 +9,6 @@ using namespace bluegrass;
 int main() {
 	vector<bdaddr_t> devices;
 	struct packet_t packet{ 0, 0 };
-	uint8_t count{ 1 };
 	
 	hci_controller hci = hci_controller::access();
 	hci.address_inquiry(8, devices);
@@ -28,7 +27,6 @@ int main() {
 			do {
 				us.receive(&packet);
 				cout.write((const char*) packet.data, packet.size) << flush;
-				++count;
 			} while(packet.size == sizeof packet.data);
 		} catch(...) {
 			cout << "Client construction failed" << endl;

@@ -22,7 +22,7 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 	while(file.good()) {
 		file.read((char*) packet.data, sizeof packet.data);
 		packet.size = file.gcount();
-		cout << '[' << peer << ']' << " sending packet " << count;
+		cout << '[' << peer << ']' << " sending packet " << count++;
 		
 		if(us.send(&packet)) {
 			cout << " [success]"<< endl << flush;
@@ -30,8 +30,6 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 			cout << " [failure]" << endl << flush;
 			return;
 		}
-		
-		++count;
 	}
 	
 	cout << '[' << peer<< ']' << " file transfer complete" << endl << endl << flush;

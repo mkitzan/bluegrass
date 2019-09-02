@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <sys/ioctl.h>
 
 #include <iostream>
 
@@ -87,8 +88,50 @@ namespace bluegrass {
 			}
 		}
 		
+		/*
+		 * Function read_rssi has two parameters:
+		 *     addrs - vector storing the Bluetooth addresses translate
+		 *     rssi - vector storing the RSSI of devices
+		 *
+		 * Description: read_rssi makes blocking calls to the physical
+		 * HCI which records the RSSI of a nearby broadcasting Bluetooth devices 
+		 * If a Bluetooth device is unreachable -1 will be set for that device.
+		 * Positions of reachable devices will correspond to the position of the
+		 * Bluetooth address in the addrs vector.
+		 */
+		void read_rssi(const std::vector<bdaddr_t>& addrs, 
+		std::vector<int8_t>& signals) const 
+		{
+			int flag = 0;
+			int8_t rssi;
+			uint16_t handle;
+			struct hci_dev_info info;
+			struct hci_conn_info_req req;
+			
+			signals.clear();
+			req.type = ACL_LINK;
+			
+			for(auto addr : addrs) {
+				bacpy(&req.bdaddr, &addr);
+				
+				flag |= hci_create_connection(device_, &addr, htobs(info.pkt_type & ACL_PTYPE_MASK), 0, 0x01, &handle, 1000);
+				flag |= ioctl(device_, HCIGETCONNINFO, static_cast<void*>(&req));
+				flag |= hci_read_rssi(device_, htobs(req.conn_info->handle), &rssi, 1000);
+				
+				if(flag == -1) {
+					// temp error code
+					signals.push_back(100);
+				} else {
+					signals.push_back(rssi);	
+				}
+			}
+		}
+		
 		inline bdaddr_t local_address() const {
-			return self_;
+			bdaddr_t self;
+			hci_devba(device_, &self);
+			
+			return self;
 		}
 	
 	private:
@@ -101,7 +144,6 @@ namespace bluegrass {
 		{
 			device_ = hci_get_route(NULL);
 			socket_ = hci_open_dev(device_);
-			hci_devba(device_, &self_);
 			
 			if(device_ < 0 || socket_ < 0) {
 				throw std::runtime_error("Failed creating socket to HCI controller");
@@ -109,8 +151,13 @@ namespace bluegrass {
 		}
 		
 		int device_, socket_;
-		bdaddr_t self_;
 	};
+	
+	
+	
+	/*
+	 * SDP controller is untested
+	 */
 	
 	/*
 	 * Class sdp_controller may be used to access the local device SDP server 
