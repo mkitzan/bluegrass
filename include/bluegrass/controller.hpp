@@ -106,24 +106,25 @@ namespace bluegrass {
 			int8_t rssi;
 			uint16_t handle;
 			struct hci_dev_info info;
-			struct hci_conn_info_req req;
 			
 			signals.clear();
-			req.type = ACL_LINK;
+			hci_devinfo(device_, &info);
 			
 			for(auto addr : addrs) {
 				bacpy(&req.bdaddr, &addr);
 				
-				flag |= hci_create_connection(device_, &addr, htobs(info.pkt_type & ACL_PTYPE_MASK), 0, 0x01, &handle, 1000);
-				flag |= ioctl(device_, HCIGETCONNINFO, static_cast<void*>(&req));
-				flag |= hci_read_rssi(device_, htobs(req.conn_info->handle), &rssi, 1000);
+				// clock offset may be required from peer connection currently 0
+				flag |= hci_create_connection(socket_, &addr, htobs(info.pkt_type & ACL_PTYPE_MASK), 0, 0, &handle, 0);
+				flag |= hci_read_rssi(socket_, handle, &rssi, 0);
 				
 				if(flag == -1) {
 					// temp error code
-					signals.push_back(100);
+					signals.push_back(-127);
 				} else {
 					signals.push_back(rssi);	
 				}
+				
+				hci_disconnect(socket_, handle, HCI_OE_USER_ENDED_CONNECTION, 0);
 			}
 		}
 		
