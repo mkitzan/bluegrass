@@ -111,8 +111,6 @@ namespace bluegrass {
 			hci_devinfo(device_, &info);
 			
 			for(auto addr : addrs) {
-				bacpy(&req.bdaddr, &addr);
-				
 				// clock offset may be required from peer connection currently 0
 				flag |= hci_create_connection(socket_, &addr, htobs(info.pkt_type & ACL_PTYPE_MASK), 0, 0, &handle, 0);
 				flag |= hci_read_rssi(socket_, handle, &rssi, 0);
