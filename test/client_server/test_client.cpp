@@ -12,15 +12,15 @@ using namespace bluegrass;
 
 template<proto_t P>
 void test(uint16_t n) {
-	vector<device> devices;
+	vector<bdaddr_t> addresses;
 	hci_controller hci = hci_controller::access();
-	hci.device_inquiry(8, devices);
+	hci.address_inquiry(8, addresses);
 	bdaddr_t self{ hci.local_address() }, ret;
 	
-	for(auto peer : devices) {
+	for(auto peer : addresses) {
 		cout << "\tCreating client\n" << flush;
 		try {
-			unique_socket us(bluegrass::socket<P>(peer.addr, n));
+			unique_socket us(bluegrass::socket<P>(peer, n));
 			if(us.send(&self)) {
 				cout << "\tSent:     " << self << endl << flush;
 			} else {

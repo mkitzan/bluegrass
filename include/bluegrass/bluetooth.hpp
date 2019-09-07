@@ -58,15 +58,6 @@ namespace bluegrass {
 	};
 	
 	/*
-	 * Struct to package information from an HCI inquiry. This struct will grow
-	 * as more functionality is added.
-	 */
-	struct device {
-		bdaddr_t addr;
-		uint16_t offset;
-	};
-	
-	/*
 	 * Description: Prints a human readable Bluetooth device address 
 	 */
 	std::ostream& operator<<(std::ostream& out, const bdaddr_t& ba)  
