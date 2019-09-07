@@ -19,14 +19,14 @@ void serve(bluegrass::socket<P>& sk) {
 	if(us.receive(&addr)) {
 		cout << "\tReceived: " << addr << endl << flush;
 	} else {
-		cout << "\tReceive failed" << endl;
+		cout << "\tReceive failed\n";
 	}
 	
 	addr = hci_controller::access().local_address();
 	if(us.send(&addr)) {
 		cout << "\tSent:     " << addr << endl << flush;
 	} else {
-		cout << "\tSend failed" << endl;
+		cout << "\tSend failed\n";
 	}
 	
 	WAIT = false;
@@ -34,25 +34,25 @@ void serve(bluegrass::socket<P>& sk) {
 
 template<proto_t P>
 void test(uint16_t n) {
-	cout << "\tCreating service_queue" << endl << flush;
+	cout << "\tCreating service_queue\n" << flush;
 	service_queue<bluegrass::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
-	cout << "\tCreating server" << endl << flush;
+	cout << "\tCreating server\n" << flush;
 	try {
 		server<P> s(&sq, n, 4);
 		while(WAIT);
 		WAIT = true;
 	} catch(...) {
-		cout << "\tServer construction failed" << endl;
+		cout << "\tServer construction failed\n";
 	}
 }
 
 int main() {
-	cout << "Starting L2CAP server test" << endl;
+	cout << "Starting L2CAP server test\n";
 	test<L2CAP>(0x1001);
-	cout << "L2CAP server test complete" << endl << endl << flush;
-	cout << "Starting RFCOMM server test" << endl;
+	cout << "L2CAP server test complete\n" << flush;
+	cout << "Starting RFCOMM server test\n";
 	test<RFCOMM>(0x1);
-	cout << "RFCOMM server test complete" << endl;
+	cout << "RFCOMM server test complete\n";
 	
 	return 0;
 }

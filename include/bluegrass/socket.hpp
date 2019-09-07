@@ -280,7 +280,8 @@ namespace bluegrass {
 		server& operator=(server&&) = delete;
 		
 		// RAII destructor resets the signal handler and c_closes the socket
-		~server() {
+		~server() 
+		{
 			fcntl(handle_, F_SETSIG, 0);
 			c_close(handle_);
 			connections_.erase(handle_);

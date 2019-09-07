@@ -39,24 +39,24 @@ namespace bluegrass {
 		~hci_controller() { c_close(socket_); }
 		
 		/*
-		 * Function address_inquiry has two parameters:
+		 * Function device_inquiry has two parameters:
 		 *     max_resps - maximum number of responses to return
-		 *     addrs - vector storing the addresses discovered during the inquiry
+		 *     info - vector storing the devices discovered during the inquiry
 		 *
-		 * Description: address_inquiry makes a blocking call to the physical
+		 * Description: device_inquiry makes a blocking call to the physical
 		 * HCI which performs an inquiry of nearby broadcasting Bluetooth devices.
-		 * A vector of Bluetooth addresses are returned which will be <= max_resps.
+		 * A vector of Bluetooth device info is returned which will be <= max_resps.
 		 */
-		void address_inquiry(std::size_t max_resps, std::vector<bdaddr_t>& addrs) const
+		void device_inquiry(std::size_t max_resps, std::vector<device>& info) const 
 		{
-			addrs.clear();
+			info.clear();
 			inquiry_info* inquiries = static_cast<inquiry_info*>(
 			::operator new[](max_resps * sizeof(inquiry_info)));
 			std::size_t resps = hci_inquiry(device_, 16, max_resps, NULL, 
 			(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 			
 			for(std::size_t i = 0; i < resps; ++i) {
-				addrs.push_back((inquiries+i)->bdaddr);
+				info.push_back({ (inquiries+i)->bdaddr, (inquiries+i)->clock_offset });
 			}
 			
 			::operator delete[](inquiries);
@@ -64,7 +64,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function remote_names has two parameters:
-		 *     addrs - vector storing the Bluetooth addresses translate
+		 *     devices - vector storing the Bluetooth addresses translate
 		 *     names - vector storing the human readable remote device names
 		 *
 		 * Description: remote_names makes blocking calls to the physical
@@ -72,15 +72,15 @@ namespace bluegrass {
 		 * retrieving their human readable device name. If a Bluetooth device 
 		 * is unreachable "unknown" will be set for that device. Positions of
 		 * readable names will correspond to the position of the Bluetooth address
-		 * in the addrs vector.
+		 * in the devices vector.
 		 */
-		void remote_names(const std::vector<bdaddr_t>& addrs, 
+		void remote_names(const std::vector<device>& devices, 
 		std::vector<std::string>& names) const
 		{
 			char str[64];			
 			names.clear();
-			for(auto addr : addrs) {
-				if(hci_read_remote_name(socket_, &addr, sizeof(str), str, 0) < 0) {
+			for(auto dev : devices) {
+				if(hci_read_remote_name(socket_, &(dev.addr), sizeof(str), str, 0) < 0) {
 					names.push_back(std::string("unknown"));
 				} else {
 					names.push_back(std::string(str));
@@ -95,11 +95,11 @@ namespace bluegrass {
 		 *
 		 * Description: read_rssi makes blocking calls to the physical
 		 * HCI which records the RSSI of a nearby broadcasting Bluetooth devices 
-		 * If a Bluetooth device is unreachable -1 will be set for that device.
+		 * If a Bluetooth device is unreachable -127 will be set for that device.
 		 * Positions of reachable devices will correspond to the position of the
 		 * Bluetooth address in the addrs vector.
 		 */
-		void read_rssi(const std::vector<bdaddr_t>& addrs, 
+		void read_rssi(const std::vector<device>& devices, 
 		std::vector<int8_t>& signals) const 
 		{
 			int flag = 0;
@@ -110,10 +110,15 @@ namespace bluegrass {
 			signals.clear();
 			hci_devinfo(device_, &info);
 			
-			for(auto addr : addrs) {
+			for(auto dev : devices) {
 				// clock offset may be required from peer connection currently 0
-				flag |= hci_create_connection(socket_, &addr, htobs(info.pkt_type & ACL_PTYPE_MASK), 0, 0, &handle, 0);
+				flag |= hci_create_connection(socket_, &dev.addr, 
+				htobs(info.pkt_type & ACL_PTYPE_MASK), dev.offset, 0, &handle, 0);
+				//DEBUG
+				std::cout << flag << std::endl;
 				flag |= hci_read_rssi(socket_, handle, &rssi, 0);
+				//DEBUG
+				std::cout << flag << std::endl;
 				
 				if(flag == -1) {
 					// temp error code

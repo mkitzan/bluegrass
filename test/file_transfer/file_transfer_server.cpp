@@ -13,11 +13,11 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 	struct packet_t packet{ 0, 0 };
 	uint8_t count{ '1' };
 	
-	cout << "Receiving address of client" << endl << flush;
+	cout << "Receiving address of client\n" << flush;
 	us.receive(&peer);
 	cout << "Connection received from " << peer << endl << flush;
 	ifstream file("../../test_files/zimmermann.txt", ios::binary);
-	cout << "Transfering file \"zimmermann.txt\" to client" << endl << flush;
+	cout << "Transfering file \"zimmermann.txt\" to client\n" << flush;
 	
 	while(file.good()) {
 		file.read((char*) packet.data, sizeof packet.data);
@@ -25,27 +25,27 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 		cout << '[' << peer << ']' << " sending packet " << count++;
 		
 		if(us.send(&packet)) {
-			cout << " [success]"<< endl << flush;
+			cout << " [success]\n" << flush;
 		} else {
-			cout << " [failure]" << endl << flush;
+			cout << " [failure]\n" << flush;
 			return;
 		}
 	}
 	
-	cout << '[' << peer<< ']' << " file transfer complete" << endl << endl << flush;
+	cout << '[' << peer<< ']' << " file transfer complete\n" << endl << flush;
 }
 
 int main() {
-	cout << "Creating service_queue" << endl << flush;
+	cout << "Creating service_queue\n" << flush;
 	service_queue<bluegrass::socket<L2CAP>, ENQUEUE> sq(transfer, 4, 2);
 	
 	try {
-		cout << "Creating server" << endl << flush;
+		cout << "Creating server\n" << flush;
 		server<L2CAP> s(&sq, 0x1001, 4);
-		cout << "Server construction succeeded" << endl << flush;
+		cout << "Server construction succeeded\n" << flush;
 		for(;;);
 	} catch(...) {
-		cout << "Server construction failed" << endl;
+		cout << "Server construction failed\n";
 	}
 	
 	return 0;
