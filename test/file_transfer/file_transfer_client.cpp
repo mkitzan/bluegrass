@@ -7,17 +7,17 @@ using namespace std;
 using namespace bluegrass;
 
 int main() {
-	vector<bdaddr_t> devices;
-	struct packet_t packet{ 0, 0 };
+	vector<device> devices;
+	struct packet_t packet { 0, 0 };
 	
-	hci_controller hci = hci_controller::access();
-	hci.address_inquiry(8, devices);
-	bdaddr_t local{ hci.local_address() };
+	hci_controller& hci = hci_controller::access();
+	hci.device_inquiry(8, devices);
+	bdaddr_t local { hci.local_address() };
 	
-	for(auto peer : devices) {
+	for(auto& dev : devices) {
 		try {
-			cout << "Creating client socket to " << peer << endl << flush;
-			unique_socket us(bluegrass::socket<L2CAP>(peer, 0x1001));
+			cout << "Creating client socket to " << dev.addr << endl << flush;
+			unique_socket us(bluegrass::socket<L2CAP>(dev.addr, 0x1001));
 			cout << "Client construction succeeded\n" << flush;
 			
 			cout << "Sending local device address to server\n" << flush;

@@ -58,6 +58,16 @@ namespace bluegrass {
 	};
 	
 	/*
+	 * Struct to package data about a remote Bluetooth device. device struct 
+	 * has device address and the device's clock offset.
+	 */
+	struct device {
+		bdaddr_t addr;
+		uint16_t offset;
+	};
+	
+
+	/*
 	 * Description: Prints a human readable Bluetooth device address 
 	 */
 	std::ostream& operator<<(std::ostream& out, const bdaddr_t& ba)  

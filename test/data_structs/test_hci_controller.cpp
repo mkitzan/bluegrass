@@ -8,19 +8,15 @@ using namespace std;
 using namespace bluegrass;
 
 int main() {
-	vector<bdaddr_t> devices;
-	vector<string> names;
-	//vector<int8_t> signals;
+	vector<device> devices;
 	hci_controller& hci = hci_controller::access();
 	
 	cout << "Remote Bluetooth Devices\n";
+	hci.device_inquiry(32, devices);
 	
-	hci.address_inquiry(32, devices);
-	hci.remote_names(devices, names);
-	//hci.read_rssi(devices, signals);
-	
-	for(std::size_t i = 0; i < devices.size(); ++i) {
-		cout << '\t' << devices[i] << '\t' << names[i] << endl;
+	for(auto& dev : devices) {
+		cout << '\t' << dev.addr << '\t' << dev.offset << '\t' << hci.device_name(dev) 
+		<< '\t' << (int) hci.device_rssi(dev) << endl;
 	}
 	
 	return 0;

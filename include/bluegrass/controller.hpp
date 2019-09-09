@@ -3,9 +3,6 @@
 
 #include <vector>
 #include <string>
-#include <sys/ioctl.h>
-
-#include <iostream>
 
 #include "bluegrass/system.hpp"
 #include "bluegrass/bluetooth.hpp"
@@ -39,61 +36,95 @@ namespace bluegrass {
 		~hci_controller() { c_close(socket_); }
 		
 		/*
-		 * Function address_inquiry has two parameters:
-		 *     max_resps - maximum number of responses to return
+		 * Function device_inquiry has two parameters:
+		 *     max - maximum number of responses to return
 		 *     devices - vector storing the devices discovered during the inquiry
 		 *
-		 * Description: address_inquiry makes a blocking call to the physical
+		 * Description: device_inquiry makes a blocking call to the physical
 		 * HCI which performs an inquiry of nearby broadcasting Bluetooth devices.
-		 * A vector of Bluetooth device info is returned which will be <= max_resps.
+		 * A vector of Bluetooth device info is returned which will be <= max.
 		 */
-		void address_inquiry(std::size_t max_resps, std::vector<bdaddr_t>& devices) const 
+		void device_inquiry(size_t max, std::vector<device>& devices) 
 		{
 			devices.clear();
+			
 			inquiry_info* inquiries = static_cast<inquiry_info*>(
-			::operator new[](max_resps * sizeof(inquiry_info)));
-			std::size_t resps = hci_inquiry(device_, 16, max_resps, NULL, 
+			::operator new[](max * sizeof(inquiry_info)));
+			size_t resps = hci_inquiry(device_, 8, max, NULL, 
 			(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 			
-			for(std::size_t i = 0; i < resps; ++i) {
-				devices.push_back((inquiries+i)->bdaddr);
+			for(size_t i = 0; i < resps; ++i) {
+				devices.push_back({ (inquiries + i)->bdaddr, (inquiries + i)->clock_offset });
 			}
 			
 			::operator delete[](inquiries);
 		}
 		
 		/*
-		 * Function remote_names has two parameters:
-		 *     devices - vector storing the Bluetooth addresses to translate
-		 *     names - vector storing the human readable remote device names
+		 * Function device_name has one parameters:
+		 *     dev - Bluetooth device info to translate
 		 *
-		 * Description: remote_names makes blocking calls to the physical
+		 * Description: device_name makes blocking calls to the physical
 		 * HCI which perform queries of a nearby broadcasting Bluetooth devices
 		 * retrieving their human readable device name. If a Bluetooth device 
-		 * is unreachable "unknown" will be set for that device. Positions of
-		 * readable names will correspond to the position of the Bluetooth address
-		 * in the devices vector.
+		 * is unreachable "unknown" will be set for that device.
 		 */
-		void remote_names(const std::vector<bdaddr_t>& devices, 
-		std::vector<std::string>& names) const
+		std::string device_name(const device& dev) const
 		{
-			char str[64];			
-			names.clear();
-			for(auto dev : devices) {
-				if(hci_read_remote_name(socket_, &dev, sizeof(str), str, 0) < 0) {
-					names.push_back(std::string("unknown"));
-				} else {
-					names.push_back(std::string(str));
-				}
+			char cstr[64];
+			std::string str { "unknown" };
+		
+			if(hci_read_remote_name(socket_, &(dev.addr), sizeof(cstr), cstr, 0) >= 0) {
+				str = cstr;
 			}
+			
+			return str;
 		}
 		
+		/*
+		 * Description: local_address returns the Bluetooth device address of
+		 * the device running the program.
+		 */
 		inline bdaddr_t local_address() const 
 		{
 			bdaddr_t self;
 			hci_devba(device_, &self);
 			
 			return self;
+		}
+		
+		/*
+		 * Function device_name has one parameters:
+		 *     dev - Bluetooth device to find RSSI for
+		 *
+		 * Description: device_rssi evaluates and returns the RSSI between the
+		 * device running the program and the device represented by the "dev"
+		 * argument. Programs utilizing device_rssi must be run as super user.
+		 */
+		int8_t device_rssi(device& dev) const 
+		{
+			int8_t rssi;
+			int flag { 0 }, conn;
+			uint16_t handle;
+			
+			// get device file descriptor
+			conn = hci_get_route(&dev.addr);
+			conn = hci_open_dev(conn);
+			
+			// connect and evaluate RSSI
+			flag |= hci_create_connection(conn, &dev.addr, 
+			htobs(info_.pkt_type & ACL_PTYPE_MASK), dev.offset, 
+			0, &handle, 0);
+			flag |= hci_read_rssi(conn, handle, &rssi, 0);
+			
+			if(flag < 0) {
+				rssi = -127;
+			}
+			// clean up
+			hci_disconnect(conn, handle, HCI_OE_USER_ENDED_CONNECTION, 0);
+			c_close(conn);
+			
+			return rssi;
 		}
 	
 	private:
@@ -107,12 +138,13 @@ namespace bluegrass {
 			device_ = hci_get_route(NULL);
 			socket_ = hci_open_dev(device_);
 			
-			if(device_ < 0 || socket_ < 0) {
-				throw std::runtime_error("Failed creating socket to HCI controller");
+			if(device_ < 0 || socket_ < 0 || hci_devinfo(device_, &info_) < 0) {
+				throw std::runtime_error("Failed creating HCI controller");
 			}
 		}
 		
 		int device_, socket_;
+		struct hci_dev_info info_;
 	};
 	
 }
