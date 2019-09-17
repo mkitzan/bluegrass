@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 
-#include "bluegrass/system.hpp"
 #include "bluegrass/bluetooth.hpp"
 
 namespace bluegrass {

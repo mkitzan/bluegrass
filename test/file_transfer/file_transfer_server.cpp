@@ -1,8 +1,12 @@
 #include <iostream>
 #include <fstream>
+
 #include "file_transfer.hpp"
-#include "bluegrass/socket.hpp"
+
 #include "bluegrass/service_queue.hpp"
+#include "bluegrass/socket.hpp"
+#include "bluegrass/unique_socket.hpp"
+#include "bluegrass/server.hpp"
 
 using namespace std;
 using namespace bluegrass;

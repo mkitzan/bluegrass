@@ -21,6 +21,9 @@
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
 
+// "system.hpp" brings the Bluetooth C library functions into C++
+#include "bluegrass/system.hpp"
+
 namespace bluegrass {
 	
 	/*
