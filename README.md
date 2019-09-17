@@ -13,7 +13,7 @@ poorly documented libraries. Simply put it's not beginner friendly to begin empl
 
 Bluegrass is built on top of the Blue-Z stack. It abstracts the core utilities a developer needs to begin using Bluetooth. It doesn't 
 provide the low-level granular control the full Blue-Z stack provides: this isn't the library you're looking for if you need that. 
-Every `*.hpp` file is well documented in-source and the example usage in the `test` folder should get a developer familiar with usage.
+Every `*.hpp` file is well documented in-source and the examples in the `test` folder should get a developer familiar with usage.
 
 Bluegrass provides tools to enable performant Bluetooth network programming. For example, `server.hpp` defines an entirely asynchronous 
 socket server through Linux asynchronous IO signals. Essentially this means a `server` object doesn't loop infinitely waiting for the next 
