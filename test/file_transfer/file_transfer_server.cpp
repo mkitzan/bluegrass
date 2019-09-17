@@ -21,6 +21,7 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 	cout << "Receiving address of client\n" << flush;
 	us.receive(&peer);
 	cout << "Connection received from " << peer << endl << flush;
+	// change this file path to where ever your zimmermann.txt file is
 	ifstream file("../../test_files/zimmermann.txt", ios::binary);
 	cout << "Transfering file \"zimmermann.txt\" to client\n" << flush;
 	
