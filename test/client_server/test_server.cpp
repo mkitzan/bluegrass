@@ -26,7 +26,7 @@ void serve(bluegrass::socket<P>& sk) {
 	
 	addr = hci_controller::access().local_address();
 	if(us.send(&addr)) {
-		cout << "\tSent:     " << addr << endl << flush;
+		cout << "\tSent:	 " << addr << endl << flush;
 	} else {
 		cout << "\tSend failed\n";
 	}

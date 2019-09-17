@@ -42,8 +42,8 @@ namespace bluegrass {
 		
 		/*
 		 * Function service_search has two parameters:
-		 *     svc - the service ID to search for (proto and port are not used)
-		 *     resps - container to store the found services
+		 *	 svc - the service ID to search for (proto and port are not used)
+		 *	 resps - container to store the found services
 		 *
 		 * Description: service_search performs a search of services matching
 		 * the argument "svc" service on the remote device's SDP server. On 

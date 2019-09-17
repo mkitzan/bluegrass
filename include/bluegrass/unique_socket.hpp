@@ -6,9 +6,9 @@
 
 namespace bluegrass {
 
-    /*
+	/*
 	 * Class template unique_socket has one template parameter
-	 *     P = the Bluetooth socket protocol used by the underlying socket
+	 *	 P - the Bluetooth socket protocol used by the underlying socket
 	 *
 	 * Description: unique_socket provides an RAII interface to the socket 
 	 * class. On destruction, it automatically closes the held socket. The

@@ -36,8 +36,8 @@ namespace bluegrass {
 		
 		/*
 		 * Function device_inquiry has two parameters:
-		 *     max - maximum number of responses to return
-		 *     devices - vector storing the devices discovered during the inquiry
+		 *	 max - maximum number of responses to return
+		 *	 devices - vector storing the devices discovered during the inquiry
 		 *
 		 * Description: device_inquiry makes a blocking call to the physical
 		 * HCI which performs an inquiry of nearby broadcasting Bluetooth devices.
@@ -47,7 +47,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function device_name has one parameters:
-		 *     dev - Bluetooth device info to translate
+		 *	 dev - Bluetooth device info to translate
 		 *
 		 * Description: device_name makes blocking calls to the physical
 		 * HCI which perform queries of a nearby broadcasting Bluetooth devices
@@ -70,7 +70,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function device_name has one parameters:
-		 *     dev - Bluetooth device to find RSSI for
+		 *	 dev - Bluetooth device to find RSSI for
 		 *
 		 * Description: device_rssi evaluates and returns the RSSI between the
 		 * device running the program and the device represented by the "dev"

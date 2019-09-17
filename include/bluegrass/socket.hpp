@@ -9,7 +9,7 @@ namespace bluegrass {
 	
 	/*
 	 * Class template socket has one template parameter
-	 *     P - the Bluetooth socket protocol
+	 *	 P - the Bluetooth socket protocol
 	 *
 	 * Description: socket interfaces a Bluetooth socket providing send and
 	 * receive functionality.
@@ -25,8 +25,8 @@ namespace bluegrass {
 		
 		/*
 		 * Function socket constructor has two parameters:
-		 *     addr - the Bluetooth address to connect to
-		 *     port - the port to utilize for the connection
+		 *	 addr - the Bluetooth address to connect to
+		 *	 port - the port to utilize for the connection
 		 */
 		socket(bdaddr_t addr, uint16_t port) 
 		{
@@ -51,7 +51,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function template receive takes one template parameter
-		 *     T - the class type to receive from the socket
+		 *	 T - the class type to receive from the socket
 		 * 
 		 * Description: receives data from the socket into data reference. 
 		 */
@@ -68,7 +68,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function template receive takes one template parameter
-		 *     T - the class type to receive from the socket
+		 *	 T - the class type to receive from the socket
 		 * 
 		 * Description: receives data from the socket into data reference. 
 		 * Function also saves the address of the sender.
@@ -87,7 +87,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function template send takes one template parameter
-		 *     T - the class type to send from the socket
+		 *	 T - the class type to send from the socket
 		 * 
 		 * Description: sends data in data reference to peer socket. 
 		 */
@@ -104,7 +104,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function template send takes one template parameter
-		 *     T - the class type to send from the socket
+		 *	 T - the class type to send from the socket
 		 * 
 		 * Description: sends data in data reference through socket to 
 		 * specified address by addr parameter.
@@ -124,8 +124,8 @@ namespace bluegrass {
 	private:
 		/*
 		 * Function setup has two parameters:
-		 *     addr - the Bluetooth address to connect to
-		 *     port - the port utilized for the connection
+		 *	 addr - the Bluetooth address to connect to
+		 *	 port - the port utilized for the connection
 		 *
 		 * Description: setup is conditionally enabled depending on the 
 		 * protocol type template parameter. The function creates a socket
@@ -143,8 +143,8 @@ namespace bluegrass {
 		
 		/*
 		 * Function setup has two parameters:
-		 *     addr - the Bluetooth address to connect to
-		 *     port - the port utilized for the connection
+		 *	 addr - the Bluetooth address to connect to
+		 *	 port - the port utilized for the connection
 		 *
 		 * Description: setup is conditionally enabled depending on the 
 		 * protocol type template parameter. The function creates a socket

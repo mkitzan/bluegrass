@@ -23,7 +23,7 @@ void test(uint16_t n) {
 		try {
 			unique_socket us(bluegrass::socket<P>(dev.addr, n));
 			if(us.send(&self)) {
-				cout << "\tSent:     " << self << endl << flush;
+				cout << "\tSent:	 " << self << endl << flush;
 			} else {
 				cout << "\tSend failed\n";
 			}

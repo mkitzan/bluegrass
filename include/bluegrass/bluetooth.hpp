@@ -37,7 +37,7 @@ namespace bluegrass {
 	
 	/*
 	 * Struct template has one template parameter
-	 *     P - the Bluetooth socket protocol 
+	 *	 P - the Bluetooth socket protocol 
 	 * 
 	 * Description: address is a simple struct which wraps a socket address
 	 * and int storing the length of the socket address. This struct is used

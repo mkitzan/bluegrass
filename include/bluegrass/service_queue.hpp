@@ -28,8 +28,8 @@ namespace bluegrass {
 	
 	/*
 	 * Class template service_queue has two template parameters:
-	 *     T - the service_queue element type
-	 *     Q - the queue type of the associated service_queue
+	 *	 T - the service_queue element type
+	 *	 Q - the queue type of the associated service_queue
 	 * 
 	 * Description: service_queue provides asynchronous queuing functionality.
 	 * Programmer has access to either enqueue or dequeue while the internal
@@ -45,9 +45,9 @@ namespace bluegrass {
 	public:
 		/*
 		 * Function service_queue constructor has three parameters:
-		 *     queue_size > 0 - specifies the max size of the internal queue
-		 *     thread_count > 0 - specifies the number of internal threads 
-		 *     service - the function threads execute to create or utilize T
+		 *	 queue_size > 0 - specifies the max size of the internal queue
+		 *	 thread_count > 0 - specifies the number of internal threads 
+		 *	 service - the function threads execute to create or utilize T
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != NOQUEUE, bool> = true>
@@ -68,11 +68,11 @@ namespace bluegrass {
 		
 		/*
 		 * Function service_queue constructor has three parameters:
-		 *     queue_size > 0 - specifies the max size of the internal queue
-		 *     enq_count > 0 - specifies the number of threads enqueue-ing T
-		 *     deq_count > 0 - specifies the number of threads dequeue-ing T
-		 *     service_enq - the function threads execute to create T elements
-		 *     service_deq - the function threads execute to utilize T elements
+		 *	 queue_size > 0 - specifies the max size of the internal queue
+		 *	 enq_count > 0 - specifies the number of threads enqueue-ing T
+		 *	 deq_count > 0 - specifies the number of threads dequeue-ing T
+		 *	 service_enq - the function threads execute to create T elements
+		 *	 service_deq - the function threads execute to utilize T elements
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == NOQUEUE, bool> = true>
@@ -109,7 +109,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function enqueue has a single parameter:
-		 *     element - the element to be moved into the service_queue
+		 *	 element - the element to be moved into the service_queue
 		 *
 		 * Description: enqueue is a blocking function. If the internal queue
 		 * is full, the call will block. enqueue returns a bool representing
@@ -125,7 +125,7 @@ namespace bluegrass {
 			while(open_ && queue_.size() == max_) { 
 				enqcv_.wait(lock); 
 			}
-            
+			
 			if(open_) {
 				queue_.push(std::move(element));
 				deqcv_.notify_one();
@@ -136,7 +136,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function dequeue has a single parameter:
-		 *     element - the location to move the dequeued element into
+		 *	 element - the location to move the dequeued element into
 		 *
 		 * Description: dequeue is a blocking function. If the internal queue
 		 * is empty, the call will block. dequeue returns a bool representing
@@ -182,7 +182,7 @@ namespace bluegrass {
 	private:
 		/*
 		 * Function enqueue_service has one function parameter:
-		 *     service - the function threads invoke to utilize T
+		 *	 service - the function threads invoke to utilize T
 		 * 
 		 * Description: enqueue_service enqueues a new T element into the 
 		 * the service_queue. This service is utilized by ENQUEUE
@@ -202,7 +202,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function enqueue_service has one function parameter:
-		 *     service - the function threads invoke to utilize T
+		 *	 service - the function threads invoke to utilize T
 		 * 
 		 * Description: enqueue_service enqueues a new T element into the 
 		 * the service_queue. This service is utilized by DEQUEUE
@@ -229,7 +229,7 @@ namespace bluegrass {
 			while(open_ && queue_.size() == max_) { 
 				enqcv_.wait(lock); 
 			}
-            
+			
 			if(open_) {
 				queue_.push(std::move(element));
 				deqcv_.notify_one();

@@ -13,9 +13,9 @@
 
 namespace bluegrass {
 
-    /*
+	/*
 	 * Class template server has one template parameter
-	 *     P - the Bluetooth socket protocol
+	 *	 P - the Bluetooth socket protocol
 	 *
 	 * Description: server provides asynchronous Bluetooth connection
 	 * handling. server wraps an OS level socket which is configured to
@@ -36,10 +36,10 @@ namespace bluegrass {
 	public:	
 		/*
 		 * Function server constructor has four parameters:
-		 *     connection_queue - service_queue handling connections
-		 *     type - the communication type of the socket
-		 *     port - the port to utilize for the connection
-		 *     backlog - size of internal socket buffer
+		 *	 connection_queue - service_queue handling connections
+		 *	 type - the communication type of the socket
+		 *	 port - the port to utilize for the connection
+		 *	 backlog - size of internal socket buffer
 		 */
 		server(connection_queue* queue, uint16_t port, int backlog)
 		{
@@ -82,7 +82,7 @@ namespace bluegrass {
 	private:
 		/*
 		 * Function setup has one parameter:
-		 *     port - the port utilized for the connection
+		 *	 port - the port utilized for the connection
 		 *
 		 * Description: setup is conditionally enabled depending on the 
 		 * protocol type template parameter. The function creates a socket
@@ -100,7 +100,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function setup has one parameter:
-		 *     port - the port utilized for the connection
+		 *	 port - the port utilized for the connection
 		 *
 		 * Description: setup is conditionally enabled depending on the 
 		 * protocol type template parameter. The function creates a socket
@@ -129,9 +129,9 @@ namespace bluegrass {
 		
 	/*
 	 * Function sigio has three parameters:
-	 *     signal - the signal number which generated the call
-	 *     info - struct containing extend info on the signal
-	 *     context - unused parameter
+	 *	 signal - the signal number which generated the call
+	 *	 info - struct containing extend info on the signal
+	 *	 context - unused parameter
 	 *
 	 * Description: sigio is the global handler installed to SIGIO signals
 	 * for server sockets. server sockets are mapped to service_queues which
