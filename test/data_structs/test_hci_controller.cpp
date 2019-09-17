@@ -1,8 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
+
 #include "bluegrass/bluetooth.hpp"
-#include "bluegrass/controller.hpp"
+#include "bluegrass/hci_controller.hpp"
 
 using namespace std;
 using namespace bluegrass;

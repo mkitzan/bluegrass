@@ -1,5 +1,5 @@
-#ifndef __CONTROLLER__
-#define __CONTROLLER__
+#ifndef __HCI_CONTROLLER__
+#define __HCI_CONTROLLER__
 
 #include <vector>
 #include <string>
@@ -27,13 +27,13 @@ namespace bluegrass {
 		}
 		
 		// hci_controller is movable and copyable
-		hci_controller(const hci_controller& other) = default;
-		hci_controller(hci_controller&& other) = default;
-		hci_controller& operator=(const hci_controller& other) = default;
-		hci_controller& operator=(hci_controller&& other) = default;
+		hci_controller(const hci_controller&) = default;
+		hci_controller(hci_controller&&) = default;
+		hci_controller& operator=(const hci_controller&) = default;
+		hci_controller& operator=(hci_controller&&) = default;
 		
 		// Performs RAII socket closing
-		~hci_controller() { c_close(socket_); }
+		~hci_controller();
 		
 		/*
 		 * Function device_inquiry has two parameters:
@@ -44,21 +44,7 @@ namespace bluegrass {
 		 * HCI which performs an inquiry of nearby broadcasting Bluetooth devices.
 		 * A vector of Bluetooth device info is returned which will be <= max.
 		 */
-		void device_inquiry(size_t max, std::vector<device>& devices) 
-		{
-			devices.clear();
-			
-			inquiry_info* inquiries = static_cast<inquiry_info*>(
-			::operator new[](max * sizeof(inquiry_info)));
-			size_t resps = hci_inquiry(device_, 8, max, NULL, 
-			(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
-			
-			for(size_t i = 0; i < resps; ++i) {
-				devices.push_back({ (inquiries + i)->bdaddr, (inquiries + i)->clock_offset });
-			}
-			
-			::operator delete[](inquiries);
-		}
+		void device_inquiry(size_t, std::vector<device>&);
 		
 		/*
 		 * Function device_name has one parameters:
@@ -69,17 +55,7 @@ namespace bluegrass {
 		 * retrieving their human readable device name. If a Bluetooth device 
 		 * is unreachable "unknown" will be set for that device.
 		 */
-		std::string device_name(const device& dev) const
-		{
-			char cstr[64];
-			std::string str { "unknown" };
-		
-			if(hci_read_remote_name(socket_, &(dev.addr), sizeof(cstr), cstr, 0) >= 0) {
-				str = cstr;
-			}
-			
-			return str;
-		}
+		std::string device_name(const device& dev) const;
 		
 		/*
 		 * Description: local_address returns the Bluetooth device address of
@@ -101,31 +77,7 @@ namespace bluegrass {
 		 * device running the program and the device represented by the "dev"
 		 * argument. Programs utilizing device_rssi must be run as super user.
 		 */
-		int8_t device_rssi(device& dev) const 
-		{
-			int8_t rssi;
-			int flag { 0 }, conn;
-			uint16_t handle;
-			
-			// get device file descriptor
-			conn = hci_get_route(&dev.addr);
-			conn = hci_open_dev(conn);
-			
-			// connect and evaluate RSSI
-			flag |= hci_create_connection(conn, &dev.addr, 
-			htobs(info_.pkt_type & ACL_PTYPE_MASK), dev.offset, 
-			0, &handle, 0);
-			flag |= hci_read_rssi(conn, handle, &rssi, 0);
-			
-			if(flag < 0) {
-				rssi = -127;
-			}
-			// clean up
-			hci_disconnect(conn, handle, HCI_OE_USER_ENDED_CONNECTION, 0);
-			c_close(conn);
-			
-			return rssi;
-		}
+		int8_t device_rssi(device&) const;
 	
 	private:
 		/*
@@ -133,20 +85,12 @@ namespace bluegrass {
 		 * Bluetooth host controller interface. The HCI provides the means to
 		 * search for nearby Bluetooth device addresses and device names.
 		 */
-		hci_controller() 
-		{
-			device_ = hci_get_route(NULL);
-			socket_ = hci_open_dev(device_);
-			
-			if(device_ < 0 || socket_ < 0 || hci_devinfo(device_, &info_) < 0) {
-				throw std::runtime_error("Failed creating HCI controller");
-			}
-		}
+		hci_controller();
 		
 		int device_, socket_;
 		struct hci_dev_info info_;
 	};
-	
+
 }
 
 #endif

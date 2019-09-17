@@ -1,6 +1,8 @@
 #ifndef __BLUETOOTH__
 #define __BLUETOOTH__
 
+#include <iostream>
+
 /*
  * Including bluetooth.hpp includes all the Bluetooth libraries associated
  * with the Blue-Z 5.50 library. If this file is included in a program then 
@@ -18,8 +20,6 @@
 #include <bluetooth/sco.h>
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
-
-#include <iostream>
 
 namespace bluegrass {
 	
@@ -70,17 +70,7 @@ namespace bluegrass {
 	/*
 	 * Description: Prints a human readable Bluetooth device address 
 	 */
-	std::ostream& operator<<(std::ostream& out, const bdaddr_t& ba)  
-	{
-		std::ios_base::fmtflags ff(out.flags());
-		out << std::hex << std::uppercase 
-		<< (uint32_t) ba.b[5] << ':' << (uint32_t) ba.b[4] << ':' << (uint32_t) ba.b[3] 
-		<< ':' 
-		<< (uint32_t) ba.b[2] << ':' << (uint32_t) ba.b[1] << ':' << (uint32_t) ba.b[0];
-		out.flags(ff);
-		
-		return out;
-	}
+	std::ostream& operator<<(std::ostream&, const bdaddr_t&);
 	
 }
 

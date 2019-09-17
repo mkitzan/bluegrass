@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include <mutex>
+
 #include "bluegrass/service_queue.hpp"
 
 using namespace std;

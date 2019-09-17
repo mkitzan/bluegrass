@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "file_transfer.hpp"
+#include "bluegrass/socket.hpp"
 #include "bluegrass/service_queue.hpp"
 
 using namespace std;

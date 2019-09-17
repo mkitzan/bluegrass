@@ -1,7 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include "file_transfer.hpp"
-#include "bluegrass/controller.hpp"
+#include "bluegrass/socket.hpp"
+#include "bluegrass/hci_controller.hpp"
 
 using namespace std;
 using namespace bluegrass;
