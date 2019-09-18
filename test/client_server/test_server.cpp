@@ -18,14 +18,14 @@ void serve(bluegrass::socket<P>& sk) {
 	bdaddr_t addr = { 0 };
 	unique_socket us(std::move(sk));
 	
-	if(us.receive(&addr)) {
+	if (us.receive(&addr)) {
 		cout << "\tReceived: " << addr << endl << flush;
 	} else {
 		cout << "\tReceive failed\n";
 	}
 	
 	addr = hci_controller::access().local_address();
-	if(us.send(&addr)) {
+	if (us.send(&addr)) {
 		cout << "\tSent:	 " << addr << endl << flush;
 	} else {
 		cout << "\tSend failed\n";
@@ -41,9 +41,9 @@ void test(uint16_t n) {
 	cout << "\tCreating server\n" << flush;
 	try {
 		server<P> s(&sq, n, 4);
-		while(WAIT);
+		while (WAIT);
 		WAIT = true;
-	} catch(...) {
+	} catch (...) {
 		cout << "\tServer construction failed\n";
 	}
 }

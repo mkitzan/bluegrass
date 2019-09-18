@@ -55,8 +55,8 @@ namespace bluegrass {
 		std::size_t queue_size, std::size_t thread_count) : max_(queue_size) 
 		{		
 			threads_.reserve(thread_count);
-			while(threads_.size() < thread_count) {
-				if constexpr(Q == DEQUEUE) {
+			while (threads_.size() < thread_count) {
+				if constexpr (Q == DEQUEUE) {
 					threads_.emplace_back(std::thread(
 					[this, service] { enqueue_service(service); }));
 				} else {
@@ -80,11 +80,11 @@ namespace bluegrass {
 		std::size_t queue_size, std::size_t enq_count, std::size_t deq_count) : max_(queue_size) 
 		{	
 			threads_.reserve(enq_count + deq_count);
-			for(; enq_count; --enq_count) {
+			for (; enq_count; --enq_count) {
 				threads_.emplace_back(std::thread(
 				[this, service_enq] { enqueue_service(service_enq); }));
 			}
-			for(; deq_count; --deq_count) {
+			for (; deq_count; --deq_count) {
 				threads_.emplace_back(std::thread(
 				[this, service_deq] { dequeue_service(service_deq); }));
 			}	
@@ -100,8 +100,8 @@ namespace bluegrass {
 		~service_queue() 
 		{
 			shutdown();
-			for(std::thread &t : threads_) {
-				if(t.joinable()) { 
+			for (std::thread &t : threads_) {
+				if (t.joinable()) { 
 					t.join(); 
 				}
 			}
@@ -122,11 +122,11 @@ namespace bluegrass {
 		bool enqueue(T& element) 
 		{
 			std::unique_lock<std::mutex> lock(m_);
-			while(open_ && queue_.size() == max_) { 
+			while (open_ && queue_.size() == max_) { 
 				enqcv_.wait(lock); 
 			}
 			
-			if(open_) {
+			if (open_) {
 				queue_.push(std::move(element));
 				deqcv_.notify_one();
 			}
@@ -149,11 +149,11 @@ namespace bluegrass {
 		bool dequeue(T& element) 
 		{
 			std::unique_lock<std::mutex> lock(m_);
-			while(open_ && queue_.empty()) { 
+			while (open_ && queue_.empty()) { 
 				deqcv_.wait(lock); 
 			}
 			
-			if(!queue_.empty()) {
+			if (!queue_.empty()) {
 				element = std::move(queue_.front());
 				queue_.pop();
 				enqcv_.notify_one();
@@ -172,7 +172,7 @@ namespace bluegrass {
 		void shutdown() 
 		{
 			std::unique_lock<std::mutex> lock(m_);
-			if(open_) {
+			if (open_) {
 				open_ = false;
 				deqcv_.notify_all();
 				enqcv_.notify_all();
@@ -195,7 +195,7 @@ namespace bluegrass {
 		void dequeue_service(std::function<void(T&)> service) 
 		{
 			T data;
-			while(dequeue(data)) { 
+			while (dequeue(data)) { 
 				service(data); 
 			}
 		}
@@ -217,7 +217,7 @@ namespace bluegrass {
 			T data;
 			do { 
 				service(data); 
-			} while(enqueue(data));
+			} while (enqueue(data));
 		}
 		
 		// Private redefinition of enqueue instantiated for DEQUEUE
@@ -226,11 +226,11 @@ namespace bluegrass {
 		bool enqueue(T& element) 
 		{
 			std::unique_lock<std::mutex> lock(m_);	
-			while(open_ && queue_.size() == max_) { 
+			while (open_ && queue_.size() == max_) { 
 				enqcv_.wait(lock); 
 			}
 			
-			if(open_) {
+			if (open_) {
 				queue_.push(std::move(element));
 				deqcv_.notify_one();
 			}
@@ -244,11 +244,11 @@ namespace bluegrass {
 		bool dequeue(T& element) 
 		{
 			std::unique_lock<std::mutex> lock(m_); 
-			while(open_ && queue_.empty()) { 
+			while (open_ && queue_.empty()) { 
 				deqcv_.wait(lock); 
 			}
 			
-			if(!queue_.empty()) {
+			if (!queue_.empty()) {
 				element = std::move(queue_.front());
 				queue_.pop();
 				enqcv_.notify_one();

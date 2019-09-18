@@ -7,7 +7,7 @@ namespace bluegrass {
 		device_ = hci_get_route(NULL);
 		socket_ = hci_open_dev(device_);
 		
-		if(device_ < 0 || socket_ < 0 || hci_devinfo(device_, &info_) < 0) {
+		if (device_ < 0 || socket_ < 0 || hci_devinfo(device_, &info_) < 0) {
 			throw std::runtime_error("Failed creating HCI controller");
 		}
 	}
@@ -18,12 +18,14 @@ namespace bluegrass {
 	{
 		devices.clear();
 		
+		// allocate temp buffer for inquiry results before transferring to vector
 		inquiry_info* inquiries = static_cast<inquiry_info*>(
 		::operator new[](max * sizeof(inquiry_info)));
+
 		size_t resps = hci_inquiry(device_, 8, max, NULL, 
 		(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 		
-		for(size_t i = 0; i < resps; ++i) {
+		for (size_t i = 0; i < resps; ++i) {
 			devices.push_back({ (inquiries + i)->bdaddr, (inquiries + i)->clock_offset });
 		}
 		
@@ -35,7 +37,7 @@ namespace bluegrass {
 		char cstr[64];
 		std::string str { "unknown" };
 	
-		if(hci_read_remote_name(socket_, &(dev.addr), sizeof(cstr), cstr, 0) >= 0) {
+		if (hci_read_remote_name(socket_, &(dev.addr), sizeof(cstr), cstr, 0) >= 0) {
 			str = cstr;
 		}
 		
@@ -58,7 +60,7 @@ namespace bluegrass {
 		0, &handle, 0);
 		flag |= hci_read_rssi(conn, handle, &rssi, 0);
 		
-		if(flag < 0) {
+		if (flag < 0) {
 			rssi = -127;
 		}
 		// clean up

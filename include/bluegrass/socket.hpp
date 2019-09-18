@@ -31,7 +31,7 @@ namespace bluegrass {
 		socket(bdaddr_t addr, uint16_t port) 
 		{
 			setup(addr, port);
-			if(handle_ == -1 || c_connect(handle_, 
+			if (handle_ == -1 || c_connect(handle_, 
 			(const struct sockaddr*) &(addr_.addr), sizeof(addr_.addr)) == -1) {
 				c_close(handle_);
 				throw std::runtime_error("Failed creating client_socket");
@@ -41,7 +41,7 @@ namespace bluegrass {
 		// safely closes socket if active
 		void close() 
 		{
-			if(handle_ != -1) {
+			if (handle_ != -1) {
 				c_close(handle_);
 			}
 		}
@@ -60,7 +60,7 @@ namespace bluegrass {
 		bool receive(T* data) const
 		{
 			int state{ -1 };
-			if(handle_ != -1) {
+			if (handle_ != -1) {
 				state = c_recv(handle_, (void*) data, sizeof(T), 0);
 			}
 			return state != -1;
@@ -78,7 +78,7 @@ namespace bluegrass {
 		bool receive(T* data, address<P>* addr) const
 		{
 			int state{ -1 };
-			if(handle_ != -1) {
+			if (handle_ != -1) {
 				state = c_recvfrom(handle_, (void*) data, sizeof(T), 0, 
 				(struct sockaddr*)&addr.addr, &addr.len);
 			}
@@ -96,7 +96,7 @@ namespace bluegrass {
 		bool send(const T* data) const
 		{
 			int state{ -1 };
-			if(handle_ != -1) {
+			if (handle_ != -1) {
 				state = c_send(handle_, (void*) data, sizeof(T), 0);
 			}
 			return state != -1;
@@ -114,7 +114,7 @@ namespace bluegrass {
 		bool send(const T* data, const address<P>* addr) const
 		{
 			int state = -1;
-			if(handle_ != -1) {
+			if (handle_ != -1) {
 				state = c_sendto(handle_, (void*) data, sizeof(T), 0,
 				(const struct sockaddr*) &addr.addr, addr.len);
 			}

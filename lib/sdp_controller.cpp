@@ -31,22 +31,22 @@ namespace bluegrass {
 		attr = sdp_list_append(NULL, &range);
 		
 		// perform search on the remote device's SDP server
-		if(sdp_service_search_attr_req(
+		if (sdp_service_search_attr_req(
 		session_, search, SDP_ATTR_REQ_RANGE, attr, &resp) < 0) {
 			throw std::runtime_error("Failed searching for service");
 		}
 		
 		// iteratre list of service records
-		for(sdp_list_t* r = resp; r; r = r->next) {
-			if(sdp_get_access_protos((sdp_record_t*) r->data, &proto) >= 0) {
+		for (sdp_list_t* r = resp; r; r = r->next) {
+			if (sdp_get_access_protos((sdp_record_t*) r->data, &proto) >= 0) {
 				// iterate list of protocol sequences for each service record
-				for(sdp_list_t* p = proto; p; p = p->next) {
+				for (sdp_list_t* p = proto; p; p = p->next) {
 					// iterate through specific protocols for each sequence
-					for(sdp_list_t* pdata = (sdp_list_t*) p->data; 
+					for (sdp_list_t* pdata = (sdp_list_t*) p->data; 
 					pdata; pdata = pdata->next) {
 						int pt = 0;
 						// iterate through the attributes of a specific protocol
-						for(sdp_data_t* pattr = (sdp_data_t*) pdata->data; 
+						for (sdp_data_t* pattr = (sdp_data_t*) pdata->data; 
 						pattr; pattr = pattr->next) {
 							switch(pattr->dtd) {
 							case SDP_UUID16:

@@ -59,7 +59,7 @@ namespace bluegrass {
 			flag |= fcntl(handle_, F_SETSIG, SIGIO);
 			flag |= c_listen(handle_, backlog);
 			
-			if(flag == -1) {
+			if (flag == -1) {
 				c_close(handle_);
 				throw std::runtime_error("Failed creating async server");
 			}
