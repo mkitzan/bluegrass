@@ -81,7 +81,8 @@ namespace bluegrass {
 						
 	private:
 		/*
-		 * Function setup has one parameter:
+		 * Function setup has two parameter:
+		 *   addr - the address struct to store connection info
 		 *	 port - the port utilized for the connection
 		 *
 		 * Description: setup is conditionally enabled depending on the 
@@ -100,6 +101,7 @@ namespace bluegrass {
 		
 		/*
 		 * Function setup has one parameter:
+		 *   addr - the address struct to store connection info
 		 *	 port - the port utilized for the connection
 		 *
 		 * Description: setup is conditionally enabled depending on the 
