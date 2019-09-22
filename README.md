@@ -62,6 +62,8 @@ You will use an `hci_controller` object to query the addresses/names of remote n
 To setup your Linux system for Bluetooth development, run the `bluetooth.sh` script as super user from the directory you wish to store 
 the Bluetooth library tools needed.
 
+Inorder to use the bluegrass::sdp_controller you must follow [this guide](https://raspberrypi.stackexchange.com/questions/41776/failed-to-connect-to-sdp-server-on-ffffff000000-no-such-file-or-directory) on your system.
+
 To put your Linux system into discoverable mode run `hciconfig hci0 piscan` from the terminal, or add that to your start up script 
 (`/etc/rc.local`) to enable discoverable mode on boot.
 

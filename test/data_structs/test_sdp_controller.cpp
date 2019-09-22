@@ -31,12 +31,15 @@ int main() {
 
 	cout << "Remote devices and matching services:\n" << flush;
 	for(auto& dev : devices) {
+		cout << '\t' << dev.addr;
 		sdp_controller remote {dev.addr};
 		remote.service_search(svc, services);
 
 		for(auto& ser : services) {
-			cout << '\t' << dev.addr << '\t' << ser.id << '\t' << ser.proto << '\t' << ser.port << endl;
+			cout << '\t' << ser.id << '\t' << ser.proto << '\t' << ser.port;
 		}
+
+		cout << endl << flush;
 	}
 
 	return 0;
