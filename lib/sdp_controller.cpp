@@ -15,11 +15,11 @@ namespace bluegrass {
 	}
 
 	sdp_controller::~sdp_controller() 
-	{ 
+	{
 		sdp_close(session_); 
 	}
 
-	void sdp_controller::service_search(const service svc, std::vector<service>& resps) const 
+	void sdp_controller::service_search(const service& svc, std::vector<service>& resps) const 
 	{
 		uuid_t id;
 		sdp_list_t *resp, *search, *attr, *proto;
@@ -44,17 +44,21 @@ namespace bluegrass {
 					// iterate through specific protocols for each sequence
 					for (sdp_list_t* pdata = (sdp_list_t*) p->data; 
 					pdata; pdata = pdata->next) {
-						int pt = 0;
 						// iterate through the attributes of a specific protocol
 						for (sdp_data_t* pattr = (sdp_data_t*) pdata->data; 
 						pattr; pattr = pattr->next) {
 							switch(pattr->dtd) {
 							case SDP_UUID16:
-								pt = sdp_uuid_to_proto(&pattr->val.uuid);
+								resps.push_back(
+								{svc.id, 
+								(proto_t) sdp_uuid_to_proto(&pattr->val.uuid), 
+								pattr->val.uint16});
 								break;
 							case SDP_UINT8:
 								resps.push_back(
-								{ svc.id, (proto_t) pt, pattr->val.uint16 });
+								{svc.id, 
+								(proto_t) sdp_uuid_to_proto(&pattr->val.uuid), 
+								pattr->val.uint16});
 								break;
 							}
 						}
@@ -72,15 +76,52 @@ namespace bluegrass {
 		sdp_list_free(resp, 0);
 	}
 
-	// TODO
-	void sdp_controller::register_service(const service svc, const std::string name, 
-	const std::string description, const std::string provider) {
-		
-	}
+	bool sdp_controller::register_service(const service& svc, const std::string& name, 
+	const std::string& description, const std::string& provider) {
+		bool success = true;
+		uuid_t svc_uuid, root_uuid, proto_uuid;
+		sdp_list_t *root_list, *sub_list, *proto_list, *access_list;
+		sdp_data_t *channel;
+		sdp_session_t *session;
 
-	// TODO
-	void sdp_controller::unregister_service(/* ??? */) {
+		// allocate data for service record and assign service ID
+		sdp_record_t* record = sdp_record_alloc();
+		sdp_uuid128_create(&svc_uuid, &svc.id);
+		sdp_set_service_id(record, svc_uuid);
+
+		// create root data indicating service group
+		sdp_uuid16_create(&root_uuid, PUBLIC_BROWSE_GROUP);
+		root_list = sdp_list_append(0, &root_uuid);
+		sdp_set_browse_groups(record, root_list);
+
+		// allocate protocol specific data
+		if(svc.proto == L2CAP) {
+			sdp_uuid16_create(&proto_uuid, L2CAP_UUID);
+			channel = sdp_data_alloc(SDP_UINT16, &proto_uuid);
+		} else {
+			sdp_uuid16_create(&proto_uuid, RFCOMM_UUID);
+			channel = sdp_data_alloc(SDP_UINT8, &proto_uuid);
+		}
+		sub_list = sdp_list_append(0, &proto_uuid);
+		proto_list = sdp_list_append(0, sub_list);
+
+		// attach protocol data to the service record
+		access_list = sdp_list_append(0, proto_list);
+		sdp_set_access_protos(record, access_list);
+
+		sdp_set_info_attr(record, name.data(), provider.data(), description.data());
 		
+		if(sdp_record_register(session_, record, 0)) {
+			success  = false;
+		}
+
+		// clean up un-needed allocated data
+		sdp_data_free(channel);
+		sdp_list_free(sub_list, 0);
+		sdp_list_free(root_list, 0);
+		sdp_list_free(access_list, 0);
+
+		return success;
 	}
 
 }

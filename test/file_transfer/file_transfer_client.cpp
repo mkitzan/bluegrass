@@ -12,7 +12,7 @@ using namespace bluegrass;
 
 int main() {
 	vector<device> devices;
-	struct packet_t packet { 0, 0 };
+	struct packet_t packet {0, 0};
 	
 	// find addresses of all nearby discoverable Bluetooth devices
 	hci_controller& hci = hci_controller::access();

@@ -1,5 +1,5 @@
-#ifndef __BLUETOOTH__
-#define __BLUETOOTH__
+#ifndef __BLUEGRASS_BLUETOOTH__
+#define __BLUEGRASS_BLUETOOTH__
 
 #include <iostream>
 
@@ -75,6 +75,6 @@ namespace bluegrass {
 	 */
 	std::ostream& operator<<(std::ostream&, const bdaddr_t&);
 	
-}
+} // namespace bluegrass 
 
 #endif

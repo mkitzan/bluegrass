@@ -12,10 +12,15 @@ namespace bluegrass {
 		}
 	}
 
-	hci_controller::~hci_controller() { c_close(socket_); }
+	hci_controller::~hci_controller() 
+	{ 
+		std::unique_lock<std::mutex>(m_);
+		c_close(socket_); 
+	}
 
 	void hci_controller::device_inquiry(size_t max, std::vector<device>& devices) 
 	{
+		std::unique_lock<std::mutex>(m_);
 		devices.clear();
 		
 		// allocate temp buffer for inquiry results before transferring to vector
@@ -34,6 +39,7 @@ namespace bluegrass {
 
 	std::string hci_controller::device_name(const device& dev) const
 	{
+		std::unique_lock<std::mutex>(m_);
 		char cstr[64];
 		std::string str { "unknown" };
 	
@@ -46,6 +52,7 @@ namespace bluegrass {
 
 	int8_t hci_controller::device_rssi(device& dev) const 
 	{
+		std::unique_lock<std::mutex>(m_);
 		int8_t rssi;
 		int flag { 0 }, conn;
 		uint16_t handle;

@@ -1,8 +1,8 @@
-#ifndef __UNIQUE_SOCKET__
-#define __UNIQUE_SOCKET__
+#ifndef __BLUEGRASS_UNIQUE_SOCKET__
+#define __BLUEGRASS_UNIQUE_SOCKET__
 
-#include "bluegrass/socket.hpp"
 #include "bluegrass/bluetooth.hpp"
+#include "bluegrass/socket.hpp"
 
 namespace bluegrass {
 
@@ -56,6 +56,6 @@ namespace bluegrass {
 		socket<P> socket_;
 	};
 
-}
+} // namespace bluegrass 
 
 #endif

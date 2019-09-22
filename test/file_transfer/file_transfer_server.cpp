@@ -15,9 +15,9 @@ using namespace bluegrass;
 void transfer(bluegrass::socket<L2CAP>& conn) {	
 	unique_socket us(std::move(conn));
 	
-	bdaddr_t peer{ 0 };
-	struct packet_t packet{ 0, 0 };
-	uint8_t count{ '1' };
+	bdaddr_t peer {0};
+	struct packet_t packet {0, 0};
+	uint8_t count {1};
 	
 	// find out who the client is
 	cout << "Receiving address of client\n" << flush;
@@ -32,7 +32,7 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 	while (file.good()) {
 		file.read((char*) packet.data, sizeof packet.data);
 		packet.size = file.gcount();
-		cout << '[' << peer << ']' << " sending packet " << count++;
+		cout << '[' << peer << ']' << " sending packet " << (int) count++;
 		
 		if (us.send(&packet)) {
 			cout << " [success]\n" << flush;
@@ -51,7 +51,7 @@ int main() {
 	
 	try {
 		cout << "Creating server\n" << flush;
-		server<L2CAP> s(&sq, 0x1001, 4);
+		server<L2CAP> s(sq, 0x1001, 4);
 		cout << "Server construction succeeded\n" << flush;
 		// this example waits, but a real system could do other work (the server is async)
 		for (;;);

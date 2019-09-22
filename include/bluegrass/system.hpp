@@ -1,5 +1,5 @@
-#ifndef __SYSTEM__
-#define __SYSTEM__
+#ifndef __BLUEGRASS_SYSTEM__
+#define __BLUEGRASS_SYSTEM__
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -39,6 +39,6 @@ namespace bluegrass {
 	struct sockaddr* sockaddr, socklen_t socklen) 
 	{ return sendto(socket, data, size, flags, sockaddr, socklen); }
 	
-}
+} // namespace bluegrass 
 
 #endif

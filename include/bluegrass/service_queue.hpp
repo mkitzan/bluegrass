@@ -1,5 +1,5 @@
-#ifndef __SERVICE_QUEUE__
-#define __SERVICE_QUEUE__
+#ifndef __BLUEGRASS_SERVICE_QUEUE__
+#define __BLUEGRASS_SERVICE_QUEUE__
 
 #include <functional>
 #include <type_traits>
@@ -262,9 +262,9 @@ namespace bluegrass {
 		std::queue<T> queue_;
 		std::vector<std::thread> threads_;
 		std::size_t max_;
-		bool open_ = true;
+		bool open_ {true};
 	};
 
-}
+} // namespace bluegrass 
 
 #endif

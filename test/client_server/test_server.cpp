@@ -15,7 +15,7 @@ bool WAIT = true;
 
 template <proto_t P>
 void serve(bluegrass::socket<P>& sk) {
-	bdaddr_t addr = { 0 };
+	bdaddr_t addr {0};
 	unique_socket us(std::move(sk));
 	
 	if (us.receive(&addr)) {
@@ -40,7 +40,7 @@ void test(uint16_t n) {
 	service_queue<bluegrass::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
 	cout << "\tCreating server\n" << flush;
 	try {
-		server<P> s(&sq, n, 4);
+		server<P> s(sq, n, 4);
 		while (WAIT);
 		WAIT = true;
 	} catch (...) {

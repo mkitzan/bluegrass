@@ -1,5 +1,5 @@
-#ifndef __SOCKET__
-#define __SOCKET__
+#ifndef __BLUEGRASS_SOCKET__
+#define __BLUEGRASS_SOCKET__
 
 #include <type_traits>
 
@@ -59,7 +59,7 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool receive(T* data) const
 		{
-			int state{ -1 };
+			int state {-1};
 			if (handle_ != -1) {
 				state = c_recv(handle_, (void*) data, sizeof(T), 0);
 			}
@@ -77,7 +77,7 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool receive(T* data, address<P>* addr) const
 		{
-			int state{ -1 };
+			int state {-1};
 			if (handle_ != -1) {
 				state = c_recvfrom(handle_, (void*) data, sizeof(T), 0, 
 				(struct sockaddr*)&addr.addr, &addr.len);
@@ -95,7 +95,7 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool send(const T* data) const
 		{
-			int state{ -1 };
+			int state {-1};
 			if (handle_ != -1) {
 				state = c_send(handle_, (void*) data, sizeof(T), 0);
 			}
@@ -113,7 +113,7 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool send(const T* data, const address<P>* addr) const
 		{
-			int state = -1;
+			int state {-1};
 			if (handle_ != -1) {
 				state = c_sendto(handle_, (void*) data, sizeof(T), 0,
 				(const struct sockaddr*) &addr.addr, addr.len);
@@ -160,10 +160,10 @@ namespace bluegrass {
 			bacpy(&addr_.addr.rc_bdaddr, &addr);
 		}
 	
-		int handle_{ -1 };
-		address<P> addr_{ 0, 0 };
+		int handle_ {-1};
+		address<P> addr_ {0, 0};
 	};
 	
-}
+} // namespace bluegrass 
 
 #endif

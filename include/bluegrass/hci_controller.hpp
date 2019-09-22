@@ -1,6 +1,7 @@
-#ifndef __HCI_CONTROLLER__
-#define __HCI_CONTROLLER__
+#ifndef __BLUEGRASS_HCI_CONTROLLER__
+#define __BLUEGRASS_HCI_CONTROLLER__
 
+#include <mutex>
 #include <vector>
 #include <string>
 
@@ -30,9 +31,6 @@ namespace bluegrass {
 		hci_controller(hci_controller&&) = default;
 		hci_controller& operator=(const hci_controller&) = default;
 		hci_controller& operator=(hci_controller&&) = default;
-		
-		// Performs RAII socket closing
-		~hci_controller();
 		
 		/*
 		 * Function device_inquiry has two parameters:
@@ -85,11 +83,15 @@ namespace bluegrass {
 		 * search for nearby Bluetooth device addresses and device names.
 		 */
 		hci_controller();
+
+		// Performs RAII socket closing
+		~hci_controller();
 		
+		mutable std::mutex m_;
 		int device_, socket_;
 		struct hci_dev_info info_;
 	};
 
-}
+} // namespace bluegrass 
 
 #endif

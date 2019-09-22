@@ -1,5 +1,5 @@
-#ifndef __SERVER__
-#define __SERVER__
+#ifndef __BLUEGRASS_SERVER__
+#define __BLUEGRASS_SERVER__
 
 #include <unistd.h>
 #include <signal.h>
@@ -7,8 +7,8 @@
 #include <type_traits>
 #include <map>
 
-#include "bluegrass/socket.hpp"
 #include "bluegrass/bluetooth.hpp"
+#include "bluegrass/socket.hpp"
 #include "bluegrass/service_queue.hpp"
 
 namespace bluegrass {
@@ -41,15 +41,15 @@ namespace bluegrass {
 		 *	 port - the port to utilize for the connection
 		 *	 backlog - size of internal socket buffer
 		 */
-		server(connection_queue* queue, uint16_t port, int backlog)
+		server(connection_queue& queue, uint16_t port, int backlog)
 		{
-			int flag{ 0 };
-			address<P> addr{ 0, 0 };
-			struct sigaction action{ 0 };
+			int flag { 0 };
+			address<P> addr {0, 0};
+			struct sigaction action {0};
 			
 			setup(addr, port);
 			flag |= c_bind(handle_, (struct sockaddr*) &addr, sizeof(addr.addr));
-			connections_.insert(std::pair<int, connection_queue*>(handle_, queue));
+			connections_.insert(std::pair<int, connection_queue&>(handle_, queue));
 			
 			action.sa_sigaction = sigio;
 			action.sa_flags = SA_SIGINFO;
@@ -121,13 +121,13 @@ namespace bluegrass {
 		// sigio signal handler hook
 		static void sigio(int, siginfo_t*, void*);
 		
-		int handle_{ -1 };
-		static std::map<int, connection_queue*> connections_;
+		int handle_ {-1};
+		static std::map<int, connection_queue&> connections_;
 	};
 
 	// static allocation for the connection map
 	template <proto_t P>
-	std::map<int, service_queue<socket<P>, ENQUEUE>*> server<P>::connections_;
+	std::map<int, service_queue<socket<P>, ENQUEUE>&> server<P>::connections_;
 		
 	/*
 	 * Function sigio has three parameters:
@@ -147,9 +147,9 @@ namespace bluegrass {
 		socket<P> temp;
 		temp.handle_ = c_accept(info->si_fd, 
 		(struct sockaddr*) &temp.addr_.addr, &temp.addr_.len);
-		connections_[info->si_fd]->enqueue(temp);
+		connections_.at(info->si_fd).enqueue(temp);
 	}
 
-}
+} // namespace bluegrass 
 
 #endif
