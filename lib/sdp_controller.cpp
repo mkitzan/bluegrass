@@ -6,12 +6,12 @@ namespace bluegrass {
 
 	sdp_controller::sdp_controller() 
 	{
-		session_ = sdp_connect((bdaddr_t *) 0, (bdaddr_t *) 0xFFFFFF, SDP_RETRY_IF_BUSY);
+		session_ = sdp_connect(&ANY, &LOCAL, SDP_RETRY_IF_BUSY);
 	}
 
 	sdp_controller::sdp_controller(bdaddr_t addr) 
 	{
-		session_ = sdp_connect((bdaddr_t *) 0, &addr, SDP_RETRY_IF_BUSY);
+		session_ = sdp_connect(&ANY, &addr, SDP_RETRY_IF_BUSY);
 	}
 
 	sdp_controller::~sdp_controller() 
@@ -111,7 +111,7 @@ namespace bluegrass {
 
 		sdp_set_info_attr(record, name.data(), provider.data(), description.data());
 		
-		if(sdp_record_register(session_, record, 0)) {
+		if(sdp_record_register(session_, record, 0) == -1) {
 			success  = false;
 		}
 

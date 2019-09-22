@@ -96,7 +96,7 @@ namespace bluegrass {
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
 			addr.addr.l2_family = AF_BLUETOOTH;
 			addr.addr.l2_psm = htobs(port);
-			addr.addr.l2_bdaddr = { 0, 0, 0, 0, 0, 0 };
+			addr.addr.l2_bdaddr = ANY;
 		}
 		
 		/*
@@ -115,7 +115,7 @@ namespace bluegrass {
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 			addr.addr.rc_family = AF_BLUETOOTH;
 			addr.addr.rc_channel = (uint8_t) port;
-			addr.addr.rc_bdaddr = { 0, 0, 0, 0, 0, 0 };
+			addr.addr.rc_bdaddr = ANY;
 		}
 	
 		// sigio signal handler hook

@@ -26,6 +26,10 @@
 
 namespace bluegrass {
 	
+	static const bdaddr_t ANY {0, 0, 0, 0, 0, 0};
+	static const bdaddr_t ALL {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	static const bdaddr_t LOCAL {0, 0, 0, 0xFF, 0xFF, 0xFF};	
+	
 	/*
 	 * Description: proto_t is used to specify the Bluteooth protocol used by 
 	 * sockets and address.
