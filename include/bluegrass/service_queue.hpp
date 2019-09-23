@@ -45,14 +45,14 @@ namespace bluegrass {
 	public:
 		/*
 		 * Function service_queue constructor has three parameters:
-		 *	 queue_size > 0 - specifies the max size of the internal queue
-		 *	 thread_count > 0 - specifies the number of internal threads 
 		 *	 service - the function threads execute to create or utilize T
+		 *	 thread_count > 0 - specifies the number of internal threads 
+		 *	 queue_size > 0 - specifies the max size of the internal queue
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != NOQUEUE, bool> = true>
 		service_queue(
-			std::function<void(T&)> service, size_t queue_size, size_t thread_count) : 
+			std::function<void(T&)> service, size_t thread_count, size_t queue_size) : 
 			max_ {queue_size} 
 		{		
 			// reserved vector will ensure stable threads
@@ -71,17 +71,17 @@ namespace bluegrass {
 		
 		/*
 		 * Function service_queue constructor has three parameters:
-		 *	 queue_size > 0 - specifies the max size of the internal queue
-		 *	 enq_count > 0 - specifies the number of threads enqueue-ing T
-		 *	 deq_count > 0 - specifies the number of threads dequeue-ing T
 		 *	 service_enq - the function threads execute to create T elements
 		 *	 service_deq - the function threads execute to utilize T elements
+		 *	 enq_count > 0 - specifies the number of threads enqueue-ing T
+		 *	 deq_count > 0 - specifies the number of threads dequeue-ing T
+		 *	 queue_size > 0 - specifies the max size of the internal queue
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == NOQUEUE, bool> = true>
 		service_queue(
 			std::function<void(T&)> service_enq, std::function<void(T&)> service_deq,
-			size_t queue_size, size_t enq_count, size_t deq_count) : 
+			size_t enq_count, size_t deq_count, size_t queue_size) : 
 			max_ {queue_size} 
 		{	
 			// reserved vector will ensure stable threads

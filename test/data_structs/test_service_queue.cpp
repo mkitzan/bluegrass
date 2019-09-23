@@ -38,8 +38,8 @@ bool test_ende_queues()
 {
 	I = 0;
 	char data;
-	service_queue<char, queue_t::DEQUEUE> dq(create_test0, 16, 4);
-	service_queue<char, queue_t::ENQUEUE> eq(utilize_test, 16, 4);
+	service_queue<char, queue_t::DEQUEUE> dq(create_test0, 4, 16);
+	service_queue<char, queue_t::ENQUEUE> eq(utilize_test, 4, 16);
 	
 	// perform manual transfer of data
 	do { 
@@ -57,7 +57,7 @@ bool test_ende_queues()
 bool test_no_queue() 
 {
 	I = 0;
-	service_queue<char, queue_t::NOQUEUE> no(create_test1, utilize_test, 16, 4, 4);
+	service_queue<char, queue_t::NOQUEUE> no(create_test1, utilize_test, 4, 4, 16);
 	
 	// wait until all the input string is consumed
 	while (STR1[I]);

@@ -44,13 +44,10 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 	cout << '[' << peer<< ']' << " file transfer complete\n" << endl << flush;
 }
 
-int main() {
-	cout << "Creating service_queue\n" << flush;
-	service_queue<bluegrass::socket<L2CAP>, ENQUEUE> sq(transfer, 4, 2);
-	
+int main() {	
 	try {
 		cout << "Creating server\n" << flush;
-		server<L2CAP> s(sq, 0x1001, 4);
+		server<L2CAP> s(0x1001, transfer, 2);
 		cout << "Server construction succeeded\n" << flush;
 		// this example waits, but a real system could do other work (the server is async)
 		for (;;);

@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <functional>
 #include <type_traits>
 #include <map>
 
@@ -35,32 +36,33 @@ namespace bluegrass {
 		
 	public:	
 		/*
-		 * Function server constructor has four parameters:
-		 *	 connection_queue - service_queue handling connections
-		 *	 type - the communication type of the socket
+		 * Function server constructor has two parameters:
 		 *	 port - the port to utilize for the connection
-		 *	 backlog - size of internal socket buffer
+		 *   service - the function threads execute to create or utilize socket<P>
 		 */
-		server(connection_queue& queue, uint16_t port, int backlog)
+		server(
+			uint16_t port, std::function<void(socket<P>&)> service, 
+			size_t thread_count=1, size_t queue_size=8, int backlog=4) :
+			svc_queue_ {service, thread_count, queue_size}
 		{
-			int flag { 0 };
-			address<P> addr {0, 0};
+			int flag {0};
 			struct sigaction action {0};
 			
-			setup(addr, port);
-			flag |= c_bind(handle_, (struct sockaddr*) &addr, sizeof(addr.addr));
-			connections_.insert(std::pair<int, connection_queue&>(handle_, queue));
+			server_.setup(ANY, port);
+			flag |= c_bind(server_.handle_, (struct sockaddr*) &server_.addr_, sizeof(server_.addr_.addr));
+			connections_.emplace(std::pair<int, connection_queue&>(server_.handle_, svc_queue_));
 			
+			// setup SIGIO on the server socket file descriptor
 			action.sa_sigaction = sigio;
 			action.sa_flags = SA_SIGINFO;
 			flag |= sigaction(SIGIO, &action, NULL);
-			flag |= fcntl(handle_, F_SETFL, O_ASYNC | O_NONBLOCK);
-			flag |= fcntl(handle_, F_SETOWN, getpid());
-			flag |= fcntl(handle_, F_SETSIG, SIGIO);
-			flag |= c_listen(handle_, backlog);
+			flag |= fcntl(server_.handle_, F_SETFL, O_ASYNC | O_NONBLOCK);
+			flag |= fcntl(server_.handle_, F_SETOWN, getpid());
+			flag |= fcntl(server_.handle_, F_SETSIG, SIGIO);
+			flag |= c_listen(server_.handle_, backlog);
 			
 			if (flag == -1) {
-				c_close(handle_);
+				c_close(server_.handle_);
 				throw std::runtime_error("Failed creating async server");
 			}
 		}
@@ -74,54 +76,18 @@ namespace bluegrass {
 		// RAII destructor resets the signal handler and c_closes the socket
 		~server() 
 		{
-			fcntl(handle_, F_SETSIG, 0);
-			c_close(handle_);
-			connections_.erase(handle_);
+			fcntl(server_.handle_, F_SETSIG, 0);
+			c_close(server_.handle_);
+			connections_.erase(server_.handle_);
 		}
 						
-	private:
-		/*
-		 * Function setup has two parameter:
-		 *   addr - the address struct to store connection info
-		 *	 port - the port utilized for the connection
-		 *
-		 * Description: setup is conditionally enabled depending on the 
-		 * protocol type template parameter. The function creates a socket
-		 * and configures the socket address struct.
-		 */
-		template <proto_t P_TYPE = P,
-		typename std::enable_if_t<P_TYPE == L2CAP, bool> = true>
-		inline void setup(address<P>& addr, uint16_t port) 
-		{
-			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
-			addr.addr.l2_family = AF_BLUETOOTH;
-			addr.addr.l2_psm = htobs(port);
-			addr.addr.l2_bdaddr = ANY;
-		}
-		
-		/*
-		 * Function setup has one parameter:
-		 *   addr - the address struct to store connection info
-		 *	 port - the port utilized for the connection
-		 *
-		 * Description: setup is conditionally enabled depending on the 
-		 * protocol type template parameter. The function creates a socket
-		 * and configures the socket address struct.
-		 */
-		template <proto_t P_TYPE = P,
-		typename std::enable_if_t<P_TYPE == RFCOMM, bool> = true>
-		inline void setup(address<P>& addr, uint16_t port) 
-		{
-			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-			addr.addr.rc_family = AF_BLUETOOTH;
-			addr.addr.rc_channel = (uint8_t) port;
-			addr.addr.rc_bdaddr = ANY;
-		}
-	
+	private:	
 		// sigio signal handler hook
 		static void sigio(int, siginfo_t*, void*);
 		
 		int handle_ {-1};
+		socket<P> server_;
+		connection_queue svc_queue_;
 		static std::map<int, connection_queue&> connections_;
 	};
 

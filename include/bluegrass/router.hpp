@@ -9,7 +9,6 @@
 #include "bluegrass/sdp_controller.hpp"
 #include "bluegrass/server.hpp"
 
-
 // GOAL: bluegrass network architecture 
 //		should support the creation of user defined architectures
 // 			bluegrass networking is the abstraction between bluetooth comm protocol and user's architecture
@@ -37,12 +36,13 @@
 
 namespace bluegrass {
 
-	template <proto_t P> // TODO: decide if will be template (probably not)
 	class router {
 	public:
-		router(size_t meta_queue, size_t meta_threads, uint16_t meta_port) : 
-			meta_queue_ {meta_connection, meta_queue, meta_threads}, 
-			meta_server_ {meta_queue_, meta_port, 4} 
+		router(
+			uint16_t meta_port, uint16_t router_port, 
+			size_t queue_size=8, size_t thread_count=1) : 
+			meta_server_ {meta_port, meta_connection, thread_count, queue_size}, 
+			router_server_ {router_port, router_connection, thread_count, queue_size} 
 		{
 			// TODO: collect nearby remote devices 
 			//		How dense should a network node be? how many neighbors held?
@@ -62,8 +62,6 @@ namespace bluegrass {
 
 		void refresh(); // TODO: refresh remote device list draft implementation will likely block asyncio in future?
 
-		// TODO: decide if local device service control and remote service controller should be separate class
-
 		/*return svc id?*/void new_service(); // TODO: emplace client service into router container, notify network of new service
 
 		void drop_service(); // TODO: close serivce, notify network of dropped service 
@@ -77,16 +75,24 @@ namespace bluegrass {
 		//		type: new service, dropped service, new node, dropped node
 		//		payload: new service, dropped service, new node, dropped node
 
-		static void meta_connection(socket<L2CAP>& conn) 
-		{
-			// TODO: implement the meta communication between Bluetooth routers about network state
-		}
+		static void meta_connection(socket<L2CAP>& conn);
 
-		service_queue<socket<L2CAP>, ENQUEUE> meta_queue_;
-		server<L2CAP> meta_server_;
-		// TODO: container for client services likely std::list or std::map for stability
+		static void router_connection(socket<L2CAP>& conn);
+
+		server<L2CAP> meta_server_, router_server_;
+		//static service_controller& svc_;
 		// TODO: container for nearby remote device addresses likely std::vector
 	};
+
+	void router::meta_connection(socket<L2CAP>& conn) 
+	{
+		// TODO: implement the meta communication between Bluetooth routers about network state
+	}
+
+	void router::router_connection(socket<L2CAP>& conn) 
+	{
+		// TODO: implement the core packet routing function
+	}
 	
 } // namespace bluegrass 
 

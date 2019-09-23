@@ -35,11 +35,9 @@ void serve(bluegrass::socket<P>& sk) {
 
 template<proto_t P>
 void test(uint16_t n) {
-	cout << "\tCreating service_queue\n" << flush;
-	service_queue<bluegrass::socket<P>, ENQUEUE> sq(serve<P>, 4, 1);
 	cout << "\tCreating server\n" << flush;
 	try {
-		server<P> s(sq, n, 4);
+		server<P> s(n, serve<P>);
 		while (WAIT);
 		WAIT = true;
 	} catch (...) {
