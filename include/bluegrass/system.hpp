@@ -28,15 +28,15 @@ namespace bluegrass {
 	static inline int c_recv(int socket, void* data, size_t size, int flags) 
 	{ return recv(socket, data, size, flags); }
 	
-	static inline int c_recvfrom(int socket, void* data, size_t size, int flags, 
-	struct sockaddr* sockaddr, socklen_t* socklen) 
+	static inline int c_recvfrom(
+		int socket, void* data, size_t size, int flags, struct sockaddr* sockaddr, socklen_t* socklen) 
 	{ return recvfrom(socket, data, size, flags, sockaddr, socklen); }
 	
 	static inline int c_send(int socket, const void* data, size_t size, int flags) 
 	{ return send(socket, data, size, flags); }
 	
-	static inline int c_sendto(int socket, const void* data, size_t size, int flags, 
-	struct sockaddr* sockaddr, socklen_t socklen) 
+	static inline int c_sendto(
+		int socket, const void* data, size_t size, int flags, struct sockaddr* sockaddr, socklen_t socklen) 
 	{ return sendto(socket, data, size, flags, sockaddr, socklen); }
 	
 } // namespace bluegrass 

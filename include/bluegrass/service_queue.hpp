@@ -51,10 +51,13 @@ namespace bluegrass {
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != NOQUEUE, bool> = true>
-		service_queue(std::function<void(T&)> service,
-		std::size_t queue_size, std::size_t thread_count) : max_(queue_size) 
+		service_queue(
+			std::function<void(T&)> service, size_t queue_size, size_t thread_count) : 
+			max_ {queue_size} 
 		{		
+			// reserved vector will ensure stable threads
 			threads_.reserve(thread_count);
+
 			while (threads_.size() < thread_count) {
 				if constexpr (Q == DEQUEUE) {
 					threads_.emplace_back(std::thread(
@@ -76,10 +79,14 @@ namespace bluegrass {
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == NOQUEUE, bool> = true>
-		service_queue(std::function<void(T&)> service_enq, std::function<void(T&)> service_deq,
-		std::size_t queue_size, std::size_t enq_count, std::size_t deq_count) : max_(queue_size) 
+		service_queue(
+			std::function<void(T&)> service_enq, std::function<void(T&)> service_deq,
+			size_t queue_size, size_t enq_count, size_t deq_count) : 
+			max_ {queue_size} 
 		{	
+			// reserved vector will ensure stable threads
 			threads_.reserve(enq_count + deq_count);
+
 			for (; enq_count; --enq_count) {
 				threads_.emplace_back(std::thread(
 				[this, service_enq] { enqueue_service(service_enq); }));

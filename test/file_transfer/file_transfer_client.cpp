@@ -4,7 +4,6 @@
 #include "file_transfer.hpp"
 
 #include "bluegrass/socket.hpp"
-#include "bluegrass/unique_socket.hpp"
 #include "bluegrass/hci_controller.hpp"
 
 using namespace std;

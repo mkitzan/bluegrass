@@ -6,7 +6,6 @@
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/hci_controller.hpp"
 #include "bluegrass/socket.hpp"
-#include "bluegrass/unique_socket.hpp"
 
 using namespace std;
 using namespace bluegrass;

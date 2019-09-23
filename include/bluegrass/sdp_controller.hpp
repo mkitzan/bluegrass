@@ -66,7 +66,8 @@ namespace bluegrass {
 		 * of code was ported from Albert Huang's: "The Use of Bluetooth in Linux 
 		 * and Location aware Computing"
 		 */
-		bool register_service(const service&, const std::string&, const std::string&, const std::string&);
+		bool register_service(
+			const service&, const std::string&, const std::string&, const std::string&);
 	
 	private:
 		sdp_session_t* session_;
