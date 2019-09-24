@@ -82,6 +82,7 @@ namespace bluegrass {
 		server<L2CAP> meta_server_, router_server_;
 
 		// TODO: define minimal info needed to hold network state/context
+		// std::map<>
 	};
 
 	void router::meta_connection(socket<L2CAP>& conn) 

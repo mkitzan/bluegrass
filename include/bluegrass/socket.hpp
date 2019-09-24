@@ -47,7 +47,7 @@ namespace bluegrass {
 		}
 		
 		// returns information about the connection on the socket
-		address<P> sockaddr() const { return addr_; }
+		address_t<P> sockaddr() const { return addr_; }
 		
 		/*
 		 * Function template receive takes one template parameter
@@ -75,7 +75,7 @@ namespace bluegrass {
 		 */
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		bool receive(T* data, address<P>* addr) const
+		bool receive(T* data, address_t<P>* addr) const
 		{
 			int state {-1};
 			if (handle_ != -1) {
@@ -111,7 +111,7 @@ namespace bluegrass {
 		 */
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		bool send(const T* data, const address<P>* addr) const
+		bool send(const T* data, const address_t<P>* addr) const
 		{
 			int state {-1};
 			if (handle_ != -1) {
@@ -161,7 +161,7 @@ namespace bluegrass {
 		}
 	
 		int handle_ {-1};
-		address<P> addr_ {0, 0};
+		address_t<P> addr_ {0, 0};
 	};
 	
 	/*
@@ -181,7 +181,7 @@ namespace bluegrass {
 		~unique_socket() { socket_.close(); }
 		
 		// returns information about the connection on the socket
-		inline address<P> sockaddr() const { return socket_.sockaddr(); }
+		inline address_t<P> sockaddr() const { return socket_.sockaddr(); }
 		
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
@@ -192,7 +192,7 @@ namespace bluegrass {
 		
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool receive(T* data, address<P>* addr) const 
+		inline bool receive(T* data, address_t<P>* addr) const 
 		{ 
 			return socket_.receive(data, addr);
 		}
@@ -206,7 +206,7 @@ namespace bluegrass {
 		
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool send(const T* data, const address<P>* addr) const
+		inline bool send(const T* data, const address_t<P>* addr) const
 		{
 			return socket_.send(data, addr);
 		}

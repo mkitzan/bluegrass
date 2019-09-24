@@ -41,7 +41,7 @@ namespace bluegrass {
 		 * HCI which performs an inquiry of nearby broadcasting Bluetooth devices.
 		 * A vector of Bluetooth device info is returned which will be <= max.
 		 */
-		void device_inquiry(size_t, std::vector<device>&);
+		void device_inquiry(size_t, std::vector<device_t>&);
 		
 		/*
 		 * Function device_name has one parameters:
@@ -52,7 +52,7 @@ namespace bluegrass {
 		 * retrieving their human readable device name. If a Bluetooth device 
 		 * is unreachable "unknown" will be set for that device.
 		 */
-		std::string device_name(const device& dev) const;
+		std::string device_name(const device_t& dev) const;
 		
 		/*
 		 * Description: local_address returns the Bluetooth device address of
@@ -74,7 +74,7 @@ namespace bluegrass {
 		 * device running the program and the device represented by the "dev"
 		 * argument. Programs utilizing device_rssi must be run as super user.
 		 */
-		int8_t device_rssi(device&) const;
+		int8_t device_rssi(device_t&) const;
 	
 	private:
 		/*

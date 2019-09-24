@@ -12,7 +12,7 @@ using namespace bluegrass;
 
 template<proto_t P>
 void test(uint16_t n) {
-	vector<device> devices;
+	vector<device_t> devices;
 	
 	hci& controller = hci::access();
 	controller.device_inquiry(8, devices);

@@ -14,7 +14,7 @@ namespace bluegrass {
 	//		template param -> payload
 
 	struct packet {
-
+		
 	};
 
 } // namespace bluegrass 

@@ -21,14 +21,14 @@ namespace bluegrass {
 		/*
 		 * Description: sdp() constructs an SDP session with the 
 		 * local SDP server of the device running the program. Only 
-		 * register_bdservice (will be) invokable by an sdp constructed
+		 * register_service_t (will be) invokable by an sdp constructed
 		 * in this way.
 		 */
 		sdp();
 		
 		/*
 		 * Description: sdp(bdaddr_t) constructs an SDP session with 
-		 * a remote Bluetooth device's SDP server. Only bdservice_search (will be)
+		 * a remote Bluetooth device's SDP server. Only service_t_search (will be)
 		 * invokable by an sdp object constructed in this way.
 		 */
 		sdp(bdaddr_t);
@@ -42,32 +42,32 @@ namespace bluegrass {
 		~sdp();
 		
 		/*
-		 * Function bdservice_search has two parameters:
-		 *	 const bdservice - the bdservice ID to search for (proto and port are not used)
-		 *	 std::vector<bdservice>& - container to store the found bdservices
+		 * Function sdp_search has two parameters:
+		 *	 const service_t - the service_t ID to search for (proto and port are not used)
+		 *	 std::vector<service_t>& - container to store the found service_ts
 		 *
-		 * Description: bdservice_search performs a search of bdservices matching
-		 * the argument "svc" bdservice on the remote device's SDP server. On 
-		 * return the "resps" vector is filled with matching bdservices. The 
+		 * Description: sdp_search performs a search of service_ts matching
+		 * the argument "svc" service_t on the remote device's SDP server. On 
+		 * return the "resps" vector is filled with matching service_ts. The 
 		 * majority of code was ported from Albert Huang's: "The Use of 
 		 * Bluetooth in Linux and Location aware Computing"
 		 */
-		void bdservice_search(const bdservice&, std::vector<bdservice>&) const;
+		void search(const service_t&, std::vector<service_t>&) const;
 		
 		/*
-		 * Function bdservice_search has four parameters:
-		 *	 const bdservice - the bdservice to register
-		 *	 const std::string& - name of bdservice
-		 *   const std::string& - provider of bdservice
-		 *   const std::string& - description of bdservice
+		 * Function advertise has four parameters:
+		 *	 const service_t - the service_t to register
+		 *	 const std::string& - name of service_t
+		 *   const std::string& - provider of service_t
+		 *   const std::string& - description of service_t
 		 *
-		 * Description: register_search constructs a bdservice record and registers 
-		 * that bdservice on the Bluetooth devices local SDP server. The majority 
+		 * Description: advertise constructs a service_t record and registers 
+		 * that service_t on the Bluetooth devices local SDP server. The majority 
 		 * of code was ported from Albert Huang's: "The Use of Bluetooth in Linux 
 		 * and Location aware Computing"
 		 */
-		bool register_bdservice(
-			const bdservice&, const std::string&, const std::string&, const std::string&);
+		bool advertise(
+			const service_t&, const std::string&, const std::string&, const std::string&);
 	
 	private:
 		sdp_session_t* session_;

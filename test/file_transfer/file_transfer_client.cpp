@@ -10,7 +10,7 @@ using namespace std;
 using namespace bluegrass;
 
 int main() {
-	vector<device> devices;
+	vector<device_t> devices;
 	struct packet_t packet {0, 0};
 	
 	// find addresses of all nearby discoverable Bluetooth devices
