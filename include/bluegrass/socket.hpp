@@ -8,6 +8,21 @@
 namespace bluegrass {
 	
 	/*
+	 * Struct template has one template parameter
+	 *	 P - the Bluetooth socket protocol 
+	 * 
+	 * Description: address_t is a simple struct which wraps a socket address
+	 * and int storing the length of the socket address. This struct is used
+	 * to the address of a socket class to capture the address to send data to
+	 * or where data is comming from.
+	 */
+	template <proto_t P>
+	struct address_t {
+		typename std::conditional_t<P == L2CAP, sockaddr_l2, sockaddr_rc> addr;
+		socklen_t len;
+	};
+	
+	/*
 	 * Class template socket has one template parameter
 	 *	 P - the Bluetooth socket protocol
 	 *

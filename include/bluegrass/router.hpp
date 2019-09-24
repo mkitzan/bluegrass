@@ -1,11 +1,11 @@
 #ifndef __BLUEGRASS_ROUTER__
 #define __BLUEGRASS_ROUTER__
 
+#include <array>
 #include <map>
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/hci.hpp"
-#include "bluegrass/sdp.hpp"
 #include "bluegrass/server.hpp"
 
 // GOAL: bluegrass network architecture 
@@ -71,6 +71,17 @@ namespace bluegrass {
 		void service_access(); // TODO: utilize a remote service, what if service requires arguments for use?
 
 	private:
+		/*
+		* Struct to package information about a service on a Bluegrass network.
+		* Used by router to identify services and forward packets.
+		*/
+		struct service_t {
+			uint8_t steps;
+			bdaddr_t addr;
+			proto_t proto;
+			uint16_t port;
+		};
+
 		// TODO: meta network packet [concrete packet]
 		//		type: new service, dropped service, new node, dropped node
 		//		payload: new service, dropped service, new node, dropped node
@@ -81,8 +92,9 @@ namespace bluegrass {
 
 		server<L2CAP> meta_server_, router_server_;
 
-		// TODO: define minimal info needed to hold network state/context
-		// std::map<>
+		// lookup structure to quickly forward packets
+		// stores "best" known device to forward service specific packets 
+		std::map<uint8_t, service_t> route_; 
 	};
 
 	void router::meta_connection(socket<L2CAP>& conn) 

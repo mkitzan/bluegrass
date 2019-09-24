@@ -9,6 +9,16 @@
 namespace bluegrass {
 
 	/*
+	 * Struct to package information about a Bluetooth service_t. service_t struct
+	 * has service_t id, Bluetooth protocol, and port number.
+	 */
+	struct service_t {
+		uint8_t id;
+		proto_t proto;
+		uint16_t port;
+	};
+
+	/*
 	 * Class sdp may be used to access the local device SDP server 
 	 * or to access the SDP server on a remote device. The default argument of
 	 * this class connects to the local device SDP server, but a programmer may
