@@ -2,19 +2,19 @@
 #include <string>
 
 #include "bluegrass/bluetooth.hpp"
-#include "bluegrass/sdp_controller.hpp"
+#include "bluegrass/sdp.hpp"
 
 using namespace std;
 using namespace bluegrass;
 
 int main() {
-	// create an sdp_controller object to local SDP server
-	sdp_controller local {};
-	service svc {0xBBCF, L2CAP, 0x1001};
+	// create an sdp object to local SDP server
+	sdp local {};
+	bdservice svc {0xBBCF, L2CAP, 0x1001};
 	
 	cout << "Registering service\n" << flush;
-	if(!local.register_service(svc, 
-	"SDP Test"s, "Bluegrass"s, "Fake Service Testing bluegrass::sdp_controller"s)) {
+	if(!local.register_bdservice(svc, 
+	"SDP Test"s, "Bluegrass"s, "Fake Service Testing bluegrass::sdp"s)) {
 		cout << "Failed to register service. Quiting SDP controller tests.\n";
 		exit(1);
 	}

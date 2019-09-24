@@ -1,12 +1,11 @@
 #ifndef __BLUEGRASS_ROUTER__
 #define __BLUEGRASS_ROUTER__
 
-//#include <list>
-//#include <map>
+#include <map>
 
 #include "bluegrass/bluetooth.hpp"
-#include "bluegrass/hci_controller.hpp"
-#include "bluegrass/sdp_controller.hpp"
+#include "bluegrass/hci.hpp"
+#include "bluegrass/sdp.hpp"
 #include "bluegrass/server.hpp"
 
 // GOAL: bluegrass network architecture 
@@ -47,6 +46,7 @@ namespace bluegrass {
 			// TODO: collect nearby remote devices 
 			//		How dense should a network node be? how many neighbors held?
 			//		Capped density -> how to assert all possible nodes connected? responsibility of individual node
+			//		define directly supported devices and indirectly supported devices
 			// notify network of new router
 		}
 		
@@ -64,7 +64,7 @@ namespace bluegrass {
 
 		/*return svc id?*/void new_service(); // TODO: emplace client service into router container, notify network of new service
 
-		void drop_service(); // TODO: close serivce, notify network of dropped service 
+		void drop_service(); // TODO: close service, notify network of dropped service 
 
 		bool service_available(); // TODO: check if service available on network
 
@@ -80,8 +80,8 @@ namespace bluegrass {
 		static void router_connection(socket<L2CAP>& conn);
 
 		server<L2CAP> meta_server_, router_server_;
-		//static service_controller& svc_;
-		// TODO: container for nearby remote device addresses likely std::vector
+
+		// TODO: define minimal info needed to hold network state/context
 	};
 
 	void router::meta_connection(socket<L2CAP>& conn) 

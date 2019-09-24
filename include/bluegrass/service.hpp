@@ -1,5 +1,5 @@
-#ifndef __BLUEGRASS_SERVICE_QUEUE__
-#define __BLUEGRASS_SERVICE_QUEUE__
+#ifndef __BLUEGRASS_SERVICE__
+#define __BLUEGRASS_SERVICE__
 
 #include <functional>
 #include <type_traits>
@@ -13,7 +13,7 @@ namespace bluegrass {
 	
 	/*
 	 * Description: queue_t is an enum type passed as a template argument to
-	 * service_queue. If ENQUEUE is passed, then the programmer has 
+	 * service. If ENQUEUE is passed, then the programmer has 
 	 * access to the enqueue function and the service threads have access to 
 	 * dequeue. If DEQUEUE is passed, then the programmer has access 
 	 * to the dequeue function and the service threads have access to enqueue.
@@ -27,32 +27,31 @@ namespace bluegrass {
 	};
 	
 	/*
-	 * Class template service_queue has two template parameters:
-	 *	 T - the service_queue element type
-	 *	 Q - the queue type of the associated service_queue
+	 * Class template service has two template parameters:
+	 *	 T - the service element type
+	 *	 Q - the queue type of the associated service
 	 * 
-	 * Description: service_queue provides asynchronous queuing functionality.
+	 * Description: service provides asynchronous queuing functionality.
 	 * Programmer has access to either enqueue or dequeue while the internal
-	 * service_queue threads have access to the other function. With this 
+	 * service threads have access to the other function. With this 
 	 * scheme, threads asynchronously processes the queue as programmer 
-	 * performs other work. All service_queue functions are thread safe.
-	 * service_queue has RAII functionality as it safely shuts-down on 
-	 * destruction. At shutdown, a service_queue will process all remaining 
+	 * performs other work. All service functions are thread safe.
+	 * service has RAII functionality as it safely shuts-down on 
+	 * destruction. At shutdown, a service will process all remaining 
 	 * elements before joining service threads.
 	 */
 	template <class T, queue_t Q>
-	class service_queue {
+	class service {
 	public:
 		/*
-		 * Function service_queue constructor has three parameters:
-		 *	 service - the function threads execute to create or utilize T
+		 * Function service constructor has three parameters:
+		 *	 routine - the function threads execute to create or utilize T
 		 *	 thread_count > 0 - specifies the number of internal threads 
 		 *	 queue_size > 0 - specifies the max size of the internal queue
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != NOQUEUE, bool> = true>
-		service_queue(
-			std::function<void(T&)> service, size_t thread_count, size_t queue_size) : 
+		service(std::function<void(T&)> routine, size_t thread_count, size_t queue_size) : 
 			max_ {queue_size} 
 		{		
 			// reserved vector will ensure stable threads
@@ -61,26 +60,26 @@ namespace bluegrass {
 			while (threads_.size() < thread_count) {
 				if constexpr (Q == DEQUEUE) {
 					threads_.emplace_back(std::thread(
-					[this, service] { enqueue_service(service); }));
+					[this, routine] { enqueue(routine); }));
 				} else {
 					threads_.emplace_back(std::thread(
-					[this, service] { dequeue_service(service); }));
+					[this, routine] { dequeue(routine); }));
 				}
 			}	
 		}
 		
 		/*
-		 * Function service_queue constructor has three parameters:
-		 *	 service_enq - the function threads execute to create T elements
-		 *	 service_deq - the function threads execute to utilize T elements
+		 * Function service constructor has three parameters:
+		 *	 enq_routine - the function threads execute to create T elements
+		 *	 deq_routine - the function threads execute to utilize T elements
 		 *	 enq_count > 0 - specifies the number of threads enqueue-ing T
 		 *	 deq_count > 0 - specifies the number of threads dequeue-ing T
 		 *	 queue_size > 0 - specifies the max size of the internal queue
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == NOQUEUE, bool> = true>
-		service_queue(
-			std::function<void(T&)> service_enq, std::function<void(T&)> service_deq,
+		service(
+			std::function<void(T&)> enq_routine, std::function<void(T&)> deq_routine,
 			size_t enq_count, size_t deq_count, size_t queue_size) : 
 			max_ {queue_size} 
 		{	
@@ -89,22 +88,22 @@ namespace bluegrass {
 
 			for (; enq_count; --enq_count) {
 				threads_.emplace_back(std::thread(
-				[this, service_enq] { enqueue_service(service_enq); }));
+				[this, enq_routine] { enqueue(enq_routine); }));
 			}
 			for (; deq_count; --deq_count) {
 				threads_.emplace_back(std::thread(
-				[this, service_deq] { dequeue_service(service_deq); }));
+				[this, deq_routine] { dequeue(deq_routine); }));
 			}	
 		}
 		
-		// service_queue is not copyable or movable
-		service_queue(const service_queue&) = delete;
-		service_queue(service_queue&&) = delete;
-		service_queue& operator=(const service_queue&) = delete;
-		service_queue& operator=(service_queue&&) = delete;
+		// service is not copyable or movable
+		service(const service&) = delete;
+		service(service&&) = delete;
+		service& operator=(const service&) = delete;
+		service& operator=(service&&) = delete;
 
 		// RAII destructor performs shutdown and join
-		~service_queue() 
+		~service() 
 		{
 			shutdown();
 			for (std::thread &t : threads_) {
@@ -116,12 +115,12 @@ namespace bluegrass {
 		
 		/*
 		 * Function enqueue has a single parameter:
-		 *	 element - the element to be moved into the service_queue
+		 *	 element - the element to be moved into the service
 		 *
 		 * Description: enqueue is a blocking function. If the internal queue
 		 * is full, the call will block. enqueue returns a bool representing
-		 * whether the service_queue is open or not. enqueue will fail to 
-		 * insert the element if the service_queue is shutdown at the time it
+		 * whether the service is open or not. enqueue will fail to 
+		 * insert the element if the service is shutdown at the time it
 		 * has mutually exclusive access to the internal queue.
 		 */
 		template <queue_t Q_TYPE = Q, 
@@ -147,8 +146,8 @@ namespace bluegrass {
 		 *
 		 * Description: dequeue is a blocking function. If the internal queue
 		 * is empty, the call will block. dequeue returns a bool representing
-		 * whether the service_queue is open or not. dequeue will fail to
-		 * remove an element if the service_queue is shutdown and empty at the 
+		 * whether the service is open or not. dequeue will fail to
+		 * remove an element if the service is shutdown and empty at the 
 		 * time it has mutually exclusive access to the internal queue.
 		 */
 		template <queue_t Q_TYPE = Q, 
@@ -170,11 +169,11 @@ namespace bluegrass {
 		}
 		
 		/*
-		 * Description: shutdown places the service_queue into a closed state.
+		 * Description: shutdown places the service into a closed state.
 		 * No further elements will be queued after this call returns including
 		 * elements blocked and waiting to enqueue. Elements may be dequeued 
-		 * from the service_queue while it is shutdown. Once shutdown, a 
-		 * service_queue can not be re-opened. 
+		 * from the service while it is shutdown. Once shutdown, a 
+		 * service can not be re-opened. 
 		 */
 		void shutdown() 
 		{
@@ -188,42 +187,42 @@ namespace bluegrass {
 		
 	private:
 		/*
-		 * Function enqueue_service has one function parameter:
-		 *	 service - the function threads invoke to utilize T
+		 * Function enqueue has one function parameter:
+		 *	 routine - the function threads invoke to utilize T
 		 * 
-		 * Description: enqueue_service enqueues a new T element into the 
-		 * the service_queue. This service is utilized by ENQUEUE
+		 * Description: enqueue enqueues a new T element into the 
+		 * the queue. This service is utilized by ENQUEUE
 		 * and NOQUEUE. The core while loops terminate when their
-		 * calls to service return false indicating the service_queue has been
+		 * calls to service return false indicating the service has been
 		 * shutdown (and empty for dequeue calls).
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != DEQUEUE, bool> = true>
-		void dequeue_service(std::function<void(T&)> service) 
+		void dequeue(std::function<void(T&)> routine) 
 		{
 			T data;
 			while (dequeue(data)) { 
-				service(data); 
+				routine(data); 
 			}
 		}
 		
 		/*
-		 * Function enqueue_service has one function parameter:
-		 *	 service - the function threads invoke to utilize T
+		 * Function enqueue has one function parameter:
+		 *	 routine - the function threads invoke to utilize T
 		 * 
-		 * Description: enqueue_service enqueues a new T element into the 
-		 * the service_queue. This service is utilized by DEQUEUE
+		 * Description: enqueue enqueues a new T element into the 
+		 * the queue. This service is utilized by DEQUEUE
 		 * and NOQUEUE. The core while loops terminate when their
-		 * calls to service return false indicating the service_queue has been
+		 * calls to service return false indicating the service has been
 		 * shutdown (and empty for dequeue calls).
 		 */
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != ENQUEUE, bool> = true>
-		void enqueue_service(std::function<void(T&)> service) 
+		void enqueue(std::function<void(T&)> routine) 
 		{
 			T data;
 			do { 
-				service(data); 
+				routine(data); 
 			} while (enqueue(data));
 		}
 		

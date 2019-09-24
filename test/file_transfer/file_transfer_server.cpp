@@ -3,7 +3,7 @@
 
 #include "file_transfer.hpp"
 
-#include "bluegrass/service_queue.hpp"
+#include "bluegrass/service.hpp"
 #include "bluegrass/socket.hpp"
 #include "bluegrass/server.hpp"
 

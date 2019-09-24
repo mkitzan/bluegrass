@@ -1,5 +1,5 @@
-#ifndef __BLUEGRASS_HCI_CONTROLLER__
-#define __BLUEGRASS_HCI_CONTROLLER__
+#ifndef __BLUEGRASS_HCI__
+#define __BLUEGRASS_HCI__
 
 #include <mutex>
 #include <vector>
@@ -10,27 +10,27 @@
 namespace bluegrass {
 	
 	/*
-	 * Class hci_controller provides access to the physical host controller
-	 * interface on the hardware running the program. hci_controller is a 
+	 * Class hci provides access to the physical host controller
+	 * interface on the hardware running the program. hci is a 
 	 * singleton which guarantees a program has one path to physical controller.
 	 */
-	class hci_controller {
+	class hci {
 	public:
 		/*
-		 * Description: hci_controller singleton accessor function. Singleton
+		 * Description: hci singleton accessor function. Singleton
 		 * ensures only one socket connection exists to the physical HCI.
 		 */
-		static hci_controller& access() 
+		static hci& access() 
 		{
-			static hci_controller hci;
+			static hci hci;
 			return hci;
 		}
 		
-		// hci_controller is movable and copyable
-		hci_controller(const hci_controller&) = default;
-		hci_controller(hci_controller&&) = default;
-		hci_controller& operator=(const hci_controller&) = default;
-		hci_controller& operator=(hci_controller&&) = default;
+		// hci is movable and copyable
+		hci(const hci&) = default;
+		hci(hci&&) = default;
+		hci& operator=(const hci&) = default;
+		hci& operator=(hci&&) = default;
 		
 		/*
 		 * Function device_inquiry has two parameters:
@@ -78,14 +78,14 @@ namespace bluegrass {
 	
 	private:
 		/*
-		 * Description: hci_controller provides a simplified interface to the
+		 * Description: hci provides a simplified interface to the
 		 * Bluetooth host controller interface. The HCI provides the means to
 		 * search for nearby Bluetooth device addresses and device names.
 		 */
-		hci_controller();
+		hci();
 
 		// Performs RAII socket closing
-		~hci_controller();
+		~hci();
 		
 		mutable std::mutex m_;
 		int device_, socket_;

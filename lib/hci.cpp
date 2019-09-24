@@ -1,8 +1,8 @@
-#include "bluegrass/hci_controller.hpp"
+#include "bluegrass/hci.hpp"
 
 namespace bluegrass {
 
-	hci_controller::hci_controller() 
+	hci::hci() 
 	{
 		device_ = hci_get_route(NULL);
 		socket_ = hci_open_dev(device_);
@@ -12,13 +12,13 @@ namespace bluegrass {
 		}
 	}
 
-	hci_controller::~hci_controller() 
+	hci::~hci() 
 	{ 
 		std::unique_lock<std::mutex>(m_);
 		c_close(socket_); 
 	}
 
-	void hci_controller::device_inquiry(size_t max, std::vector<device>& devices) 
+	void hci::device_inquiry(size_t max, std::vector<device>& devices) 
 	{
 		std::unique_lock<std::mutex>(m_);
 		devices.clear();
@@ -37,7 +37,7 @@ namespace bluegrass {
 		::operator delete[](inquiries);
 	}
 
-	std::string hci_controller::device_name(const device& dev) const
+	std::string hci::device_name(const device& dev) const
 	{
 		std::unique_lock<std::mutex>(m_);
 		char cstr[64];
@@ -50,7 +50,7 @@ namespace bluegrass {
 		return str;
 	}
 
-	int8_t hci_controller::device_rssi(device& dev) const 
+	int8_t hci::device_rssi(device& dev) const 
 	{
 		std::unique_lock<std::mutex>(m_);
 		int8_t rssi;

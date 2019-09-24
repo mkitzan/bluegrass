@@ -55,10 +55,10 @@ namespace bluegrass {
 	};
 	
 	/*
-	 * Struct to package information about a Bluetooth service. service struct
-	 * has service id, Bluetooth protocol, and port number.
+	 * Struct to package information about a Bluetooth bdservice. bdservice struct
+	 * has bdservice id, Bluetooth protocol, and port number.
 	 */
-	struct service {
+	struct bdservice {
 		uint16_t id;
 		proto_t proto;
 		uint16_t port;

@@ -2,8 +2,8 @@
 #include <mutex>
 
 #include "bluegrass/bluetooth.hpp"
-#include "bluegrass/service_queue.hpp"
-#include "bluegrass/hci_controller.hpp"
+#include "bluegrass/service.hpp"
+#include "bluegrass/hci.hpp"
 #include "bluegrass/socket.hpp"
 #include "bluegrass/server.hpp"
 
@@ -23,7 +23,7 @@ void serve(bluegrass::socket<P>& sk) {
 		cout << "\tReceive failed\n";
 	}
 	
-	addr = hci_controller::access().local_address();
+	addr = hci::access().local_address();
 	if (us.send(&addr)) {
 		cout << "\tSent:	 " << addr << endl << flush;
 	} else {

@@ -4,7 +4,7 @@
 #include "file_transfer.hpp"
 
 #include "bluegrass/socket.hpp"
-#include "bluegrass/hci_controller.hpp"
+#include "bluegrass/hci.hpp"
 
 using namespace std;
 using namespace bluegrass;
@@ -14,9 +14,9 @@ int main() {
 	struct packet_t packet {0, 0};
 	
 	// find addresses of all nearby discoverable Bluetooth devices
-	hci_controller& hci = hci_controller::access();
-	hci.device_inquiry(8, devices);
-	bdaddr_t local { hci.local_address() };
+	hci& controller = hci::access();
+	controller.device_inquiry(8, devices);
+	bdaddr_t local { controller.local_address() };
 	
 	// try to connect and receive a file from each device
 	for (auto& dev : devices) {

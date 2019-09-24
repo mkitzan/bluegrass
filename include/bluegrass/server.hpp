@@ -4,13 +4,14 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+
 #include <functional>
 #include <type_traits>
 #include <map>
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/socket.hpp"
-#include "bluegrass/service_queue.hpp"
+#include "bluegrass/service.hpp"
 
 namespace bluegrass {
 
@@ -21,29 +22,29 @@ namespace bluegrass {
 	 * Description: server provides asynchronous Bluetooth connection
 	 * handling. server wraps an OS level socket which is configured to
 	 * asynchronously enqueue incoming connections into the provided 
-	 * service_queue which can process the connection without blocking on an
+	 * service which can process the connection without blocking on an
 	 * accept call.
 	 */
 	template <proto_t P>
 	class server {
 		/*
-		 * Description: connection_queue is the specific service_queue 
+		 * Description: connection_queue is the specific service 
 		 * definition expected by server. connection_queue is a queue
 		 * of file descriptors identifying accepted connections to the 
 		 * server.
 		 */
-		using connection_queue = service_queue<socket<P>, ENQUEUE>;
+		using connection_queue = service<socket<P>, ENQUEUE>;
 		
 	public:	
 		/*
 		 * Function server constructor has two parameters:
 		 *	 port - the port to utilize for the connection
-		 *   service - the function threads execute to create or utilize socket<P>
+		 *   routine - the function threads execute to create or utilize socket<P>
 		 */
 		server(
-			uint16_t port, std::function<void(socket<P>&)> service, 
+			uint16_t port, std::function<void(socket<P>&)> routine, 
 			size_t thread_count=1, size_t queue_size=8, int backlog=4) :
-			svc_queue_ {service, thread_count, queue_size}
+			svc_queue_ {routine, thread_count, queue_size}
 		{
 			int flag {0};
 			struct sigaction action {0};
@@ -93,7 +94,7 @@ namespace bluegrass {
 
 	// static allocation for the connection map
 	template <proto_t P>
-	std::map<int, service_queue<socket<P>, ENQUEUE>&> server<P>::connections_;
+	std::map<int, service<socket<P>, ENQUEUE>&> server<P>::connections_;
 		
 	/*
 	 * Function sigio has three parameters:
@@ -102,7 +103,7 @@ namespace bluegrass {
 	 *	 context - unused parameter
 	 *
 	 * Description: sigio is the global handler installed to SIGIO signals
-	 * for server sockets. server sockets are mapped to service_queues which
+	 * for server sockets. server sockets are mapped to services which
 	 * allow for multiple open server sockets at once. However, a single 
 	 * signal handler must be used for all SIGIO signals. The correct queue
 	 * for the signaling socket must be found be traversing the map.

@@ -4,7 +4,7 @@
 #include <mutex>
 
 #include "bluegrass/bluetooth.hpp"
-#include "bluegrass/hci_controller.hpp"
+#include "bluegrass/hci.hpp"
 #include "bluegrass/socket.hpp"
 
 using namespace std;
@@ -14,9 +14,9 @@ template<proto_t P>
 void test(uint16_t n) {
 	vector<device> devices;
 	
-	hci_controller& hci = hci_controller::access();
-	hci.device_inquiry(8, devices);
-	bdaddr_t self { hci.local_address() }, ret;
+	hci& controller = hci::access();
+	controller.device_inquiry(8, devices);
+	bdaddr_t self { controller.local_address() }, ret;
 	
 	for (auto& dev : devices) {
 		cout << "\tCreating client\n" << flush;

@@ -1,25 +1,25 @@
-#include "bluegrass/sdp_controller.hpp"
+#include "bluegrass/sdp.hpp"
 #include "bluegrass/system.hpp"
 #include "bluegrass/bluetooth.hpp"
 
 namespace bluegrass {
 
-	sdp_controller::sdp_controller() 
+	sdp::sdp() 
 	{
 		session_ = sdp_connect(&ANY, &LOCAL, SDP_RETRY_IF_BUSY);
 	}
 
-	sdp_controller::sdp_controller(bdaddr_t addr) 
+	sdp::sdp(bdaddr_t addr) 
 	{
 		session_ = sdp_connect(&ANY, &addr, SDP_RETRY_IF_BUSY);
 	}
 
-	sdp_controller::~sdp_controller() 
+	sdp::~sdp() 
 	{
 		sdp_close(session_); 
 	}
 
-	void sdp_controller::service_search(const service& svc, std::vector<service>& resps) const 
+	void sdp::bdservice_search(const bdservice& svc, std::vector<bdservice>& resps) const 
 	{
 		uuid_t id;
 		sdp_list_t *resp, *search, *attr, *proto;
@@ -33,13 +33,13 @@ namespace bluegrass {
 		// perform search on the remote device's SDP server
 		if (sdp_service_search_attr_req(
 		session_, search, SDP_ATTR_REQ_RANGE, attr, &resp) < 0) {
-			throw std::runtime_error("Failed searching for service");
+			throw std::runtime_error("Failed searching for bdservice");
 		}
 		
-		// iteratre list of service records
+		// iteratre list of bdservice records
 		for (sdp_list_t* r = resp; r; r = r->next) {
 			if (sdp_get_access_protos((sdp_record_t*) r->data, &proto) >= 0) {
-				// iterate list of protocol sequences for each service record
+				// iterate list of protocol sequences for each bdservice record
 				for (sdp_list_t* p = proto; p; p = p->next) {
 					// iterate through specific protocols for each sequence
 					for (sdp_list_t* pdata = (sdp_list_t*) p->data; 
@@ -76,7 +76,7 @@ namespace bluegrass {
 		sdp_list_free(resp, 0);
 	}
 
-	bool sdp_controller::register_service(const service& svc, const std::string& name, 
+	bool sdp::register_bdservice(const bdservice& svc, const std::string& name, 
 	const std::string& description, const std::string& provider) {
 		bool success = true;
 		uuid_t svc_uuid, root_uuid, proto_uuid;
@@ -84,12 +84,12 @@ namespace bluegrass {
 		sdp_data_t *channel;
 		sdp_session_t *session;
 
-		// allocate data for service record and assign service ID
+		// allocate data for bdservice record and assign bdservice ID
 		sdp_record_t* record = sdp_record_alloc();
 		sdp_uuid128_create(&svc_uuid, &svc.id);
 		sdp_set_service_id(record, svc_uuid);
 
-		// create root data indicating service group
+		// create root data indicating bdservice group
 		sdp_uuid16_create(&root_uuid, PUBLIC_BROWSE_GROUP);
 		root_list = sdp_list_append(0, &root_uuid);
 		sdp_set_browse_groups(record, root_list);
@@ -105,7 +105,7 @@ namespace bluegrass {
 		sub_list = sdp_list_append(0, &proto_uuid);
 		proto_list = sdp_list_append(0, sub_list);
 
-		// attach protocol data to the service record
+		// attach protocol data to the bdservice record
 		access_list = sdp_list_append(0, proto_list);
 		sdp_set_access_protos(record, access_list);
 

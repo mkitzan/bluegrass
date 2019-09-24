@@ -2,27 +2,27 @@
 #include <vector>
 
 #include "bluegrass/bluetooth.hpp"
-#include "bluegrass/hci_controller.hpp"
-#include "bluegrass/sdp_controller.hpp"
+#include "bluegrass/hci.hpp"
+#include "bluegrass/sdp.hpp"
 
 using namespace std;
 using namespace bluegrass;
 
 int main() {
 	// access HCI singleton connection
-	hci_controller& hci = hci_controller::access();
-	service svc {0xBBCF, L2CAP, 0x1001};
+	hci& controller = hci::access();
+	bdservice svc {0xBBCF, L2CAP, 0x1001};
 	// containers for controller return data
 	vector<device> devices;
-	vector<service> services;
+	vector<bdservice> services;
 	
-	hci.device_inquiry(32, devices);
+	controller.device_inquiry(32, devices);
 
 	cout << "Remote devices and matching services:\n" << flush;
 	for(auto& dev : devices) {
 		cout << '\t' << dev.addr;
-		sdp_controller remote {dev.addr};
-		remote.service_search(svc, services);
+		sdp remote {dev.addr};
+		remote.bdservice_search(svc, services);
 
 		for(auto& ser : services) {
 			cout << '\t' << ser.id << '\t' << ser.proto << '\t' << ser.port;
