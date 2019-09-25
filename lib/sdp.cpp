@@ -19,6 +19,7 @@ namespace bluegrass {
 		sdp_close(session_); 
 	}
 
+	// Majority of code was ported from Albert Huang's: "The Use of Bluetooth in Linux and Location aware Computing"
 	void sdp::search(const service_t& svc, std::vector<service_t>& resps) const 
 	{
 		uuid_t id;
@@ -36,7 +37,7 @@ namespace bluegrass {
 			throw std::runtime_error("Failed searching for service_t");
 		}
 		
-		// iteratre list of service_t records
+		// iterate list of service_t records
 		for (sdp_list_t* r = resp; r; r = r->next) {
 			if (sdp_get_access_protos((sdp_record_t*) r->data, &proto) >= 0) {
 				// iterate list of protocol sequences for each service_t record
@@ -76,6 +77,7 @@ namespace bluegrass {
 		sdp_list_free(resp, 0);
 	}
 
+	// Majority of code was ported from Albert Huang's: "The Use of Bluetooth in Linux and Location aware Computing"
 	bool sdp::advertise(const service_t& svc, const std::string& name, 
 	const std::string& description, const std::string& provider) {
 		bool success = true;

@@ -15,8 +15,8 @@ int main() {
 	
 	// find addresses of all nearby discoverable Bluetooth devices
 	hci& controller = hci::access();
-	controller.device_inquiry(8, devices);
-	bdaddr_t local { controller.local_address() };
+	controller.inquiry(8, devices);
+	bdaddr_t local { controller.self() };
 	
 	// try to connect and receive a file from each device
 	for (auto& dev : devices) {

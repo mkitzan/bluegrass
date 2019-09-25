@@ -18,7 +18,7 @@ namespace bluegrass {
 		c_close(socket_); 
 	}
 
-	void hci::device_inquiry(size_t max, std::vector<device_t>& devices) 
+	void hci::inquiry(size_t max, std::vector<device_t>& devices) 
 	{
 		std::unique_lock<std::mutex>(m_);
 		devices.clear();
@@ -37,7 +37,7 @@ namespace bluegrass {
 		::operator delete[](inquiries);
 	}
 
-	std::string hci::device_name(const device_t& dev) const
+	std::string hci::name(const device_t& dev) const
 	{
 		std::unique_lock<std::mutex>(m_);
 		char cstr[64];
@@ -50,7 +50,7 @@ namespace bluegrass {
 		return str;
 	}
 
-	int8_t hci::device_rssi(device_t& dev) const 
+	int8_t hci::rssi(device_t& dev) const 
 	{
 		std::unique_lock<std::mutex>(m_);
 		int8_t rssi;

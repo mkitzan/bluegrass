@@ -23,7 +23,7 @@ void serve(bluegrass::socket<P>& sk) {
 		cout << "\tReceive failed\n";
 	}
 	
-	addr = hci::access().local_address();
+	addr = hci::access().self();
 	if (us.send(&addr)) {
 		cout << "\tSent:	 " << addr << endl << flush;
 	} else {

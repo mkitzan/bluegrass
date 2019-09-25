@@ -11,10 +11,7 @@ namespace bluegrass {
 	 * Struct template has one template parameter
 	 *	 P - the Bluetooth socket protocol 
 	 * 
-	 * Description: address_t is a simple struct which wraps a socket address
-	 * and int storing the length of the socket address. This struct is used
-	 * to the address of a socket class to capture the address to send data to
-	 * or where data is comming from.
+	 * "address_t" wraps a socket address and int storing the length of the address.
 	 */
 	template <proto_t P>
 	struct address_t {
@@ -26,8 +23,7 @@ namespace bluegrass {
 	 * Class template socket has one template parameter
 	 *	 P - the Bluetooth socket protocol
 	 *
-	 * Description: socket interfaces a Bluetooth socket providing send and
-	 * receive functionality.
+	 * "socket" wraps a Bluetooth socket providing send and receive functionality.
 	 */
 	template <proto_t P>
 	class socket {
@@ -38,11 +34,7 @@ namespace bluegrass {
 		// default constructor does not create kernel level socket
 		socket() {}
 		
-		/*
-		 * Function socket constructor has two parameters:
-		 *	 addr - the Bluetooth address to connect to
-		 *	 port - the port to utilize for the connection
-		 */
+		// creates a kernel level socket to provided address and port
 		socket(bdaddr_t addr, uint16_t port) 
 		{
 			setup(addr, port);
@@ -62,14 +54,12 @@ namespace bluegrass {
 		}
 		
 		// returns information about the connection on the socket
-		address_t<P> sockaddr() const { return addr_; }
+		address_t<P> sockaddr() const 
+		{ 
+			return addr_; 
+		}
 		
-		/*
-		 * Function template receive takes one template parameter
-		 *	 T - the class type to receive from the socket
-		 * 
-		 * Description: receives data from the socket into data reference. 
-		 */
+		// receives data from the socket into data reference. 
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool receive(T* data) const
@@ -81,13 +71,7 @@ namespace bluegrass {
 			return state != -1;
 		}
 		
-		/*
-		 * Function template receive takes one template parameter
-		 *	 T - the class type to receive from the socket
-		 * 
-		 * Description: receives data from the socket into data reference. 
-		 * Function also saves the address of the sender.
-		 */
+		// receives data from the socket into data reference and saves the address of the sender.
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool receive(T* data, address_t<P>* addr) const
@@ -100,12 +84,7 @@ namespace bluegrass {
 			return state != -1;
 		}
 		
-		/*
-		 * Function template send takes one template parameter
-		 *	 T - the class type to send from the socket
-		 * 
-		 * Description: sends data in data reference to peer socket. 
-		 */
+		// sends data in data reference to peer socket. 
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool send(const T* data) const
@@ -117,13 +96,7 @@ namespace bluegrass {
 			return state != -1;
 		}
 		
-		/*
-		 * Function template send takes one template parameter
-		 *	 T - the class type to send from the socket
-		 * 
-		 * Description: sends data in data reference through socket to 
-		 * specified address by addr parameter.
-		 */
+		// sends data in data reference through socket to specified address.
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool send(const T* data, const address_t<P>* addr) const
@@ -137,15 +110,7 @@ namespace bluegrass {
 		}
 	
 	private:
-		/*
-		 * Function setup has two parameters:
-		 *	 addr - the Bluetooth address to connect to
-		 *	 port - the port utilized for the connection
-		 *
-		 * Description: setup is conditionally enabled depending on the 
-		 * protocol type template parameter. The function creates a socket
-		 * and configures the socket address struct.
-		 */
+		// creates an L2CAP socket and configures the socket address struct.
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == L2CAP, bool> = true>
 		inline void setup(bdaddr_t addr, uint16_t port) 
@@ -156,15 +121,7 @@ namespace bluegrass {
 			bacpy(&addr_.addr.l2_bdaddr, &addr);
 		}
 		
-		/*
-		 * Function setup has two parameters:
-		 *	 addr - the Bluetooth address to connect to
-		 *	 port - the port utilized for the connection
-		 *
-		 * Description: setup is conditionally enabled depending on the 
-		 * protocol type template parameter. The function creates a socket
-		 * and configures the socket address struct.
-		 */
+		// creates an RFCOMM socket and configures the socket address struct.
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == RFCOMM, bool> = true>
 		inline void setup(bdaddr_t addr, uint16_t port) 
@@ -183,20 +140,24 @@ namespace bluegrass {
 	 * Class template unique_socket has one template parameter
 	 *	 P - the Bluetooth socket protocol used by the underlying socket
 	 *
-	 * Description: unique_socket provides an RAII interface to the socket 
-	 * class. On destruction, it automatically closes the held socket. The
-	 * class socket doesn't perform this because of temp objects destructing
-	 * and closing valid sockets.
+	 * "unique_socket" provides an RAII interface to the socket class. On destruction, 
+	 * it automatically closes the held socket. The class socket doesn't perform 
+	 * this because of temp objects destructing and closing valid sockets.
 	 */
 	template<proto_t P>
 	class unique_socket {
 	public:
 		unique_socket(socket<P>&& s) : socket_(s) {}
 		
-		~unique_socket() { socket_.close(); }
+		~unique_socket() 
+		{ 
+			socket_.close(); 
+		}
 		
-		// returns information about the connection on the socket
-		inline address_t<P> sockaddr() const { return socket_.sockaddr(); }
+		inline address_t<P> sockaddr() const 
+		{ 
+			return socket_.sockaddr(); 
+		}
 		
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>

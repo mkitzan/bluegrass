@@ -15,8 +15,8 @@ void test(uint16_t n) {
 	vector<device_t> devices;
 	
 	hci& controller = hci::access();
-	controller.device_inquiry(8, devices);
-	bdaddr_t self { controller.local_address() }, ret;
+	controller.inquiry(8, devices);
+	bdaddr_t self { controller.self() }, ret;
 	
 	for (auto& dev : devices) {
 		cout << "\tCreating client\n" << flush;

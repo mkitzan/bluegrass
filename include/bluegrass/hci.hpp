@@ -19,55 +19,39 @@ namespace bluegrass {
 	};
 
 	/*
-	 * Class hci provides access to the physical host controller
-	 * interface on the hardware running the program. hci is a 
-	 * singleton which guarantees a program has one path to physical controller.
+	 * "hci" provides access to the physical host controller interface. "hci" is 
+	 * a singleton which guarantees a program has one path to the physical controller.
 	 */
 	class hci {
 	public:
-		/*
-		 * Description: hci singleton accessor function. Singleton
-		 * ensures only one socket connection exists to the physical HCI.
-		 */
+		// "hci" singleton accessor function
 		static hci& access() 
 		{
 			static hci hci;
 			return hci;
 		}
 		
-		// hci is movable and copyable
 		hci(const hci&) = default;
 		hci(hci&&) = default;
 		hci& operator=(const hci&) = default;
 		hci& operator=(hci&&) = default;
 		
 		/*
-		 * Function device_inquiry has two parameters:
-		 *	 size_t - maximum number of responses to return
-		 *	 std::vector<device>& - vector storing the devices discovered during the inquiry
-		 *
-		 * Description: device_inquiry makes a blocking call to the physical
-		 * HCI which performs an inquiry of nearby broadcasting Bluetooth devices.
-		 * A vector of Bluetooth device info is returned which will be <= max.
+		 * "inquiry" makes a blocking call to the physical HCI which performs an 
+		 * search of nearby broadcasting Bluetooth devices. A vector of Bluetooth 
+		 * device info is returned which will be <= size_t.
 		 */
-		void device_inquiry(size_t, std::vector<device_t>&);
+		void inquiry(size_t, std::vector<device_t>&);
 		
 		/*
-		 * Function device_name has one parameters:
-		 *	 dev - Bluetooth device info to translate
-		 *
-		 * Description: device_name makes blocking calls to the physical
-		 * HCI which perform queries of a nearby broadcasting Bluetooth devices
-		 * retrieving their human readable device name. If a Bluetooth device 
-		 * is unreachable "unknown" will be set for that device.
+		 * "name" makes a blocking call to the physical HCI which performs a query 
+		 * of a nearby Bluetooth devices retrieving its human readable device name. 
+		 * If a Bluetooth device is unreachable "unknown" will be returned.
 		 */
-		std::string device_name(const device_t& dev) const;
+		std::string name(const device_t& dev) const;
 		
-		/*
-		 * Description: local_address returns the Bluetooth device address of
-		 * the device running the program.
-		 */
-		inline bdaddr_t local_address() const 
+		// "self" returns the Bluetooth device address of the local device.
+		inline bdaddr_t self() const 
 		{
 			bdaddr_t self;
 			hci_devba(device_, &self);
@@ -76,21 +60,13 @@ namespace bluegrass {
 		}
 		
 		/*
-		 * Function device_name has one parameters:
-		 *	 device& - Bluetooth device to find RSSI for
-		 *
-		 * Description: device_rssi evaluates and returns the RSSI between the
-		 * device running the program and the device represented by the "dev"
-		 * argument. Programs utilizing device_rssi must be run as super user.
+		 * "rssi" evaluates and returns the RSSI between the device running the 
+		 * program and the device represented by the "dev" argument. 
+		 * Programs utilizing "rssi" must be run as super user.
 		 */
-		int8_t device_rssi(device_t&) const;
+		int8_t rssi(device_t&) const;
 	
 	private:
-		/*
-		 * Description: hci provides a simplified interface to the
-		 * Bluetooth host controller interface. The HCI provides the means to
-		 * search for nearby Bluetooth device addresses and device names.
-		 */
 		hci();
 
 		// Performs RAII socket closing

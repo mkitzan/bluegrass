@@ -16,7 +16,7 @@ int main() {
 	vector<device_t> devices;
 	vector<service_t> services;
 	
-	controller.device_inquiry(32, devices);
+	controller.inquiry(32, devices);
 
 	cout << "Remote devices and matching services:\n" << flush;
 	for(auto& dev : devices) {
