@@ -42,6 +42,7 @@ namespace bluegrass {
 		 * device info is returned which will be <= size_t.
 		 */
 		void inquiry(size_t, std::vector<device_t>&);
+		void inquiry(size_t, std::vector<bdaddr_t>&);
 		
 		/*
 		 * "name" makes a blocking call to the physical HCI which performs a query 

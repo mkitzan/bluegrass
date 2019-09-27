@@ -147,7 +147,8 @@ namespace bluegrass {
 	template<proto_t P>
 	class unique_socket {
 	public:
-		unique_socket(socket<P>&& s) : socket_(s) {}
+		unique_socket(bdaddr_t addr, uint16_t port) : socket_ {addr, port} {}
+		unique_socket(socket<P>&& s) : socket_ {s} {}
 		
 		~unique_socket() 
 		{ 

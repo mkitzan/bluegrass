@@ -37,6 +37,25 @@ namespace bluegrass {
 		::operator delete[](inquiries);
 	}
 
+	void hci::inquiry(size_t max, std::vector<bdaddr_t>& devices) 
+	{
+		std::unique_lock<std::mutex>(m_);
+		devices.clear();
+		
+		// allocate temp buffer for inquiry results before transferring to vector
+		inquiry_info* inquiries = static_cast<inquiry_info*>(
+		::operator new[](max * sizeof(inquiry_info)));
+
+		size_t resps = hci_inquiry(device_, 8, max, NULL, 
+		(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
+		
+		for (size_t i = 0; i < resps; ++i) {
+			devices.push_back({ (inquiries + i)->bdaddr });
+		}
+		
+		::operator delete[](inquiries);
+	}
+
 	std::string hci::name(const device_t& dev) const
 	{
 		std::unique_lock<std::mutex>(m_);

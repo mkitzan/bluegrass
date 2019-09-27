@@ -42,6 +42,14 @@ namespace bluegrass {
 	 * Prints a human readable Bluetooth device address_t 
 	 */
 	std::ostream& operator<<(std::ostream&, const bdaddr_t&);
+
+	inline bool operator==(bdaddr_t addr, bdaddr_t other) {
+		return (long long unsigned int) addr.b == (long long unsigned int) other.b;
+	}
+
+	inline bool operator!=(bdaddr_t addr, bdaddr_t other) {
+		return (long long unsigned int) addr.b != (long long unsigned int) other.b;
+	}
 	
 } // namespace bluegrass 
 
