@@ -5,7 +5,6 @@
 #include <map>
 #include <vector>
 
-
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/hci.hpp"
 #include "bluegrass/server.hpp"
@@ -38,14 +37,19 @@ namespace bluegrass {
 	class router {
 	public:
 		router(uint16_t meta_port, uint16_t router_port,
-			size_t queue_size=8, size_t thread_count=1, size_t max_peers=8) : 
+			size_t queue_size=8, size_t thread_count=2, size_t max_peers=8) : 
 			meta_port_ {meta_port}, router_port_ {router_port},
-			meta_server_ {meta_port, [this](socket<L2CAP>& conn){ meta_connection(conn); }, thread_count, queue_size}, 
-			router_server_ {router_port, [this](socket<L2CAP>& conn){ router_connection(conn); }, thread_count, queue_size}
+			meta_server_ {[this](socket<L2CAP>& conn){ meta_connection(conn); }, 
+				meta_port, thread_count, queue_size}, 
+			router_server_ {[this](socket<L2CAP>& conn){ router_connection(conn); }, 
+				router_port, thread_count, queue_size}
 		{
 			// find neighbors
 			hci& controller = hci::access();
 			self_ = controller.self();
+			#ifdef DEBUG
+			std::cout << self_ << "\tFinding neighbors\n";
+			#endif
 			controller.inquiry(max_peers, neighbors_);
 
 			// onboard to network / build best routes
@@ -54,7 +58,6 @@ namespace bluegrass {
 					#ifdef DEBUG
 					std::cout << self_ << "\tNeighbor detected " << addr << std::endl;
 					#endif
-
 					unique_socket<L2CAP> neighbor(*it, meta_port_);
 					packet_t<service_t> pkt {ONBOARD, 0, {0, self_, L2CAP, 0}};
 					neighbor.send(&pkt);
@@ -64,14 +67,14 @@ namespace bluegrass {
 						#ifdef DEBUG
 						std::cout << self_ << "\tReceived service " << pkt.service << " " << addr << std::endl;
 						#endif
-						auto svc = best_route_.find(pkt.service);
+						auto svc = routes_.find(pkt.service);
 
-						// determine if new service is an improvement of over current route
-						if (svc == best_route_.end() || svc->second.steps > pkt.payload.steps) {
+						// determine if new service is an improvement over current route
+						if (!available(svc) || svc->second.steps > pkt.payload.steps) {
 							#ifdef DEBUG
 							std::cout << self_ << "\tUpdating service " << pkt.service << " " << addr << std::endl;
 							#endif
-							best_route_.insert_or_assign(pkt.service, pkt.payload);
+							routes_.insert_or_assign(pkt.service, pkt.payload);
 						}
 					}
 				} catch (std::runtime_error& e) {
@@ -90,41 +93,40 @@ namespace bluegrass {
 		
 		~router() 
 		{
-			for (auto it = best_route_.begin(); it != best_route_.end(); ++it) {
+			for (auto it = routes_.begin(); it != routes_.end(); ++it) {
 				// if service directly offered
-				if(!it->second.steps) {
-
-					// START : turn into function for use with ~router() and suspend()
-					#ifdef DEBUG
-					std::cout << self_ << "\tSuspending service " << it->first << std::endl;
-					#endif
-					for(auto addr : neighbors_) {
-						// suspend services directly offered
-						try {
-							unique_socket<L2CAP> neighbor(addr, meta_port_);
-							packet_t<service_t> pkt {SUSPEND, it->first, it->second};
-							neighbor.send(&pkt);
-						} catch (std::runtime_error& e) {
-							#ifdef DEBUG
-							std::cout << self_ << "\tLost neighbor detected in destructor " << addr << std::endl;
-							#endif
-						}
-					}
-					// END
-				
+				if (!it->second.steps) {
+					drop_service(it->first, it->second);
 				}
 			}
 		}
 
 		void refresh(); // TODO: refresh router best routes (list draft implementation will likely block asyncio in future?)
 
-		void publish(); // TODO: notify network of new service
+		void publish(uint8_t service, proto_t proto, uint16_t port) 
+		{
+			if (!available(service)) {
+				packet_t<service_t> pkt {0, service, {0, self_, proto, port}};
+				routes_.insert({pkt.service, pkt.payload});
+				advertise_service(&pkt, self_);
+			}
+		}
 
-		void suspend(); // TODO: notify network of dropped service
+		void suspend(uint8_t service) 
+		{
+			auto svc = routes_.find(service);
+			if (available(svc)) {
+				drop_service(service, svc->second);
+				routes_.erase(svc);
+			}
+		}
 
-		bool available(); // TODO: check if service available on network
+		inline bool available(uint8_t service) 
+		{
+			return routes_.find(service) != routes_.end();
+		}
 
-		void utilize(); // TODO: utilize a remote service, what if service requires arguments for use?
+		void utilize(); // TODO: utilize a remote service
 
 	private:
 		enum meta_t {
@@ -135,7 +137,7 @@ namespace bluegrass {
 		
 		template<typename T>
 		struct packet_t {
-			uint8_t steps; // meta data for routers to determine best routes
+			uint8_t utility; // meta data for routers
 			uint8_t service; // service ID for routing
 			T payload; // user data 
 		};
@@ -151,17 +153,61 @@ namespace bluegrass {
 			uint16_t port;
 		};
 
+		inline bool available(std::map<uint8_t, service_t>::const_iterator svc) 
+		{
+			return svc != routes_.end();
+		}
+
+		void drop_service(uint8_t service, service_t info)
+		{
+			#ifdef DEBUG
+			std::cout << self_ << "\tDropping directly offered service " << service << std::endl;
+			#endif
+			for (auto addr : neighbors_) {
+				try {
+					unique_socket<L2CAP> neighbor(addr, meta_port_);
+					packet_t<service_t> pkt {SUSPEND, service, info};
+					neighbor.send(&pkt);
+				} catch (std::runtime_error& e) {
+					#ifdef DEBUG
+					std::cout << self_ << "\tLost neighbor detected " << addr << std::endl;
+					#endif
+				}
+			}
+		}
+
+		void advertise_service(packet_t<service_t> *pkt, bdaddr_t ignore) 
+		{
+			#ifdef DEBUG
+			std::cout << self_ << "\tAdvertising service to neighbors\n";
+			#endif
+			// forward packet which caused route change
+			for (auto addr : neighbors_) {
+				try {
+					if (addr != ignore) {
+						unique_socket<L2CAP> neighbor(addr, meta_port_);
+						neighbor.send(pkt);
+					}
+				} catch (std::runtime_error& e) {
+					#ifdef DEBUG
+					std::cout << self_ << "\tLost neighbor detected " << addr << std::endl;
+					#endif
+				}
+			}
+		}
+
 		bool handle_new(packet_t<service_t>& pkt, bdaddr_t& ignore) 
 		{
 			bool route_change {false};
-			auto svc = best_route_.find(pkt.service);
+			auto svc = routes_.find(pkt.service);
 
-			// determine if new service is an improvement of over current route
-			if (svc == best_route_.end() || svc->second.steps > pkt.payload.steps) {
+			// determine if new service is an improvement over current route
+			if (!available(svc) || svc->second.steps > pkt.payload.steps) {
 				#ifdef DEBUG
 				std::cout << self_ << "\tNew service is best route\n";
+				std::cout << self_ << '\t' << pkt.payload.steps << '\t' << pkt.payload.addr << '\t' << pkt.payload.proto << '\t' << pkt.payload.port << std::endl;
 				#endif
-				best_route_.insert_or_assign(pkt.service, pkt.payload);
+				routes_.insert_or_assign(pkt.service, pkt.payload);
 				ignore = pkt.payload.addr;
 
 				// set packet info to point to self
@@ -179,14 +225,14 @@ namespace bluegrass {
 		bool handle_drop(packet_t<service_t>& pkt, bdaddr_t& ignore)
 		{
 			bool route_change {false};
-			auto svc = best_route_.find(pkt.service);
+			auto svc = routes_.find(pkt.service);
 
-			if (svc != best_route_.end()) {
-				if(svc->second.steps) {
+			if (available(svc)) {
+				if (svc->second.steps) {
 					#ifdef DEBUG
 					std::cout << self_ << "\tService is dropped\n";
 					#endif
-					best_route_.erase(svc);
+					routes_.erase(svc);
 					ignore = pkt.payload.addr;
 					pkt.payload.addr = self_;
 				} else {
@@ -207,13 +253,17 @@ namespace bluegrass {
 			return route_change;
 		}
 
-		void handle_onboard(socket<L2CAP>& conn) {
+		void handle_onboard(packet_t<service_t>& pkt, socket<L2CAP>& conn) 
+		{
+			neighbors_.push_back(pkt.payload.addr);
+
 			// send packets to new router containing service info
-			for(auto it = best_route_.begin(); it != best_route_.end(); ++it) {
+			for (auto it = routes_.begin(); it != routes_.end(); ++it) {
 				#ifdef DEBUG
 				std::cout << self_ << "\tForwarding service " << it->first << " to new neighbor device\n";
 				#endif
-				packet_t<service_t> pkt {1, it->first, it->second};
+				pkt = {0, it->first, it->second};
+				++pkt.payload.steps;
 				conn.send(&pkt);
 			}
 		}
@@ -230,42 +280,27 @@ namespace bluegrass {
 			#endif
 
 			// packet level steps co-opted to be indicator variable
-			if (pkt.steps == PUBLISH) {
+			if (pkt.utility == PUBLISH) {
 				#ifdef DEBUG
 				std::cout << " PUBLISH service " << pkt.service << std::endl;
 				#endif
 				route_change = handle_new(pkt, ignore);
-			} else if (pkt.steps == SUSPEND) {
+			} else if (pkt.utility == SUSPEND) {
 				#ifdef DEBUG
 				std::cout << " SUSPEND service " << pkt.service << std::endl;
 				#endif
 				route_change = handle_drop(pkt, ignore);
-			} else if (pkt.steps == ONBOARD) {
+			} else if (pkt.utility == ONBOARD) {
 				#ifdef DEBUG
 				std::cout << " ONBOARD service " << pkt.service << std::endl;
 				#endif
-				handle_onboard(conn);
+				handle_onboard(pkt, conn);
 			}
 
 			conn.close();
 
-			if(route_change) {
-				#ifdef DEBUG
-				std::cout << self_ << "\tForwarding packet to neighbors\n";
-				#endif
-				// forward packet which caused route change
-				for (auto addr : neighbors_) {
-					try {
-						if (addr != ignore) {
-							unique_socket<L2CAP> neighbor(addr, meta_port_);
-							neighbor.send(&pkt);
-						}
-					} catch (std::runtime_error& e) {
-						#ifdef DEBUG
-						std::cout << self_ << "\tLost neighbor detected in meta_connection " << addr << std::endl;
-						#endif
-					}
-				}
+			if (route_change) {
+				advertise_service(&pkt, ignore);
 			}
 		}
 
@@ -277,7 +312,7 @@ namespace bluegrass {
 			// struct service_t svc;
 			
 			// recv.receive(&pkt);
-			// svc = best_route_.
+			// svc = routes_.
 			// update route table
 			// find forward
 			// forward.send(&pkt);
@@ -287,7 +322,7 @@ namespace bluegrass {
 
 		// lookup structure to quickly forward packets
 		// stores "best" known device to forward service specific packets 
-		std::map<uint8_t, struct service_t> best_route_;
+		std::map<uint8_t, service_t> routes_;
 		std::vector<bdaddr_t> neighbors_;
 		size_t meta_port_, router_port_;
 		bdaddr_t self_;

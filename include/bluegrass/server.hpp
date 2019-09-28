@@ -26,7 +26,7 @@ namespace bluegrass {
 	template <proto_t P>
 	class server {		
 	public:
-		server(uint16_t port, std::function<void(socket<P>&)> routine, 
+		server(std::function<void(socket<P>&)> routine, uint16_t port, 
 			size_t thread_count=1, size_t queue_size=8) :
 			svc_queue_ {routine, thread_count, queue_size}
 		{

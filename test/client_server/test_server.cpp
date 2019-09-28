@@ -37,7 +37,7 @@ template<proto_t P>
 void test(uint16_t n) {
 	cout << "\tCreating server\n" << flush;
 	try {
-		server<P> s(n, serve<P>);
+		server<P> s(serve<P>, n);
 		while (WAIT);
 		WAIT = true;
 	} catch (...) {
