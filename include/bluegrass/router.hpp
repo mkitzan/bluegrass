@@ -56,7 +56,7 @@ namespace bluegrass {
 			for (auto it = neighbors_.begin(); it != neighbors_.end(); ++it) {
 				try {
 					#ifdef DEBUG
-					std::cout << self_ << "\tNeighbor detected " << addr << std::endl;
+					std::cout << self_ << "\tNeighbor detected " << *it << std::endl;
 					#endif
 					unique_socket<L2CAP> neighbor(*it, meta_port_);
 					packet_t<service_t> pkt {ONBOARD, 0, {0, self_, L2CAP, 0}};
@@ -65,21 +65,21 @@ namespace bluegrass {
 					// receive all the services held by the neighbor
 					while (neighbor.receive(&pkt)) {
 						#ifdef DEBUG
-						std::cout << self_ << "\tReceived service " << pkt.service << " " << addr << std::endl;
+						std::cout << self_ << "\tReceived service " << pkt.service << " " << *it << std::endl;
 						#endif
 						auto svc = routes_.find(pkt.service);
 
 						// determine if new service is an improvement over current route
 						if (!available(svc) || svc->second.steps > pkt.payload.steps) {
 							#ifdef DEBUG
-							std::cout << self_ << "\tUpdating service " << pkt.service << " " << addr << std::endl;
+							std::cout << self_ << "\tUpdating service " << pkt.service << " " << *it << std::endl;
 							#endif
 							routes_.insert_or_assign(pkt.service, pkt.payload);
 						}
 					}
 				} catch (std::runtime_error& e) {
 					#ifdef DEBUG
-					std::cout << self_ << "\tInvalid neighbor detected " << addr << std::endl;
+					std::cout << self_ << "\tInvalid neighbor detected " << *it << std::endl;
 					#endif
 					it = neighbors_.erase(it);
 				}
@@ -230,7 +230,7 @@ namespace bluegrass {
 			if (available(svc)) {
 				if (svc->second.steps) {
 					#ifdef DEBUG
-					std::cout << self_ << "\tService is dropped\n";
+					std::cout << self_ << "\tService is dropped " << pkt.service << std::endl;
 					#endif
 					routes_.erase(svc);
 					ignore = pkt.payload.addr;
