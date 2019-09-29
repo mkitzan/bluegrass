@@ -52,27 +52,31 @@ namespace bluegrass {
 			#endif
 			controller.inquiry(max_peers, neighbors_);
 
+			#ifdef DEBUG
+			std::cout << self_ << "\tFound " << neighbors_.size() << " neighbors\n";
+			#endif
+
 			// onboard to network / build best routes
-			for (auto it = neighbors_.begin(); it != neighbors_.end(); ++it) {
+			for (auto it = neighbors_.begin(); it != neighbors_.end();) {
 				try {
 					#ifdef DEBUG
 					std::cout << self_ << "\tNeighbor detected " << *it << std::endl;
 					#endif
-					unique_socket<L2CAP> neighbor(*it, meta_port_);
+					unique_socket<L2CAP> neighbor(*it++, meta_port_);
 					packet_t<service_t> pkt {ONBOARD, 0, {0, self_, L2CAP, 0}};
 					neighbor.send(&pkt);
 
 					// receive all the services held by the neighbor
-					while (neighbor.receive(&pkt)) {
+					while (neighbor.receive(&pkt) && pkt.utility == ONBOARD) {
 						#ifdef DEBUG
-						std::cout << self_ << "\tReceived service " << pkt.service << " " << *it << std::endl;
+						std::cout << self_ << "\tReceived service " << (int) pkt.service << " " << *it << std::endl;
 						#endif
 						auto svc = routes_.find(pkt.service);
 
 						// determine if new service is an improvement over current route
 						if (!available(svc) || svc->second.steps > pkt.payload.steps) {
 							#ifdef DEBUG
-							std::cout << self_ << "\tUpdating service " << pkt.service << " " << *it << std::endl;
+							std::cout << self_ << "\tUpdating service " << (int) pkt.service << " " << *it << std::endl;
 							#endif
 							routes_.insert_or_assign(pkt.service, pkt.payload);
 						}
@@ -161,7 +165,7 @@ namespace bluegrass {
 		void drop_service(uint8_t service, service_t info)
 		{
 			#ifdef DEBUG
-			std::cout << self_ << "\tDropping directly offered service " << service << std::endl;
+			std::cout << self_ << "\tDropping directly offered service " << (int) service << std::endl;
 			#endif
 			for (auto addr : neighbors_) {
 				try {
@@ -176,7 +180,7 @@ namespace bluegrass {
 			}
 		}
 
-		void advertise_service(packet_t<service_t> *pkt, bdaddr_t ignore) 
+		void advertise_service(packet_t<service_t>* pkt, bdaddr_t ignore) 
 		{
 			#ifdef DEBUG
 			std::cout << self_ << "\tAdvertising service to neighbors\n";
@@ -205,7 +209,7 @@ namespace bluegrass {
 			if (!available(svc) || svc->second.steps > pkt.payload.steps) {
 				#ifdef DEBUG
 				std::cout << self_ << "\tNew service is best route\n";
-				std::cout << self_ << '\t' << pkt.payload.steps << '\t' << pkt.payload.addr << '\t' << pkt.payload.proto << '\t' << pkt.payload.port << std::endl;
+				std::cout << self_ << '\t' << (int) pkt.payload.steps << '\t' << pkt.payload.addr << '\t' << (int) pkt.payload.proto << '\t' << (int) pkt.payload.port << std::endl;
 				#endif
 				routes_.insert_or_assign(pkt.service, pkt.payload);
 				ignore = pkt.payload.addr;
@@ -230,7 +234,7 @@ namespace bluegrass {
 			if (available(svc)) {
 				if (svc->second.steps) {
 					#ifdef DEBUG
-					std::cout << self_ << "\tService is dropped " << pkt.service << std::endl;
+					std::cout << self_ << "\tService is dropped " << (int) pkt.service << std::endl;
 					#endif
 					routes_.erase(svc);
 					ignore = pkt.payload.addr;
@@ -260,12 +264,15 @@ namespace bluegrass {
 			// send packets to new router containing service info
 			for (auto it = routes_.begin(); it != routes_.end(); ++it) {
 				#ifdef DEBUG
-				std::cout << self_ << "\tForwarding service " << it->first << " to new neighbor device\n";
+				std::cout << self_ << "\tForwarding service " << (int) it->first << " to new neighbor device\n";
 				#endif
-				pkt = {0, it->first, it->second};
+				pkt = {ONBOARD, it->first, it->second};
 				++pkt.payload.steps;
 				conn.send(&pkt);
 			}
+
+			pkt = {SUSPEND, 0, 0};
+			conn.send(&pkt);
 		}
 
 		void meta_connection(socket<L2CAP>& conn)
@@ -282,17 +289,17 @@ namespace bluegrass {
 			// packet level steps co-opted to be indicator variable
 			if (pkt.utility == PUBLISH) {
 				#ifdef DEBUG
-				std::cout << " PUBLISH service " << pkt.service << std::endl;
+				std::cout << " publish service " << (int) pkt.service << std::endl;
 				#endif
 				route_change = handle_new(pkt, ignore);
 			} else if (pkt.utility == SUSPEND) {
 				#ifdef DEBUG
-				std::cout << " SUSPEND service " << pkt.service << std::endl;
+				std::cout << " suspend service " << (int) pkt.service << std::endl;
 				#endif
 				route_change = handle_drop(pkt, ignore);
 			} else if (pkt.utility == ONBOARD) {
 				#ifdef DEBUG
-				std::cout << " ONBOARD service " << pkt.service << std::endl;
+				std::cout << " onboard service " << (int) pkt.service << std::endl;
 				#endif
 				handle_onboard(pkt, conn);
 			}
