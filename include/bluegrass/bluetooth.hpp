@@ -53,6 +53,13 @@ namespace bluegrass {
 		return !(addr == other);
 	}
 	
+	struct addrcmp_t {
+		inline bool operator()(const bdaddr_t& addr, const bdaddr_t& other) const
+		{
+			return (long long unsigned int) addr.b < (long long unsigned int) other.b;
+		}
+	};
+
 } // namespace bluegrass 
 
 #endif

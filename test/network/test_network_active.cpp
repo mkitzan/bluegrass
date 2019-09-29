@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "bluegrass/bluetooth.hpp"
-#include "bluegrass/router.hpp"
+#include "bluegrass/network.hpp"
 #include "bluegrass/server.hpp"
 
 using namespace std;
@@ -9,8 +9,8 @@ using namespace bluegrass;
 
 int main() {
 	#ifndef DEBUG
-	cout << "Constructing router\n";
-	router network {0x1001, 0x1003};
+	cout << "Constructing network\n";
+	network network {0x1001};
 	int service {};
 
 	for (;;) {
@@ -28,9 +28,9 @@ int main() {
 		}
 		cin.clear();
 	}
-	cout << "Destructing router\n";
+	cout << "Destructing network\n";
 	#else
-	std::cout << "DEBUG must not be defined to run the router test\n\tRun: \"cmake ../bluegrass\"\n";
+	std::cout << "DEBUG must not be defined to run the active network test\n\tRun: \"cmake ../bluegrass\"\n";
 	#endif
 
 	return 0;

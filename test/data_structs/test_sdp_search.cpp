@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 #include <vector>
 
 #include "bluegrass/bluetooth.hpp"
@@ -13,7 +14,7 @@ int main() {
 	hci& controller = hci::access();
 	service_t svc {0xCF, L2CAP, 0x1001};
 	// containers for controller return data
-	vector<device_t> devices;
+	set<device_t> devices;
 	vector<service_t> services;
 	
 	controller.inquiry(32, devices);

@@ -2,6 +2,11 @@
 
 namespace bluegrass {
 
+	inline bool operator<(const device_t& dev, const device_t& other)
+	{
+		return (long long unsigned int) dev.addr.b < (long long unsigned int) other.addr.b;
+	}
+
 	hci::hci() 
 	{
 		device_ = hci_get_route(NULL);
@@ -18,12 +23,12 @@ namespace bluegrass {
 		c_close(socket_); 
 	}
 
-	void hci::inquiry(size_t max, std::vector<device_t>& devices) 
+	void hci::inquiry(size_t max, std::set<device_t>& devices) 
 	{
 		std::unique_lock<std::mutex>(m_);
 		devices.clear();
 		
-		// allocate temp buffer for inquiry results before transferring to vector
+		// allocate temp buffer for inquiry results before transferring to set
 		inquiry_info* inquiries = static_cast<inquiry_info*>(
 		::operator new[](max * sizeof(inquiry_info)));
 
@@ -31,18 +36,18 @@ namespace bluegrass {
 		(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 		
 		for (size_t i = 0; i < resps; ++i) {
-			devices.push_back({ (inquiries + i)->bdaddr, (inquiries + i)->clock_offset });
+			devices.insert({ (inquiries + i)->bdaddr, (inquiries + i)->clock_offset });
 		}
 		
 		::operator delete[](inquiries);
 	}
 
-	void hci::inquiry(size_t max, std::vector<bdaddr_t>& devices) 
+	void hci::inquiry(size_t max, std::set<bdaddr_t, addrcmp_t>& devices) 
 	{
 		std::unique_lock<std::mutex>(m_);
 		devices.clear();
 		
-		// allocate temp buffer for inquiry results before transferring to vector
+		// allocate temp buffer for inquiry results before transferring to set
 		inquiry_info* inquiries = static_cast<inquiry_info*>(
 		::operator new[](max * sizeof(inquiry_info)));
 
@@ -50,7 +55,7 @@ namespace bluegrass {
 		(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 		
 		for (size_t i = 0; i < resps; ++i) {
-			devices.push_back({ (inquiries + i)->bdaddr });
+			devices.insert({ (inquiries + i)->bdaddr });
 		}
 		
 		::operator delete[](inquiries);

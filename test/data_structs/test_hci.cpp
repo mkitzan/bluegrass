@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <set>
 #include <string>
 
 #include "bluegrass/bluetooth.hpp"
@@ -9,7 +9,7 @@ using namespace std;
 using namespace bluegrass;
 
 int main() {
-	vector<device_t> devices;
+	set<device_t> devices;
 	// access HCI singleton connection
 	hci& controller = hci::access();
 	
@@ -18,7 +18,7 @@ int main() {
 	controller.inquiry(32, devices);
 	
 	// print all the data hci can determine about peer device
-	for (auto& dev : devices) {
+	for (auto dev : devices) {
 		cout << '\t' << dev.addr << '\t' << dev.offset << '\t' << controller.name(dev) 
 		<< '\t' << (int) controller.rssi(dev) << endl;
 	}

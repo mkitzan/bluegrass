@@ -2,7 +2,7 @@
 #define __BLUEGRASS_HCI__
 
 #include <mutex>
-#include <vector>
+#include <set>
 #include <string>
 
 #include "bluegrass/bluetooth.hpp"
@@ -41,8 +41,8 @@ namespace bluegrass {
 		 * search of nearby broadcasting Bluetooth devices. A vector of Bluetooth 
 		 * device info is returned which will be <= size_t.
 		 */
-		void inquiry(size_t, std::vector<device_t>&);
-		void inquiry(size_t, std::vector<bdaddr_t>&);
+		void inquiry(size_t, std::set<device_t>&);
+		void inquiry(size_t, std::set<bdaddr_t, addrcmp_t>&);
 		
 		/*
 		 * "name" makes a blocking call to the physical HCI which performs a query 

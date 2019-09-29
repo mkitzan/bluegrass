@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <set>
 #include <cassert>
 #include <mutex>
 
@@ -12,7 +12,7 @@ using namespace bluegrass;
 
 template<proto_t P>
 void test(uint16_t n) {
-	vector<device_t> devices;
+	set<device_t> devices;
 	
 	hci& controller = hci::access();
 	controller.inquiry(8, devices);

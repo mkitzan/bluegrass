@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
+#include <set>
 
 #include "file_transfer.hpp"
 
@@ -11,7 +11,7 @@ using namespace std;
 using namespace bluegrass;
 
 int main() {
-	vector<device_t> devices;
+	set<device_t> devices;
 	struct packet_t packet {0, 0};
 	
 	// find addresses of all nearby discoverable Bluetooth devices
