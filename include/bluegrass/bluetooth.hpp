@@ -43,11 +43,9 @@ namespace bluegrass {
 	 */
 	std::ostream& operator<<(std::ostream&, const bdaddr_t&);
 
-	constexpr long long unsigned int MASK = 0xFFFFFFFFFFFF0000; 
-
 	inline bool operator==(const bdaddr_t addr, const bdaddr_t other)
 	{
-		return ((long long unsigned int) addr.b & MASK) == ((long long unsigned int) other.b & MASK);
+		return bacmp(&addr, &other) == 0;
 	}
 
 	inline bool operator!=(const bdaddr_t addr, const bdaddr_t other)
@@ -58,7 +56,7 @@ namespace bluegrass {
 	struct addrcmp_t {
 		inline bool operator()(const bdaddr_t& addr, const bdaddr_t& other) const
 		{
-			return ((long long unsigned int) addr.b & MASK) < ((long long unsigned int) other.b & MASK);
+			return bacmp(&addr, &other) < 0;
 		}
 	};
 

@@ -68,7 +68,7 @@ namespace bluegrass {
 			netpkt_t pkt {PUBLISH, service, {0, self_, proto, port}};
 			routes_.insert({pkt.service, pkt.payload});
 			++pkt.payload.steps;
-			advertise(&pkt, self_);
+			advertise(&pkt, ANY);
 		}
 	}
 
@@ -213,6 +213,7 @@ namespace bluegrass {
 		} else if (pkt.utility == ONBOARD) {
 			#ifdef DEBUG
 			std::cout << self_ << "\tNew connection from " << pkt.payload.addr << " onboard service\n";
+			std::cout << self_ << "\tNeighbor count " << neighbors_.size() << std::endl;
 			#endif
 			neighbors_.insert(pkt.payload.addr);
 			handle_onboard(pkt, conn);
