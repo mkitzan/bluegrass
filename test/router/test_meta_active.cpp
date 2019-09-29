@@ -13,18 +13,20 @@ int main() {
 	router network {0x1001, 0x1003};
 	int service {};
 
-	while (cin) {
+	for (;;) {
 		cout << "Enter a service ID to publish: ";
 		if (cin >> service) {
 			// publish dummy service to evaluate functionality
 			network.publish(service, L2CAP, 0);
 		}
+		cin.clear();
 		
 		cout << "Enter a service ID to suspend: ";
 		if (cin >> service) {
 			// suspend dummy service to evaluate functionality
 			network.suspend(service);
 		}
+		cin.clear();
 	}
 	cout << "Destructing router\n";
 	#else

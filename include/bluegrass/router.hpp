@@ -113,6 +113,7 @@ namespace bluegrass {
 			if (!available(service)) {
 				packet_t<service_t> pkt {PUBLISH, service, {0, self_, proto, port}};
 				routes_.insert({pkt.service, pkt.payload});
+				++pkt.payload.steps;
 				advertise_service(&pkt, self_);
 			}
 		}
@@ -209,8 +210,7 @@ namespace bluegrass {
 			// determine if new service is an improvement over current route
 			if (!available(svc) || svc->second.steps > pkt.payload.steps) {
 				#ifdef DEBUG
-				std::cout << self_ << "\tNew service is best route\n";
-				std::cout << self_ << '\t' << (int) pkt.payload.steps << '\t' << pkt.payload.addr << '\t' << (int) pkt.payload.proto << '\t' << (int) pkt.payload.port << std::endl;
+				std::cout << self_ << "\tNew service is best route " << (int) pkt.payload.steps << '\t' << pkt.payload.addr << '\t' << (int) pkt.payload.proto << '\t' << (int) pkt.payload.port << std::endl;
 				#endif
 				routes_.insert_or_assign(pkt.service, pkt.payload);
 				ignore = pkt.payload.addr;
@@ -293,24 +293,21 @@ namespace bluegrass {
 			bool route_change {false};
 
 			conn.receive(&pkt);
-			#ifdef DEBUG
-			std::cout << self_ << "\tNew connection from " << pkt.payload.addr;
-			#endif
 
 			// packet level steps co-opted to be indicator variable
 			if (pkt.utility == PUBLISH) {
 				#ifdef DEBUG
-				std::cout << " publish service " << (int) pkt.service << std::endl;
+				std::cout << self_ << "\tNew connection from " << pkt.payload.addr << " publish service " << (int) pkt.service << std::endl;
 				#endif
 				route_change = handle_new(pkt, ignore);
 			} else if (pkt.utility == SUSPEND) {
 				#ifdef DEBUG
-				std::cout << " suspend service " << (int) pkt.service << std::endl;
+				std::cout << self_ << "\tNew connection from " << pkt.payload.addr << " suspend service " << (int) pkt.service << std::endl;
 				#endif
 				route_change = handle_drop(pkt, ignore);
 			} else if (pkt.utility == ONBOARD) {
 				#ifdef DEBUG
-				std::cout << " onboard service";
+				std::cout << self_ << "\tNew connection from " << pkt.payload.addr << " onboard service\n";
 				#endif
 				handle_onboard(pkt, conn);
 			}
