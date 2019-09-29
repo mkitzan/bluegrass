@@ -62,7 +62,8 @@ namespace bluegrass {
 					#ifdef DEBUG
 					std::cout << self_ << "\tNeighbor detected " << *it << std::endl;
 					#endif
-					unique_socket<L2CAP> neighbor(*it++, meta_port_);
+					unique_socket<L2CAP> neighbor(*it, meta_port_);
+					++it;
 					packet_t<service_t> pkt {ONBOARD, 0, {0, self_, L2CAP, 0}};
 					neighbor.send(&pkt);
 
@@ -110,7 +111,7 @@ namespace bluegrass {
 		void publish(uint8_t service, proto_t proto, uint16_t port) 
 		{
 			if (!available(service)) {
-				packet_t<service_t> pkt {0, service, {0, self_, proto, port}};
+				packet_t<service_t> pkt {PUBLISH, service, {0, self_, proto, port}};
 				routes_.insert({pkt.service, pkt.payload});
 				advertise_service(&pkt, self_);
 			}
@@ -258,8 +259,18 @@ namespace bluegrass {
 		}
 
 		void handle_onboard(packet_t<service_t>& pkt, socket<L2CAP>& conn) 
-		{
-			neighbors_.push_back(pkt.payload.addr);
+		{ 
+			// TODO: change neighbors_ to std::set<bdaddr_t>. this is temporary.
+			bool exist {false};
+			for (auto addr : neighbors_) {
+				if (addr == pkt.payload.addr) {
+					exist = true;
+					break;
+				}
+			}
+			if(!exist) {
+				neighbors_.push_back(pkt.payload.addr);
+			}
 
 			// send packets to new router containing service info
 			for (auto it = routes_.begin(); it != routes_.end(); ++it) {
@@ -299,7 +310,7 @@ namespace bluegrass {
 				route_change = handle_drop(pkt, ignore);
 			} else if (pkt.utility == ONBOARD) {
 				#ifdef DEBUG
-				std::cout << " onboard service " << (int) pkt.service << std::endl;
+				std::cout << " onboard service";
 				#endif
 				handle_onboard(pkt, conn);
 			}
