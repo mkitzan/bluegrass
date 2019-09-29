@@ -107,6 +107,9 @@ namespace bluegrass {
 		// forward packet which caused route change
 		for (auto addr : neighbors_) {
 			try {
+				#ifdef DEBUG
+				std::cout << self_ << '\t' << ignore << '\t' << addr << '\t' << (addr != ignore) <<std::endl;
+				#endif
 				if (addr != ignore) {
 					unique_socket<L2CAP> neighbor(addr, port_);
 					neighbor.send(pkt);
