@@ -9,26 +9,6 @@
 #include "bluegrass/hci.hpp"
 #include "bluegrass/server.hpp"
 
-// GOAL: basic router requirements 
-//		should support the creation of Bluetooth idiomatic and user defined router architectures
-//		should adapt to changing router topology [no assumption of static device postions]
-
-// DONE: transmission architecture
-//		transmission degenerates to anycasts on service
-//		no explicit destination Bluetooth address
-//		transmission can harness router effect by only having context of its neighbors
-//		route request to service provider, any provider of specified service
-//		for a service request, a router knows which of its neighbors is best to forward a request to
-//		router doesn't need to store context of entire router
-//		router does need to store information for each service provided on router
-//		router packets have one extra data member to support determining best routes
-//		service oriented router better encapsulates router functionality compared to device addresses
-//		router user cares about utilizing a service not device addresses
-//		looser coupling, service provider may change not the service itself
-//		routing routers can be layered to encapsulate multi device services
-
-// TODO: is each packet dynamically routed or is each service dynamically routed?
-
 namespace bluegrass {
 
 	struct header_t {
@@ -63,14 +43,14 @@ namespace bluegrass {
 
 		void suspend(uint8_t);
 
-		bool utilize(uint8_t);
+		bool trigger(uint8_t);
 
 	private:
 		enum utility_t {
 			PUBLISH=11,
 			SUSPEND=13,
 			ONBOARD=17,
-			UTILIZE=19,
+			TRIGGER=19,
 		};
 		
 		struct service_t {
@@ -81,6 +61,7 @@ namespace bluegrass {
 		};
 
 		static constexpr uint8_t SVC_LEN = static_cast<uint8_t>(sizeof(service_t)); 
+		
 		using network_t = packet_t<service_t>;
 
 		inline bool available(std::map<uint8_t, service_t>::const_iterator svc) const
@@ -96,14 +77,14 @@ namespace bluegrass {
 
 		void handle_onboard(const socket<L2CAP>&, header_t);
 
-		void handle_utilize(const socket<L2CAP>&, header_t);
+		void handle_trigger(const socket<L2CAP>&, header_t);
 
 		void connection(socket<L2CAP>&);
 
 		server<L2CAP> server_;
 		std::map<uint8_t, service_t> routes_;
 		std::set<bdaddr_t, addrcmp_t> neighbors_;
-		service_t self_;
+		const service_t self_;
 	};
 
 } // namespace bluegrass 

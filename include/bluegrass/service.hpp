@@ -91,7 +91,7 @@ namespace bluegrass {
 		~service() 
 		{
 			shutdown();
-			for (std::thread &t : threads_) {
+			for (auto& t : threads_) {
 				if (t.joinable()) { 
 					t.join(); 
 				}
@@ -225,7 +225,7 @@ namespace bluegrass {
 		mutable std::mutex m_;
 		std::queue<T> queue_;
 		std::vector<std::thread> threads_;
-		std::size_t max_;
+		const std::size_t max_;
 		bool open_ {true};
 	};
 

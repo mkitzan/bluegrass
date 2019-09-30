@@ -8,18 +8,6 @@
 namespace bluegrass {
 	
 	/*
-	 * Struct template has one template parameter
-	 *	 P - the Bluetooth socket protocol 
-	 * 
-	 * "address_t" wraps a socket address and int storing the length of the address.
-	 */
-	template <proto_t P>
-	struct address_t {
-		typename std::conditional_t<P == L2CAP, sockaddr_l2, sockaddr_rc> addr;
-		socklen_t len;
-	};
-	
-	/*
 	 * Class template socket has one template parameter
 	 *	 P - the Bluetooth socket protocol
 	 *
@@ -30,6 +18,8 @@ namespace bluegrass {
 		// friend class server to spawn sockets from accept calls
 		template <proto_t> friend class server;
 		
+		using address_t = typename std::conditional_t<P == L2CAP, sockaddr_l2, sockaddr_rc>;
+		
 	public:
 		// default constructor does not create kernel level socket
 		socket() {}
@@ -37,9 +27,8 @@ namespace bluegrass {
 		// creates a kernel level socket to provided address and port
 		socket(bdaddr_t addr, uint16_t port) 
 		{
-			setup(addr, port);
-			if (handle_ == -1 || c_connect(handle_, 
-			(const struct sockaddr*) &(addr_.addr), sizeof(addr_.addr)) == -1) {
+			auto peer {setup(addr, port)};
+			if (handle_ == -1 || c_connect(handle_, (const struct sockaddr*) &peer, sizeof(peer)) == -1) {
 				c_close(handle_);
 				throw std::runtime_error("Failed creating client_socket");
 			}
@@ -51,12 +40,6 @@ namespace bluegrass {
 			if (handle_ != -1) {
 				c_close(handle_);
 			}
-		}
-		
-		// returns information about the connection on the socket
-		address_t<P> sockaddr() const 
-		{ 
-			return addr_; 
 		}
 		
 		// receives data from the socket into data reference. 
@@ -107,27 +90,30 @@ namespace bluegrass {
 		// creates an L2CAP socket and configures the socket address struct.
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == L2CAP, bool> = true>
-		inline void setup(bdaddr_t addr, uint16_t port) 
+		inline address_t setup(bdaddr_t addr, uint16_t port) 
 		{
+			address_t peer;
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
-			addr_.addr.l2_family = AF_BLUETOOTH;
-			addr_.addr.l2_psm = htobs(port);			
-			bacpy(&addr_.addr.l2_bdaddr, &addr);
+			peer.l2_family = AF_BLUETOOTH;
+			peer.l2_psm = htobs(port);			
+			bacpy(&peer.l2_bdaddr, &addr);
+			return peer;
 		}
 		
 		// creates an RFCOMM socket and configures the socket address struct.
 		template <proto_t P_TYPE = P,
 		typename std::enable_if_t<P_TYPE == RFCOMM, bool> = true>
-		inline void setup(bdaddr_t addr, uint16_t port) 
+		inline address_t setup(bdaddr_t addr, uint16_t port) 
 		{
+			address_t peer;
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-			addr_.addr.rc_family = AF_BLUETOOTH;
-			addr_.addr.rc_channel = (uint8_t) port;
-			bacpy(&addr_.addr.rc_bdaddr, &addr);
+			peer.rc_family = AF_BLUETOOTH;
+			peer.rc_channel = (uint8_t) port;
+			bacpy(&peer.rc_bdaddr, &addr);
+			return peer;
 		}
 	
 		int handle_ {-1};
-		address_t<P> addr_ {0, 0};
 	};
 	
 	/*
@@ -148,12 +134,7 @@ namespace bluegrass {
 		{ 
 			socket_.close(); 
 		}
-		
-		inline address_t<P> sockaddr() const 
-		{ 
-			return socket_.sockaddr(); 
-		}
-		
+				
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		inline bool receive(T* data) const 

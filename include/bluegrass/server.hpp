@@ -32,10 +32,10 @@ namespace bluegrass {
 		{
 			int flag {0};
 			struct sigaction action {0};
-			
+
 			// create and register the server socket
-			server_.setup(ANY, port);
-			flag |= c_bind(server_.handle_, (struct sockaddr*) &server_.addr_, sizeof(server_.addr_.addr));
+			auto peer {server_.setup(ANY, port)};
+			flag |= c_bind(server_.handle_, (struct sockaddr*) &peer, sizeof(peer));
 			services_.emplace(std::pair<int, connections&>(server_.handle_, svc_queue_));
 			
 			// setup SIGIO on the server socket file descriptor
@@ -93,8 +93,7 @@ namespace bluegrass {
 	void server<P>::sigio(int signal, siginfo_t* info, void* context) 
 	{
 		socket<P> temp;
-		temp.handle_ = c_accept(info->si_fd, 
-		(struct sockaddr*) &temp.addr_.addr, &temp.addr_.len);
+		temp.handle_ = c_accept(info->si_fd, NULL, NULL);
 		// make queue_size large enough to prevent blocking in interrupt
 		services_.at(info->si_fd).enqueue(temp);
 	}
