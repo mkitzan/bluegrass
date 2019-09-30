@@ -15,7 +15,7 @@ bool WAIT = true;
 template <proto_t P>
 void serve(bluegrass::socket<P>& sk) {
 	bdaddr_t addr {0};
-	unique_socket us(std::move(sk));
+	scoped_socket us(std::move(sk));
 	
 	if (us.receive(&addr)) {
 		cout << "\tReceived: " << addr << endl << flush;

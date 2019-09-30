@@ -71,15 +71,12 @@ namespace bluegrass {
 			return state != -1;
 		}
 		
-		// receives data from the socket into data reference and saves the address of the sender.
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		bool receive(T* data, address_t<P>* addr) const
+		// receives data from the socket into data reference.
+		bool receive(void* data, size_t length) const
 		{
 			int state {-1};
 			if (handle_ != -1) {
-				state = c_recvfrom(handle_, (void*) data, sizeof(T), 0, 
-				(struct sockaddr*)&addr.addr, &addr.len);
+				state = c_recv(handle_, data, length, 0);
 			}
 			return state != -1;
 		}
@@ -96,15 +93,12 @@ namespace bluegrass {
 			return state != -1;
 		}
 		
-		// sends data in data reference through socket to specified address.
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		bool send(const T* data, const address_t<P>* addr) const
+		// sends data in data reference to peer socket.
+		bool send(const void* data, size_t length) const
 		{
 			int state {-1};
 			if (handle_ != -1) {
-				state = c_sendto(handle_, (void*) data, sizeof(T), 0,
-				(const struct sockaddr*) &addr.addr, addr.len);
+				state = c_send(handle_, data, length, 0);
 			}
 			return state != -1;
 		}
@@ -137,20 +131,20 @@ namespace bluegrass {
 	};
 	
 	/*
-	 * Class template unique_socket has one template parameter
+	 * Class template scoped_socket has one template parameter
 	 *	 P - the Bluetooth socket protocol used by the underlying socket
 	 *
-	 * "unique_socket" provides an RAII interface to the socket class. On destruction, 
+	 * "scoped_socket" provides an RAII interface to the socket class. On destruction, 
 	 * it automatically closes the held socket. The class socket doesn't perform 
 	 * this because of temp objects destructing and closing valid sockets.
 	 */
 	template<proto_t P>
-	class unique_socket {
+	class scoped_socket {
 	public:
-		unique_socket(bdaddr_t addr, uint16_t port) : socket_ {addr, port} {}
-		unique_socket(socket<P>&& s) : socket_ {s} {}
+		scoped_socket(bdaddr_t addr, uint16_t port) : socket_ {addr, port} {}
+		scoped_socket(socket<P>&& s) : socket_ {s} {}
 		
-		~unique_socket() 
+		~scoped_socket() 
 		{ 
 			socket_.close(); 
 		}
@@ -167,11 +161,9 @@ namespace bluegrass {
 			return socket_.receive(data);
 		}
 		
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool receive(T* data, address_t<P>* addr) const 
-		{ 
-			return socket_.receive(data, addr);
+		inline bool receive(void* data, size_t length) const 
+		{
+			return socket_.receive(data, length);
 		}
 		
 		template <class T, 
@@ -181,11 +173,9 @@ namespace bluegrass {
 			return socket_.send(data);
 		}
 		
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool send(const T* data, const address_t<P>* addr) const
+		inline bool send(const void* data, size_t length) const
 		{
-			return socket_.send(data, addr);
+			return socket_.send(data, length);
 		}
 		
 	private:

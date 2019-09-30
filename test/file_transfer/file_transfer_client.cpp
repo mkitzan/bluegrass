@@ -23,7 +23,7 @@ int main() {
 	for (auto& dev : devices) {
 		try {
 			cout << "Creating client socket to " << dev.addr << endl << flush;
-			unique_socket us(bluegrass::socket<L2CAP>(dev.addr, 0x1001));
+			scoped_socket us(bluegrass::socket<L2CAP>(dev.addr, 0x1001));
 			cout << "Client construction succeeded\n" << flush;
 			
 			cout << "Sending local device address to server\n" << flush;

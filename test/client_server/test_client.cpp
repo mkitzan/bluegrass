@@ -21,7 +21,7 @@ void test(uint16_t n) {
 	for (auto& dev : devices) {
 		cout << "\tCreating client\n" << flush;
 		try {
-			unique_socket us(bluegrass::socket<P>(dev.addr, n));
+			scoped_socket us(bluegrass::socket<P>(dev.addr, n));
 			if (us.send(&self)) {
 				cout << "\tSent:	 " << self << endl << flush;
 			} else {

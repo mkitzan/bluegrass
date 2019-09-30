@@ -12,7 +12,7 @@ using namespace bluegrass;
 
 // this routine sends "zimmermann.txt" to the client Bluetooth device
 void transfer(bluegrass::socket<L2CAP>& conn) {	
-	unique_socket us(std::move(conn));
+	scoped_socket us(std::move(conn));
 	
 	bdaddr_t peer {0};
 	struct packet_t packet {0, 0};
