@@ -56,7 +56,7 @@ namespace bluegrass {
 	{
 		for (auto route : routes_) {
 			if (!route.second.steps) {
-				drop(route.first, route.second);
+				notify({SUSPEND, route.first, SVC_LEN, route.second}, ANY);
 			}
 		}
 	}
@@ -67,7 +67,7 @@ namespace bluegrass {
 			routes_.insert({service, self_});
 			network_t packet {PUBLISH, service, SVC_LEN, self_};
 			++packet.payload.steps;
-			advertise(packet, ANY);
+			notify(packet, ANY);
 		}
 	}
 
@@ -75,7 +75,7 @@ namespace bluegrass {
 	{
 		auto route = routes_.find(service);
 		if (available(route)) {
-			drop(service, route->second);
+			notify({SUSPEND, service, SVC_LEN, route->second}, ANY);
 			routes_.erase(route);
 		}
 	}
@@ -86,30 +86,10 @@ namespace bluegrass {
 		return true;
 	}
 
-	void router::drop(uint8_t service, service_t info)
+	void router::notify(network_t packet, bdaddr_t ignore) const
 	{
 		#ifdef DEBUG
-		std::cout << self_ << "\tDropping directly offered service " << (int) service << std::endl;
-		#endif
-
-		for (auto addr : neighbors_) {
-			try {
-				scoped_socket<L2CAP> neighbor(addr, self_.port);
-				network_t packet {SUSPEND, service, SVC_LEN, info};
-				neighbor.send(&packet);
-			} catch (std::runtime_error& e) {
-				#ifdef DEBUG
-				std::cout << self_ << "\tLost neighbor detected " << addr << std::endl;
-				#endif
-				// TODO: Lost neighbor logic
-			}
-		}
-	}
-
-	void router::advertise(network_t packet, bdaddr_t ignore) 
-	{
-		#ifdef DEBUG
-		std::cout << self_ << "\tAdvertising service to neighbors\n";
+		std::cout << self_ << "\tnotifying neighbors\n";
 		#endif
 
 		// forward packet which caused route change
@@ -152,7 +132,7 @@ namespace bluegrass {
 			
 			service = self_;
 			service.steps = steps;
-			advertise({info, service}, ignore);
+			notify({info, service}, ignore);
 		}
 	}
 
@@ -185,11 +165,11 @@ namespace bluegrass {
 				service.steps = 1;
 			}
 			
-			advertise({info, service}, ignore);
+			notify({info, service}, ignore);
 		}
 	}
 
-	void router::handle_onboard(const socket<L2CAP>& conn, header_t info) 
+	void router::handle_onboard(const socket<L2CAP>& conn, header_t info)
 	{
 		service_t service;
 		conn.receive(&service);

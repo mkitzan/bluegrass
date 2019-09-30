@@ -54,16 +54,16 @@ namespace bluegrass {
 		
 		~router();
 
+		inline bool available(uint8_t service) const
+		{
+			return routes_.find(service) != routes_.end();
+		}
+
 		void publish(uint8_t, proto_t, uint16_t);
 
 		void suspend(uint8_t);
 
 		bool utilize(uint8_t);
-
-		inline bool available(uint8_t service) 
-		{
-			return routes_.find(service) != routes_.end();
-		}
 
 	private:
 		enum utility_t {
@@ -83,9 +83,12 @@ namespace bluegrass {
 		static constexpr uint8_t SVC_LEN = static_cast<uint8_t>(sizeof(service_t)); 
 		using network_t = packet_t<service_t>;
 
-		void drop(uint8_t, service_t);
+		inline bool available(std::map<uint8_t, service_t>::const_iterator svc) const
+		{
+			return svc != routes_.end();
+		}
 
-		void advertise(network_t, bdaddr_t);
+		void notify(network_t, bdaddr_t) const;
 
 		void handle_publish(const socket<L2CAP>&, header_t);
 
@@ -96,11 +99,6 @@ namespace bluegrass {
 		void handle_utilize(const socket<L2CAP>&, header_t);
 
 		void connection(socket<L2CAP>&);
-
-		inline bool available(std::map<uint8_t, service_t>::const_iterator svc) 
-		{
-			return svc != routes_.end();
-		}
 
 		server<L2CAP> server_;
 		std::map<uint8_t, service_t> routes_;
