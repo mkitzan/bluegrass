@@ -27,8 +27,7 @@ namespace bluegrass {
 				neighbor.send(&packet);
 
 				// receive all the services held by the neighbor
-				do {
-					neighbor.receive(&packet);
+				while (neighbor.receive(&packet) && packet.info.utility == ONBOARD) {
 					++packet.payload.steps;
 					auto route {routes_.find(packet.info.service)};
 					#ifdef DEBUG
@@ -42,7 +41,7 @@ namespace bluegrass {
 						#endif
 						routes_.insert_or_assign(packet.info.service, packet.payload);
 					}
-				} while (packet.info.utility == ONBOARD);
+				}
 			} catch (std::runtime_error& e) {
 				#ifdef DEBUG
 				std::cout << self_.addr << "\tInvalid neighbor detected " << *it << std::endl;
@@ -110,102 +109,103 @@ namespace bluegrass {
 		}
 	}
 
-	void router::handle_trigger(const socket<L2CAP>& conn, header_t info)
+	void router::handle_trigger(const socket<L2CAP>& conn, uint8_t length)
 	{
 		// TODO: forward service request to neighbor
 	}
 
-	void router::handle_onboard(const socket<L2CAP>& conn, header_t info)
+	void router::handle_onboard(const socket<L2CAP>& conn)
 	{
-		service_t service;
-		conn.receive(&service);
+		network_t packet;
+		conn.receive(&packet);
+		service_t service {packet.payload};
 		neighbors_.insert(service.addr);
 
 		#ifdef DEBUG
-		std::cout << self_.addr << "\tNew connection from " << service.addr << " onboard service\n";
+		std::cout << self_.addr << "\tNew connection from " << packet.payload.addr << " onboard service\n";
 		std::cout << self_.addr << "\tNeighbor count " << neighbors_.size() << std::endl;
 		#endif
 
 		// send packets to new router containing service info
-		auto route {routes_.begin()};
-		for (auto i {0}; i < routes_.size() - 1; ++i, ++route) {
+		
+		for (auto route {routes_.begin()}; route != routes_.end(); ++route) {
 			#ifdef DEBUG
 			std::cout << self_.addr << "\tForwarding service " << (int) route->first << " to new neighbor device\n";
 			#endif
-			network_t packet {{ONBOARD, route->first, SVC_LEN}, route->second};
+			packet = {{ONBOARD, route->first, SVC_LEN}, route->second};
 			conn.send(&packet);
 		}
 
-		network_t packet {{SUSPEND, route->first, SVC_LEN}, route->second};
+		packet = {{SUSPEND, 0, 0}, 0};
 		conn.send(&packet);
 	}
 
-	void router::handle_publish(const socket<L2CAP>& conn, header_t info) 
+	void router::handle_publish(const socket<L2CAP>& conn) 
 	{
-		auto route {routes_.find(info.service)};
-		service_t service;
-		conn.receive(&service); 
+		network_t packet;
+		conn.receive(&packet);
+		auto route {routes_.find(packet.info.service)};
 
 		#ifdef DEBUG
-		std::cout << self_.addr << "\tNew connection from " << service.addr << " publish service " << (int) info.service << std::endl;
+		std::cout << self_.addr << "\tNew connection from " << packet.payload.addr << " publish service " << (int) packet.info.service << std::endl;
 		#endif
 
 		// determine if new service is an improvement over current route
-		if (!available(route) || route->second.steps > service.steps) {
+		if (!available(route) || route->second.steps > packet.payload.steps) {
 			#ifdef DEBUG
-			std::cout << self_.addr << "\tNew service is best route\t" << (int) service.steps << '\t' << service.addr << '\t' << (int) service.proto << '\t' << (int) service.port << std::endl;
+			std::cout << self_.addr << "\tNew service is best route\t" << (int) packet.payload.steps << '\t' << packet.payload.addr << '\t' << (int) packet.payload.proto << '\t' << (int) packet.payload.port << std::endl;
 			#endif
-			routes_.insert_or_assign(info.service, service);
-			auto ignore {service.addr};
-			service = self_;
-			notify({info, service}, ignore);
+			routes_.insert_or_assign(packet.info.service, packet.payload);
+			auto ignore {packet.payload.addr};
+			packet.payload = self_;
+			notify(packet, ignore);
 		}
 	}
 
-	void router::handle_suspend(const socket<L2CAP>& conn, header_t info)
+	void router::handle_suspend(const socket<L2CAP>& conn)
 	{
-		auto route {routes_.find(info.service)};
+		network_t packet;
+		conn.receive(&packet);
+		auto route {routes_.find(packet.info.service)};
 
 		if (available(route)) {
-			service_t service;
-			conn.receive(&service);
-			auto ignore {service.addr};
+			auto ignore {packet.payload.addr};
 
 			#ifdef DEBUG
-			std::cout << self_.addr << "\tNew connection from " << service.addr << " suspend service " << (int) info.service << std::endl;
+			std::cout << self_.addr << "\tNew connection from " << packet.payload.addr << " suspend service " << (int) packet.info.service << std::endl;
 			#endif
 
 			if (route->second.steps) {
 				#ifdef DEBUG
-				std::cout << self_.addr << "\tService is dropped " << (int) info.service << std::endl;
+				std::cout << self_.addr << "\tService is dropped " << (int) packet.info.service << std::endl;
 				#endif
 				routes_.erase(route);
-				service.addr = self_.addr;
+				packet.payload.addr = self_.addr;
 			} else {
 				#ifdef DEBUG
 				std::cout << self_.addr << "\tDevice offers service being dropped: advertising device's service\n";
 				#endif
 				ignore = self_.addr;
-				service = route->second;
+				packet.payload = route->second;
 			}
 			
-			notify({info, service}, ignore);
+			notify(packet, ignore);
 		}
 	}
 
 	void router::connection(socket<L2CAP>& conn)
 	{
 		header_t info;
-		conn.receive(&info);
+		conn.receive(&info, MSG_PEEK);
 
 		if (info.utility == TRIGGER) {
-			handle_trigger(conn, info);
+			handle_trigger(conn, info.length);
 		} else if (info.utility == ONBOARD) {
-			handle_onboard(conn, info);
+			handle_onboard(conn);
 		} else if (info.utility == PUBLISH) {
-			handle_publish(conn, info);
+			handle_publish(conn);
 		} else if (info.utility == SUSPEND) {
-			handle_suspend(conn, info);
+			handle_suspend(conn);
 		}
 
 		conn.close();

@@ -45,17 +45,17 @@ namespace bluegrass {
 		// receives data from the socket into data reference. 
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		bool receive(T* data) const
+		bool receive(T* data, int flags=0) const
 		{
 			int state {-1};
 			if (handle_ != -1) {
-				state = c_recv(handle_, (void*) data, sizeof(T), 0);
+				state = c_recv(handle_, (void*) data, sizeof(T), flags);
 			}
 			return state != -1;
 		}
 		
 		// receives data from the socket into data reference.
-		bool receive(void* data, size_t length) const
+		bool receive(void* data, size_t length, int flags=0) const
 		{
 			int state {-1};
 			if (handle_ != -1) {
@@ -85,7 +85,7 @@ namespace bluegrass {
 			}
 			return state != -1;
 		}
-	
+
 	private:
 		// creates an L2CAP socket and configures the socket address struct.
 		template <proto_t P_TYPE = P,
@@ -137,14 +137,14 @@ namespace bluegrass {
 				
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool receive(T* data) const 
+		inline bool receive(T* data, int flags=0) const 
 		{
-			return socket_.receive(data);
+			return socket_.receive(data, flags);
 		}
 		
-		inline bool receive(void* data, size_t length) const 
+		inline bool receive(void* data, size_t length, int flags=0) const 
 		{
-			return socket_.receive(data, length);
+			return socket_.receive(data, length, flags);
 		}
 		
 		template <class T, 
