@@ -32,9 +32,9 @@ namespace bluegrass {
 		{
 			int flag {0};
 			struct sigaction action {0};
+			auto peer {server_.setup(ANY, port)};
 
 			// create and register the server socket
-			auto peer {server_.setup(ANY, port)};
 			flag |= c_bind(server_.handle_, (struct sockaddr*) &peer, sizeof(peer));
 			services_.emplace(std::pair<int, connections&>(server_.handle_, svc_queue_));
 			

@@ -7,20 +7,20 @@ namespace bluegrass {
 		self_ {0, hci::access().self(), L2CAP, port}
 	{
 		#ifdef DEBUG
-		std::cout << self_ << "\tFinding neighbors\n";
+		std::cout << self_.addr << "\tFinding neighbors\n";
 		#endif
 
 		hci::access().inquiry(max_neighbors, neighbors_);
 
 		#ifdef DEBUG
-		std::cout << self_ << "\tFound " << neighbors_.size() << " neighbors\n";
+		std::cout << self_.addr << "\tFound " << neighbors_.size() << " neighbors\n";
 		#endif
 
 		// onboard to router / build best routes
 		for (auto it {neighbors_.begin()}; it != neighbors_.end();) {
 			try {
 				#ifdef DEBUG
-				std::cout << self_ << "\tNeighbor detected " << *it << std::endl;
+				std::cout << self_.addr << "\tNeighbor detected " << *it << std::endl;
 				#endif
 				scoped_socket<L2CAP> neighbor(*it++, self_.port);
 				network_t packet {ONBOARD, 0, SVC_LEN, self_};
@@ -32,20 +32,20 @@ namespace bluegrass {
 					++packet.payload.steps;
 					auto route {routes_.find(packet.info.service)};
 					#ifdef DEBUG
-					std::cout << self_ << "\tReceived service " << (int) packet.info.service << " " << *it << std::endl;
+					std::cout << self_.addr << "\tReceived service " << (int) packet.info.service << " " << *it << std::endl;
 					#endif
 
 					// determine if new service is an improvement over current route
 					if (!available(route) || route->second.steps > packet.payload.steps) {
 						#ifdef DEBUG
-						std::cout << self_ << "\tUpdating service " << (int) packet.info.service << " " << *it << std::endl;
+						std::cout << self_.addr << "\tUpdating service " << (int) packet.info.service << " " << *it << std::endl;
 						#endif
 						routes_.insert_or_assign(packet.info.service, packet.payload);
 					}
 				} while (packet.info.utility == ONBOARD);
 			} catch (std::runtime_error& e) {
 				#ifdef DEBUG
-				std::cout << self_ << "\tInvalid neighbor detected " << *it << std::endl;
+				std::cout << self_.addr << "\tInvalid neighbor detected " << *it << std::endl;
 				#endif
 				it = neighbors_.erase(--it);
 			}
@@ -87,7 +87,7 @@ namespace bluegrass {
 	void router::notify(network_t packet, bdaddr_t ignore) const
 	{
 		#ifdef DEBUG
-		std::cout << self_ << "\tNotifying neighbors\n";
+		std::cout << self_.addr << "\tNotifying neighbors\n";
 		#endif
 		++packet.payload.steps;
 
@@ -96,18 +96,48 @@ namespace bluegrass {
 			if (addr != ignore) {
 				try {
 					#ifdef DEBUG
-					std::cout << self_ << '\t' << ignore << '\t' << addr << '\t' << (addr != ignore) <<std::endl;
+					std::cout << self_.addr << '\t' << ignore << '\t' << addr << '\t' << (addr != ignore) <<std::endl;
 					#endif
 					scoped_socket<L2CAP> neighbor(addr, self_.port);
 					neighbor.send(&packet);
 				} catch (std::runtime_error& e) {
 					#ifdef DEBUG
-					std::cout << self_ << "\tLost neighbor detected " << addr << std::endl;
+					std::cout << self_.addr << "\tLost neighbor detected " << addr << std::endl;
 					#endif
 					// TODO: Lost neighbor logic
 				}
 			}
 		}
+	}
+
+	void router::handle_trigger(const socket<L2CAP>& conn, header_t info)
+	{
+		// TODO: forward service request to neighbor
+	}
+
+	void router::handle_onboard(const socket<L2CAP>& conn, header_t info)
+	{
+		service_t service;
+		conn.receive(&service);
+		neighbors_.insert(service.addr);
+
+		#ifdef DEBUG
+		std::cout << self_.addr << "\tNew connection from " << service.addr << " onboard service\n";
+		std::cout << self_.addr << "\tNeighbor count " << neighbors_.size() << std::endl;
+		#endif
+
+		// send packets to new router containing service info
+		auto route {routes_.begin()};
+		for (auto i {0}; i < routes_.size() - 1; ++i, ++route) {
+			#ifdef DEBUG
+			std::cout << self_.addr << "\tForwarding service " << (int) route->first << " to new neighbor device\n";
+			#endif
+			network_t packet {{ONBOARD, route->first, SVC_LEN}, route->second};
+			conn.send(&packet);
+		}
+
+		network_t packet {{SUSPEND, route->first, SVC_LEN}, route->second};
+		conn.send(&packet);
 	}
 
 	void router::handle_publish(const socket<L2CAP>& conn, header_t info) 
@@ -117,13 +147,13 @@ namespace bluegrass {
 		conn.receive(&service); 
 
 		#ifdef DEBUG
-		std::cout << self_ << "\tNew connection from " << service.addr << " publish service " << (int) info.service << std::endl;
+		std::cout << self_.addr << "\tNew connection from " << service.addr << " publish service " << (int) info.service << std::endl;
 		#endif
 
 		// determine if new service is an improvement over current route
 		if (!available(route) || route->second.steps > service.steps) {
 			#ifdef DEBUG
-			std::cout << self_ << "\tNew service is best route\t" << (int) service.steps << '\t' << service.addr << '\t' << (int) service.proto << '\t' << (int) service.port << std::endl;
+			std::cout << self_.addr << "\tNew service is best route\t" << (int) service.steps << '\t' << service.addr << '\t' << (int) service.proto << '\t' << (int) service.port << std::endl;
 			#endif
 			routes_.insert_or_assign(info.service, service);
 			auto ignore {service.addr};
@@ -142,18 +172,18 @@ namespace bluegrass {
 			auto ignore {service.addr};
 
 			#ifdef DEBUG
-			std::cout << self_ << "\tNew connection from " << service.addr << " suspend service " << (int) info.service << std::endl;
+			std::cout << self_.addr << "\tNew connection from " << service.addr << " suspend service " << (int) info.service << std::endl;
 			#endif
 
 			if (route->second.steps) {
 				#ifdef DEBUG
-				std::cout << self_ << "\tService is dropped " << (int) info.service << std::endl;
+				std::cout << self_.addr << "\tService is dropped " << (int) info.service << std::endl;
 				#endif
 				routes_.erase(route);
 				service.addr = self_.addr;
 			} else {
 				#ifdef DEBUG
-				std::cout << self_ << "\tDevice offers service being dropped: advertising device's service\n";
+				std::cout << self_.addr << "\tDevice offers service being dropped: advertising device's service\n";
 				#endif
 				ignore = self_.addr;
 				service = route->second;
@@ -163,49 +193,19 @@ namespace bluegrass {
 		}
 	}
 
-	void router::handle_onboard(const socket<L2CAP>& conn, header_t info)
-	{
-		service_t service;
-		conn.receive(&service);
-		neighbors_.insert(service.addr);
-
-		#ifdef DEBUG
-		std::cout << self_ << "\tNew connection from " << service.addr << " onboard service\n";
-		std::cout << self_ << "\tNeighbor count " << neighbors_.size() << std::endl;
-		#endif
-
-		// send packets to new router containing service info
-		auto route {routes_.begin()};
-		for (auto i {0}; i < routes_.size() - 1; ++i, ++route) {
-			#ifdef DEBUG
-			std::cout << self_ << "\tForwarding service " << (int) route->first << " to new neighbor device\n";
-			#endif
-			network_t packet {{ONBOARD, route->first, SVC_LEN}, route->second};
-			conn.send(&packet);
-		}
-
-		network_t packet {{SUSPEND, route->first, SVC_LEN}, route->second};
-		conn.send(&packet);
-	}
-
-	void router::handle_trigger(const socket<L2CAP>& conn, header_t info)
-	{
-		// TODO: forward service request to neighbor
-	}
-
 	void router::connection(socket<L2CAP>& conn)
 	{
 		header_t info;
 		conn.receive(&info);
 
-		if (info.utility == PUBLISH) {
+		if (info.utility == TRIGGER) {
+			handle_trigger(conn, info);
+		} else if (info.utility == ONBOARD) {
+			handle_onboard(conn, info);
+		} else if (info.utility == PUBLISH) {
 			handle_publish(conn, info);
 		} else if (info.utility == SUSPEND) {
 			handle_suspend(conn, info);
-		} else if (info.utility == ONBOARD) {
-			handle_onboard(conn, info);
-		} else if (info.utility == TRIGGER) {
-			handle_trigger(conn, info);
 		}
 
 		conn.close();

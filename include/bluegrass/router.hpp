@@ -47,10 +47,10 @@ namespace bluegrass {
 
 	private:
 		enum utility_t {
-			PUBLISH=11,
-			SUSPEND=13,
-			ONBOARD=17,
-			TRIGGER=19,
+			TRIGGER=11,
+			ONBOARD=13,
+			PUBLISH=17,
+			SUSPEND=19,
 		};
 		
 		struct service_t {
