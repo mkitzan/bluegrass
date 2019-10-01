@@ -114,20 +114,15 @@ namespace bluegrass {
 		// TODO: forward service request to neighbor
 	}
 
-	void router::handle_onboard(const socket<L2CAP>& conn)
+	void router::handle_onboard(const socket<L2CAP>& conn, network_t packet)
 	{
-		network_t packet;
-		conn.receive(&packet);
-		service_t service {packet.payload};
-		neighbors_.insert(service.addr);
-
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tNew connection from " << packet.payload.addr << " onboard service\n";
 		std::cout << self_.addr << "\tNeighbor count " << neighbors_.size() << std::endl;
 		#endif
+		neighbors_.insert(packet.payload.addr);
 
 		// send packets to new router containing service info
-		
 		for (auto route {routes_.begin()}; route != routes_.end(); ++route) {
 			#ifdef DEBUG
 			std::cout << self_.addr << "\tForwarding service " << (int) route->first << " to new neighbor device\n";
@@ -140,15 +135,12 @@ namespace bluegrass {
 		conn.send(&packet);
 	}
 
-	void router::handle_publish(const socket<L2CAP>& conn) 
+	void router::handle_publish(network_t packet) 
 	{
-		network_t packet;
-		conn.receive(&packet);
-		auto route {routes_.find(packet.info.service)};
-
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tNew connection from " << packet.payload.addr << " publish service " << (int) packet.info.service << std::endl;
 		#endif
+		auto route {routes_.find(packet.info.service)};
 
 		// determine if new service is an improvement over current route
 		if (!available(route) || route->second.steps > packet.payload.steps) {
@@ -162,10 +154,8 @@ namespace bluegrass {
 		}
 	}
 
-	void router::handle_suspend(const socket<L2CAP>& conn)
+	void router::handle_suspend(network_t packet)
 	{
-		network_t packet;
-		conn.receive(&packet);
 		auto route {routes_.find(packet.info.service)};
 
 		if (available(route)) {
@@ -200,15 +190,21 @@ namespace bluegrass {
 
 		if (info.utility == TRIGGER) {
 			handle_trigger(conn, info.length);
-		} else if (info.utility == ONBOARD) {
-			handle_onboard(conn);
-		} else if (info.utility == PUBLISH) {
-			handle_publish(conn);
-		} else if (info.utility == SUSPEND) {
-			handle_suspend(conn);
-		}
+		} else {
+			network_t packet;
+			conn.receive(&packet);
 
-		conn.close();
+			if (info.utility == ONBOARD) {
+				handle_onboard(conn, packet);
+				conn.close();
+			} else if (info.utility == PUBLISH) {
+				conn.close();
+				handle_publish(packet);
+			} else if (info.utility == SUSPEND) {
+				conn.close();
+				handle_suspend(packet);
+			}
+		} 
 	}
 
 } // namespace bluegrass

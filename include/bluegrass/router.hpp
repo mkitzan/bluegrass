@@ -71,11 +71,11 @@ namespace bluegrass {
 
 		void notify(network_t, bdaddr_t) const;
 
-		void handle_publish(const socket<L2CAP>&);
+		void handle_publish(network_t);
 
-		void handle_suspend(const socket<L2CAP>&);
+		void handle_suspend(network_t);
 
-		void handle_onboard(const socket<L2CAP>&);
+		void handle_onboard(const socket<L2CAP>&, network_t);
 
 		void handle_trigger(const socket<L2CAP>&, uint8_t);
 
