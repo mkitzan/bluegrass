@@ -92,7 +92,7 @@ namespace bluegrass {
 		typename std::enable_if_t<P_TYPE == L2CAP, bool> = true>
 		inline address_t setup(bdaddr_t addr, uint16_t port) 
 		{
-			address_t peer;
+			address_t peer {};
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
 			peer.l2_family = AF_BLUETOOTH;
 			peer.l2_psm = htobs(port);			
@@ -105,7 +105,7 @@ namespace bluegrass {
 		typename std::enable_if_t<P_TYPE == RFCOMM, bool> = true>
 		inline address_t setup(bdaddr_t addr, uint16_t port) 
 		{
-			address_t peer;
+			address_t peer {};
 			handle_ = c_socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 			peer.rc_family = AF_BLUETOOTH;
 			peer.rc_channel = (uint8_t) port;
