@@ -33,9 +33,9 @@ endif()
 set(Boost_USE_MULTITHREADED false)
 find_package(Threads)
 
-add_library(bluegrass lib/bluetooth.cpp lib/hci.cpp lib/sdp.cpp lib/router)
+add_library(bluegrass lib/bluetooth.cpp lib/hci.cpp lib/sdp.cpp lib/socket lib/network lib/router)
 target_include_directories(bluegrass PUBLIC include ${BLUEZ_INCLUDE_DIRS})
-target_link_libraries(bluegrass ${BLUEZ_LIBRARY_DIRS} -lbluetooth)
+target_link_libraries(bluegrass -lbluetooth ${BLUEZ_LIBRARY_DIRS})
 
 add_executable(service_queue_test test/data_structs/test_service_queue.cpp)
 add_executable(basic_server test/client_server/test_server.cpp)

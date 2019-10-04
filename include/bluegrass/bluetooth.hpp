@@ -31,14 +31,6 @@ namespace bluegrass {
 	static const bdaddr_t LOCAL {0, 0, 0, 0xFF, 0xFF, 0xFF};	
 	
 	/*
-	 * proto_t is a common template parameter which specifies a Bluetooth protocol.
-	 */
-	enum proto_t {
-		L2CAP = L2CAP_UUID,
-		RFCOMM = RFCOMM_UUID,
-	};
-			
-	/*
 	 * Prints a human readable Bluetooth device address_t 
 	 */
 	std::ostream& operator<<(std::ostream&, const bdaddr_t&);

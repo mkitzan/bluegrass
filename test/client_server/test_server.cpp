@@ -5,15 +5,14 @@
 #include "bluegrass/service.hpp"
 #include "bluegrass/hci.hpp"
 #include "bluegrass/socket.hpp"
-#include "bluegrass/server.hpp"
+#include "bluegrass/network.hpp"
 
 using namespace std;
 using namespace bluegrass;
 
 bool WAIT = true;
 
-template <proto_t P>
-void serve(bluegrass::socket<P>& sk) {
+void serve(bluegrass::socket& sk) {
 	bdaddr_t addr {0};
 	scoped_socket us(std::move(sk));
 	
@@ -33,11 +32,10 @@ void serve(bluegrass::socket<P>& sk) {
 	WAIT = false;
 }
 
-template<proto_t P>
 void test(uint16_t n) {
-	cout << "\tCreating server\n" << flush;
+	cout << "\tCreating network\n" << flush;
 	try {
-		server<P> s(serve<P>, n);
+		network s(serve, n);
 		while (WAIT);
 		WAIT = true;
 	} catch (...) {
@@ -46,12 +44,9 @@ void test(uint16_t n) {
 }
 
 int main() {
-	cout << "Starting L2CAP server test\n";
-	test<L2CAP>(0x1001);
-	cout << "L2CAP server test complete\n" << flush;
-	cout << "Starting RFCOMM server test\n";
-	test<RFCOMM>(0x1);
-	cout << "RFCOMM server test complete\n";
+	cout << "Starting L2CAP network test\n";
+	test(0x1001);
+	cout << "L2CAP network test complete\n" << flush;
 	
 	return 0;
 }

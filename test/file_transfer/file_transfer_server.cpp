@@ -5,13 +5,13 @@
 
 #include "bluegrass/service.hpp"
 #include "bluegrass/socket.hpp"
-#include "bluegrass/server.hpp"
+#include "bluegrass/network.hpp"
 
 using namespace std;
 using namespace bluegrass;
 
 // this routine sends "zimmermann.txt" to the client Bluetooth device
-void transfer(bluegrass::socket<L2CAP>& conn) {	
+void transfer(bluegrass::socket& conn) {	
 	scoped_socket us(std::move(conn));
 	
 	bdaddr_t peer {0};
@@ -46,10 +46,10 @@ void transfer(bluegrass::socket<L2CAP>& conn) {
 
 int main() {	
 	try {
-		cout << "Creating server\n" << flush;
-		server<L2CAP> s(transfer, 0x1001, 2);
+		cout << "Creating network\n" << flush;
+		network s(transfer, 0x1001, 2);
 		cout << "Server construction succeeded\n" << flush;
-		// this example waits, but a real system could do other work (the server is async)
+		// this example waits, but a real system could do other work (the network is async)
 		for (;;);
 	} catch (...) {
 		cout << "Server construction failed\n";

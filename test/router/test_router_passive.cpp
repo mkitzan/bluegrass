@@ -2,7 +2,7 @@
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/router.hpp"
-#include "bluegrass/server.hpp"
+#include "bluegrass/network.hpp"
 
 using namespace std;
 using namespace bluegrass;

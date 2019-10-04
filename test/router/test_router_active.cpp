@@ -2,7 +2,7 @@
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/router.hpp"
-#include "bluegrass/server.hpp"
+#include "bluegrass/network.hpp"
 
 using namespace std;
 using namespace bluegrass;
@@ -17,7 +17,7 @@ int main() {
 		cout << "Enter a service ID to publish: ";
 		if (cin >> service) {
 			// publish dummy service to evaluate functionality
-			network.publish(service, L2CAP, 0);
+			network.publish(service, 0);
 		}
 		cin.clear();
 		

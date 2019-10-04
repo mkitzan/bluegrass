@@ -23,7 +23,7 @@ namespace bluegrass {
 		c_close(socket_); 
 	}
 
-	void hci::inquiry(size_t max, std::set<device_t>& devices) 
+	void hci::inquiry(size_t max, std::vector<device_t>& devices) 
 	{
 		std::unique_lock<std::mutex>(m_);
 		devices.clear();
@@ -36,13 +36,13 @@ namespace bluegrass {
 		(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 		
 		for (size_t i = 0; i < resps; ++i) {
-			devices.insert({ (inquiries + i)->bdaddr, (inquiries + i)->clock_offset });
+			devices.push_back({ (inquiries + i)->bdaddr, (inquiries + i)->clock_offset });
 		}
 		
 		::operator delete[](inquiries);
 	}
 
-	void hci::inquiry(size_t max, std::set<bdaddr_t, addrcmp_t>& devices) 
+	void hci::inquiry(size_t max, std::vector<bdaddr_t>& devices) 
 	{
 		std::unique_lock<std::mutex>(m_);
 		devices.clear();
@@ -55,7 +55,7 @@ namespace bluegrass {
 		(inquiry_info**) &inquiries, IREQ_CACHE_FLUSH);
 		
 		for (size_t i = 0; i < resps; ++i) {
-			devices.insert({ (inquiries + i)->bdaddr });
+			devices.push_back({ (inquiries + i)->bdaddr });
 		}
 		
 		::operator delete[](inquiries);

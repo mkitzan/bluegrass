@@ -12,7 +12,7 @@ namespace bluegrass {
 	static inline int c_close(int socket) 
 	{ return close(socket); }
 	
-	static inline int c_bind(int socket, struct sockaddr* addr, socklen_t  len) 
+	static inline int c_bind(int socket, const struct sockaddr* addr, socklen_t  len) 
 	{ return bind(socket, addr, len); }
 	
 	static inline int c_listen(int socket, int backlog)

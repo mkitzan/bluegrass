@@ -3,11 +3,10 @@
 
 #include <iostream>
 #include <map>
-#include <set>
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/hci.hpp"
-#include "bluegrass/server.hpp"
+#include "bluegrass/network.hpp"
 
 namespace bluegrass {
 
@@ -39,7 +38,7 @@ namespace bluegrass {
 			return routes_.find(service) != routes_.end();
 		}
 
-		void publish(uint8_t, proto_t, uint16_t);
+		void publish(uint8_t, uint16_t);
 
 		void suspend(uint8_t);
 
@@ -56,7 +55,6 @@ namespace bluegrass {
 		struct service_t {
 			uint8_t steps;
 			bdaddr_t addr;
-			proto_t proto;
 			uint16_t port;
 		};
 
@@ -69,21 +67,20 @@ namespace bluegrass {
 			return svc != routes_.end();
 		}
 
-		void notify(network_t, bdaddr_t) const;
+		void notify(network_t) const;
 
-		void handle_publish(network_t);
+		void publish(network_t);
 
-		void handle_suspend(network_t);
+		void suspend(network_t);
 
-		void handle_onboard(const socket<L2CAP>&, network_t);
+		void onboard(const socket&, network_t);
 
-		void handle_trigger(const socket<L2CAP>&, uint8_t);
+		void trigger(const socket&, uint8_t);
 
-		void connection(socket<L2CAP>&);
+		void connection(socket&);
 
-		server<L2CAP> server_;
+		network network_;
 		std::map<uint8_t, service_t> routes_;
-		std::set<bdaddr_t, addrcmp_t> neighbors_;
 		const service_t self_;
 	};
 

@@ -10,7 +10,7 @@ using namespace bluegrass;
 int main() {
 	// create an sdp object to local SDP server
 	sdp local {};
-	service_t svc {0xCF, L2CAP, 0x1001};
+	service_t svc {0xCF, 0x1001};
 	
 	cout << "Registering service\n" << flush;
 	if(!local.advertise(svc, 
