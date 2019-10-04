@@ -12,7 +12,7 @@ namespace bluegrass {
 		std::cout << self_.addr << "\tFinding neighbors\n";
 		#endif
 		std::vector<bdaddr_t> neighbors;
-		network_.insert(self_.addr, port, SERVER);
+		network_.insert<SERVER>(self_.addr, port);
 		hci::access().inquiry(max_neighbors, neighbors);
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tFound " << neighbors.size() << " neighbors\n";
@@ -45,7 +45,7 @@ namespace bluegrass {
 					}
 				}
 
-				network_.insert(std::move(neighbor), CLIENT);
+				network_.insert<CLIENT>(std::move(neighbor));
 			} catch (std::runtime_error& e) {
 				#ifdef DEBUG
 				std::cout << self_.addr << "\tInvalid neighbor detected " << addr << std::endl;
@@ -94,8 +94,10 @@ namespace bluegrass {
 		++packet.payload.steps;
 
 		// forward packet which caused route change
-		for (auto it {network_.begin(CLIENT)}; it != network_.end(CLIENT);) {
-			if(!it->send(&packet)) {
+		for (auto it {network_.begin<CLIENT>()}; it != network_.end<CLIENT>();) {
+			if(it->send(&packet)) {
+				++it;
+			} else {
 				#ifdef DEBUG
 				std::cout << self_.addr << "\tLost neighbor detected " << std::endl;
 				#endif

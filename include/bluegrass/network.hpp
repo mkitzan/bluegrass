@@ -31,14 +31,79 @@ namespace bluegrass {
 		// RAII destructor resets the signal handler and c_closes the socket
 		~network() = default;
 
-		bool insert(bdaddr_t, uint16_t, async_t);
+		template <async_t T>
+		bool insert(bdaddr_t addr, uint16_t port) 
+		{
+			bool success {false};
 
-		bool insert(socket&&, async_t);
+			if constexpr (T == CLIENT) {
+				if (clients_.size() < capacity_) {
+					clients_.emplace_back(async_socket {addr, port, service_, T});
+					success = true;
+				}
+			} else if constexpr (T == SERVER) {
+				if (servers_.size() < capacity_) {
+					servers_.emplace_back(async_socket {addr, port, service_, T});
+					success = true;
+				}
+			}		
 
-		network_iter begin(async_t) const;
+			return success;
+		}
 
-		network_iter end(async_t) const;
+		template <async_t T>
+		bool insert(socket&& sock)
+		{
+			bool success {false};
+			
+			if constexpr (T == CLIENT) {
+				if (clients_.size() < capacity_) {
+					clients_.emplace_back(async_socket {std::move(sock), service_, T});
+					success = true;
+				}
+			} else if constexpr (T == SERVER) {
+				if (servers_.size() < capacity_) {
+					servers_.emplace_back(async_socket {std::move(sock), service_, T});
+					success = true;
+				}
+			}		
 
+			return success;
+		}
+
+		template <async_t T>
+		size_t size() const
+		{
+			if constexpr (T == CLIENT) {
+				return clients_.size();
+			} else if constexpr (T == SERVER) {
+				return servers_.size();
+			}
+
+			// TODO fix?
+			throw std::invalid_argument("async_t argument is invalid");
+		}
+
+		template <async_t T>
+		network_iter begin() const
+		{
+			if constexpr (T == CLIENT) {
+				return clients_.begin();
+			} else if constexpr (T == SERVER) {
+				return servers_.begin();
+			}
+		} 
+
+		template <async_t T>
+		network_iter end() const
+		{
+			if constexpr (T == CLIENT) {
+				return clients_.end();
+			} else if constexpr (T == SERVER) {
+				return servers_.end();
+			}
+		}
+		
 		// TODO: function for accessing range of clients or servers
 		//		const iterator access begin and end
 		//		const ref access
