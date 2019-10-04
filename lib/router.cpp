@@ -26,7 +26,7 @@ namespace bluegrass {
 				#endif
 				socket neighbor {addr, self_.port};
 				network_t packet {ONBOARD, 0, SVC_LEN, self_};
-				neighbor.send(&packet);
+				neighbor << &packet;
 
 				// receive all the services held by the neighbor
 				while (neighbor.receive(&packet) && packet.info.utility == ONBOARD) {
@@ -121,11 +121,11 @@ namespace bluegrass {
 			std::cout << self_.addr << "\tForwarding service " << (int) route->first << " to new neighbor device\n";
 			#endif
 			packet = {{ONBOARD, route->first, SVC_LEN}, route->second};
-			conn.send(&packet);
+			conn << &packet;
 		}
 
 		packet = {{SUSPEND, 0, 0}, 0};
-		conn.send(&packet);
+		conn << &packet;
 	}
 
 	void router::publish(network_t packet) 
@@ -181,7 +181,7 @@ namespace bluegrass {
 			trigger(conn, info.length);
 		} else {
 			network_t packet;
-			conn.receive(&packet);
+			conn >> &packet;
 
 			if (info.utility == ONBOARD) {
 				onboard(conn, packet);

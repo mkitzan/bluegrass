@@ -27,11 +27,11 @@ int main() {
 			cout << "Client construction succeeded\n" << flush;
 			
 			cout << "Sending local device address to server\n" << flush;
-			us.send(&local);
+			us << &local;
 			
 			cout << "Receiving file from server\n" << flush;
 			do {
-				us.receive(&packet);
+				us >> &packet;
 				cout.write((const char*) packet.data, packet.size) << flush;
 			} while (packet.size == sizeof packet.data);
 		} catch (...) {

@@ -1,6 +1,11 @@
 #ifndef __BLUEGRASS_BLUETOOTH__
 #define __BLUEGRASS_BLUETOOTH__
 
+// Ensure Blue-Z libraries are wrapped in "extern C {...}"
+#ifndef __cplusplus
+#define __cplusplus
+#endif
+
 #include <iostream>
 
 /*

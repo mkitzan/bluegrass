@@ -65,7 +65,23 @@ namespace bluegrass {
 
 		// creates an L2CAP socket and configures the socket address struct.
 		sockaddr_l2 setup(bdaddr_t, uint16_t);
-	
+
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		friend const socket& operator<<(const socket& s, T* data) 
+		{
+			s.send(data);
+			return s;
+		}
+
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		friend const socket& operator>>(const socket& s, T* data) 
+		{
+			s.receive(data);
+			return s;
+		}
+
 		int handle_ {-1};
 	};
 	
@@ -107,6 +123,22 @@ namespace bluegrass {
 		}
 		
 	private:
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		friend inline const scoped_socket& operator<<(const scoped_socket& s, T* data) 
+		{
+			s.socket_.send(data);
+			return s;
+		}
+
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		friend inline const scoped_socket& operator>>(const scoped_socket& s, T* data) 
+		{
+			s.socket_.receive(data);
+			return s;
+		}
+
 		socket socket_;
 	};
 
@@ -156,6 +188,22 @@ namespace bluegrass {
 
 		// sigio signal handler hook
 		static void sigio(int, siginfo_t*, void*);
+
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		friend inline const async_socket& operator<<(const async_socket& s, T* data) 
+		{
+			s.socket_.send(data);
+			return s;
+		}
+
+		template <class T, 
+		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
+		friend inline const async_socket& operator>>(const async_socket& s, T* data) 
+		{
+			s.socket_.receive(data);
+			return s;
+		}
 
 		socket socket_;
 		static connections services_;

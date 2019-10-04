@@ -20,7 +20,7 @@ void transfer(bluegrass::socket& conn) {
 	
 	// find out who the client is
 	cout << "Receiving address of client\n" << flush;
-	us.receive(&peer);
+	us >> &peer;
 	cout << "Connection received from " << peer << endl << flush;
 
 	// change this file path to where ever your zimmermann.txt file is
