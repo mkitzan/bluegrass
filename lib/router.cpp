@@ -138,7 +138,7 @@ namespace bluegrass {
 		// determine if new service is an improvement over current route
 		if (!available(route) || route->second.steps > packet.payload.steps) {
 			#ifdef DEBUG
-			std::cout << self_.addr << "\tNew service is best route\t" << (int) packet.payload.steps << '\t' << packet.payload.addr << '\t' << (int) packet.payload.proto << '\t' << (int) packet.payload.port << std::endl;
+			std::cout << self_.addr << "\tNew service is best route\t" << (int) packet.payload.steps << '\t' << packet.payload.addr << '\t' << (int) packet.payload.port << std::endl;
 			#endif
 			routes_.insert_or_assign(packet.info.service, packet.payload);
 			packet.payload = self_;
