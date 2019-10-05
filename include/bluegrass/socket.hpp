@@ -14,7 +14,7 @@
 namespace bluegrass {
 	
 	/*
-	 * "socket" wraps a Bluetooth socket providing send and receive functionality.
+	 * "socket" wraps a Bluetooth socket and provides send and receive functionality.
 	 */
 	class socket {
 		friend class server;
@@ -101,30 +101,21 @@ namespace bluegrass {
 		scoped_socket(socket&&);
 
 		~scoped_socket();
-				
-	private:
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		friend inline const scoped_socket& operator<<(const scoped_socket& s, T* data) 
-		{
-			s.send(data);
-			return s;
-		}
-
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		friend inline const scoped_socket& operator>>(const scoped_socket& s, T* data) 
-		{
-			s.receive(data);
-			return s;
-		}
 	};
 
+	// Enum to select the behavior of SIGIO signals for async_socket 
 	enum async_t {
 		SERVER,
 		CLIENT,
 	};
 
+	/*
+	 * "async_socket" installs a Linux SIGIO signal handler on the parent class socket.
+	 * If the async_socket was constructed with "CLIENT", the socket enqueues itself onto 
+	 * the "service" it was constructed with when the signal is triggered. If the 
+	 * async_socket was constructed with "SERVER", the socket enqueues the connecting 
+	 * client onto the "service" it was constructed with when the signal is triggered.
+	 */
 	class async_socket : public socket {
 		using service_handle = service<socket, ENQUEUE>&;
 		using comm_group = std::pair<async_t, service_handle>;
@@ -133,7 +124,7 @@ namespace bluegrass {
 	public:
 		async_socket(bdaddr_t, uint16_t, service_handle, async_t);
 
-		async_socket(socket&& client, service_handle svc, async_t type);
+		async_socket(socket&&, service_handle, async_t);
 
 		void close();
 
@@ -142,22 +133,6 @@ namespace bluegrass {
 
 		// sigio signal handler hook
 		static void sigio(int, siginfo_t*, void*);
-
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		friend inline const async_socket& operator<<(const async_socket& s, T* data) 
-		{
-			s.send(data);
-			return s;
-		}
-
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		friend inline const async_socket& operator>>(const async_socket& s, T* data) 
-		{
-			s.receive(data);
-			return s;
-		}
 
 		static connections services_;
 	};
