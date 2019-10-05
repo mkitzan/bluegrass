@@ -27,6 +27,12 @@ namespace bluegrass {
 		// creates a kernel level socket to provided address and port
 		socket(bdaddr_t, uint16_t);
 
+		socket(const socket&) = delete;
+		socket& operator=(const socket&) = delete;
+
+		socket(socket&&);
+		socket& operator=(socket&&);
+
 		// safely closes socket if active
 		void close();
 		
@@ -90,44 +96,18 @@ namespace bluegrass {
 	 * it automatically closes the held socket. The class socket doesn't perform 
 	 * this because of temp objects destructing and closing valid sockets.
 	 */
-	class scoped_socket {
+	class scoped_socket : public socket {
 	public:
-		scoped_socket(bdaddr_t, uint16_t);
-
 		scoped_socket(socket&&);
-		
+
 		~scoped_socket();
 				
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool receive(T* data, int flags=0) const 
-		{
-			return socket_.receive(data, flags);
-		}
-		
-		inline bool receive(void* data, size_t length, int flags=0) const 
-		{
-			return socket_.receive(data, length, flags);
-		}
-		
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool send(const T* data) const
-		{
-			return socket_.send(data);
-		}
-		
-		inline bool send(const void* data, size_t length) const
-		{
-			return socket_.send(data, length);
-		}
-		
 	private:
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		friend inline const scoped_socket& operator<<(const scoped_socket& s, T* data) 
 		{
-			s.socket_.send(data);
+			s.send(data);
 			return s;
 		}
 
@@ -135,11 +115,9 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		friend inline const scoped_socket& operator>>(const scoped_socket& s, T* data) 
 		{
-			s.socket_.receive(data);
+			s.receive(data);
 			return s;
 		}
-
-		socket socket_;
 	};
 
 	enum async_t {
@@ -147,7 +125,7 @@ namespace bluegrass {
 		CLIENT,
 	};
 
-	class async_socket {
+	class async_socket : public socket {
 		using service_handle = service<socket, ENQUEUE>&;
 		using comm_group = std::pair<async_t, service_handle>;
 		using connections = std::map<int, std::pair<async_t, service_handle>>;
@@ -156,30 +134,6 @@ namespace bluegrass {
 		async_socket(bdaddr_t, uint16_t, service_handle, async_t);
 
 		async_socket(socket&& client, service_handle svc, async_t type);
-
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool receive(T* data, int flags=0) const 
-		{
-			return socket_.receive(data, flags);
-		}
-		
-		inline bool receive(void* data, size_t length, int flags=0) const 
-		{
-			return socket_.receive(data, length, flags);
-		}
-		
-		template <class T, 
-		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		inline bool send(const T* data) const
-		{
-			return socket_.send(data);
-		}
-		
-		inline bool send(const void* data, size_t length) const
-		{
-			return socket_.send(data, length);
-		}
 
 		void close();
 
@@ -193,7 +147,7 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		friend inline const async_socket& operator<<(const async_socket& s, T* data) 
 		{
-			s.socket_.send(data);
+			s.send(data);
 			return s;
 		}
 
@@ -201,11 +155,10 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		friend inline const async_socket& operator>>(const async_socket& s, T* data) 
 		{
-			s.socket_.receive(data);
+			s.receive(data);
 			return s;
 		}
 
-		socket socket_;
 		static connections services_;
 	};
 
