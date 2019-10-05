@@ -2,8 +2,9 @@
 #define __BLUEGRASS_NETWORK__
 
 #include <functional>
-#include <type_traits>
 #include <map>
+#include <set>
+#include <type_traits>
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/socket.hpp"
@@ -18,11 +19,11 @@ namespace bluegrass {
 	 */
 	class network {
 	public:
-		using network_iter = std::vector<async_socket>::const_iterator;
+		using network_iter = std::set<async_socket, std::less<async_socket>>::const_iterator;
 
 		network(std::function<void(socket&)>, size_t, size_t=1, size_t=8);
 		
-		// server is not copyable or movable
+		// network is not copyable or movable: need stable references
 		network(const network&) = delete;
 		network(network&&) = delete;
 		network& operator=(const network&) = delete;
@@ -38,12 +39,12 @@ namespace bluegrass {
 
 			if constexpr (T == CLIENT) {
 				if (clients_.size() < capacity_) {
-					clients_.emplace_back(async_socket {addr, port, service_, T});
+					clients_.emplace(async_socket {addr, port, service_, T});
 					success = true;
 				}
 			} else if constexpr (T == SERVER) {
 				if (servers_.size() < capacity_) {
-					servers_.emplace_back(async_socket {addr, port, service_, T});
+					servers_.emplace(async_socket {addr, port, service_, T});
 					success = true;
 				}
 			}		
@@ -58,12 +59,12 @@ namespace bluegrass {
 			
 			if constexpr (T == CLIENT) {
 				if (clients_.size() < capacity_) {
-					clients_.emplace_back(async_socket {std::move(sock), service_, T});
+					clients_.emplace(async_socket {std::move(sock), service_, T});
 					success = true;
 				}
 			} else if constexpr (T == SERVER) {
 				if (servers_.size() < capacity_) {
-					servers_.emplace_back(async_socket {std::move(sock), service_, T});
+					servers_.emplace(async_socket {std::move(sock), service_, T});
 					success = true;
 				}
 			}		
@@ -79,9 +80,6 @@ namespace bluegrass {
 			} else if constexpr (T == SERVER) {
 				return servers_.size();
 			}
-
-			// TODO fix?
-			throw std::invalid_argument("async_t argument is invalid");
 		}
 
 		template <async_t T>
@@ -103,16 +101,10 @@ namespace bluegrass {
 				return servers_.end();
 			}
 		}
-		
-		// TODO: function for accessing range of clients or servers
-		//		const iterator access begin and end
-		//		const ref access
-
-		// TODO: vector may be better off as a set -> make network friend to socket GUID=socket
 
 	private:
-		std::vector<async_socket> clients_;
-		std::vector<async_socket> servers_;
+		std::set<async_socket, std::less<async_socket>> clients_;
+		std::set<async_socket, std::less<async_socket>> servers_;
 		service<socket, ENQUEUE> service_;
 		size_t capacity_;
 	};

@@ -81,7 +81,7 @@ namespace bluegrass {
 			}	
 		}
 		
-		// service is not copyable or movable
+		// service is not copyable or movable: need stable references
 		service(const service&) = delete;
 		service(service&&) = delete;
 		service& operator=(const service&) = delete;

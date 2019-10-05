@@ -49,13 +49,11 @@ namespace bluegrass {
 	{
 		return !(addr == other);
 	}
-	
-	struct addrcmp_t {
-		inline bool operator()(const bdaddr_t& addr, const bdaddr_t& other) const
-		{
-			return bacmp(&addr, &other) < 0;
-		}
-	};
+
+	inline bool operator<(const bdaddr_t& addr, const bdaddr_t& other)
+	{
+		return bacmp(&addr, &other) < 0;
+	}
 
 } // namespace bluegrass 
 

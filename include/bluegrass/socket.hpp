@@ -33,6 +33,8 @@ namespace bluegrass {
 		socket(socket&&);
 		socket& operator=(socket&&);
 
+		bool operator<(const socket&) const;
+
 		// safely closes socket if active
 		void close();
 		

@@ -16,6 +16,7 @@ namespace bluegrass {
 		uint8_t length; // length of payload in bytes
 	};
 
+	// struct template to create packets around application specific user data
 	template <typename T>
 	struct packet_t {
 		header_t info;
@@ -26,6 +27,7 @@ namespace bluegrass {
 	public:
 		router(uint16_t, size_t=8, size_t=16, size_t=2);
 
+		// router is not copyable or movable: need stable references
 		router(const router&) = delete;
 		router(router&&) = delete;
 		router& operator=(const router&) = delete;

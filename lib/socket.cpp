@@ -26,6 +26,11 @@ namespace bluegrass {
 		return *this;
 	}
 
+	bool socket::operator<(const socket& other) const
+	{
+		return handle_ < other.handle_;
+	}
+
 	void socket::close() 
 	{
 		if (handle_ != -1) {
@@ -135,8 +140,6 @@ namespace bluegrass {
 		}
 	}
 
-	// static allocation for the map
 	std::map<int, std::pair<async_t, service<socket, ENQUEUE>&>> async_socket::services_;
 
 } // namespace bluegrass
-
