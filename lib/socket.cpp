@@ -42,7 +42,7 @@ namespace bluegrass {
 	{
 		int state {-1};
 		if (handle_ != -1) {
-			state = c_recv(handle_, data, length, 0);
+			state = c_recv(handle_, data, length, flags);
 		}
 		return state != -1;
 	}
@@ -103,7 +103,7 @@ namespace bluegrass {
 
 	void async_socket::async(int flag)
 	{
-		struct sigaction action {0};
+		struct sigaction action {};
 
 		// setup SIGIO on the server socket file descriptor
 		action.sa_sigaction = sigio;

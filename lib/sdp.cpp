@@ -80,7 +80,6 @@ namespace bluegrass {
 		uuid_t svc_uuid, root_uuid, proto_uuid;
 		sdp_list_t *root_list, *sub_list, *proto_list, *access_list;
 		sdp_data_t *channel;
-		sdp_session_t *session;
 
 		// allocate data for service_t record and assign service_t ID
 		sdp_record_t* record = sdp_record_alloc();

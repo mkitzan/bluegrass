@@ -12,7 +12,7 @@ namespace bluegrass {
 		std::cout << self_.addr << "\tFinding neighbors\n";
 		#endif
 		std::vector<bdaddr_t> neighbors;
-		network_.insert<SERVER>(self_.addr, port);
+		network_.connect<SERVER>(self_.addr, port);
 		hci::access().inquiry(max_neighbors, neighbors);
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tFound " << neighbors.size() << " neighbors\n";
@@ -45,7 +45,7 @@ namespace bluegrass {
 					}
 				}
 
-				network_.insert<CLIENT>(std::move(neighbor));
+				network_.connect<CLIENT>(std::move(neighbor));
 			} catch (std::runtime_error& e) {
 				#ifdef DEBUG
 				std::cout << self_.addr << "\tInvalid neighbor detected " << addr << std::endl;
@@ -66,7 +66,7 @@ namespace bluegrass {
 	void router::publish(uint8_t service, uint16_t port) 
 	{
 		if (!available(service)) {
-			routes_.insert({service, self_});
+			routes_.insert({service, {0, self_.addr, port}});
 			notify({PUBLISH, service, SVC_LEN, self_});
 		}
 	}
@@ -126,7 +126,8 @@ namespace bluegrass {
 			conn << &packet;
 		}
 
-		packet = {{SUSPEND, 0, 0}, 0};
+		packet.info = header_t {SUSPEND, 0, 0};
+		packet.payload = service_t {};
 		conn << &packet;
 	}
 
@@ -176,7 +177,7 @@ namespace bluegrass {
 
 	void router::connection(socket& conn)
 	{
-		header_t info;
+		header_t info {};
 		conn.receive(&info, MSG_PEEK);
 
 		if (info.utility == TRIGGER) {
@@ -187,12 +188,15 @@ namespace bluegrass {
 
 			if (info.utility == ONBOARD) {
 				onboard(conn, packet);
+				network_.connect<CLIENT>(std::move(conn));
 			} else if (info.utility == PUBLISH) {
 				publish(packet);
 			} else if (info.utility == SUSPEND) {
 				suspend(packet);
 			}
-		} 
+		}
+
+		// conn is purposely not closed
 	}
 
 } // namespace bluegrass

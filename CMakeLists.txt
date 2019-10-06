@@ -11,7 +11,6 @@ option(ENABLE_TSAN "Enable thread sanitizer" false)
 
 if(DEBUG)
 	add_compile_options(-DDEBUG)
-	add_link_options(-DDEBUG)
 endif()
 if(ENABLE_ASAN)
 	add_compile_options(-fsanitize=address)
@@ -32,6 +31,8 @@ endif()
 
 set(Boost_USE_MULTITHREADED false)
 find_package(Threads)
+
+add_compile_options(-O3 -Wall -Wextra)
 
 add_library(bluegrass lib/bluetooth.cpp lib/hci.cpp lib/sdp.cpp lib/socket lib/network lib/router)
 target_include_directories(bluegrass PUBLIC include ${BLUEZ_INCLUDE_DIRS})

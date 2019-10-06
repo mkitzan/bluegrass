@@ -19,13 +19,13 @@ namespace bluegrass {
 
 	hci::~hci() 
 	{ 
-		std::unique_lock<std::mutex>(m_);
+		std::unique_lock<std::mutex> lock {m_};
 		c_close(socket_); 
 	}
 
 	void hci::inquiry(size_t max, std::vector<device_t>& devices) 
 	{
-		std::unique_lock<std::mutex>(m_);
+		std::unique_lock<std::mutex> lock {m_};
 		devices.clear();
 		
 		// allocate temp buffer for inquiry results before transferring to set
@@ -44,7 +44,7 @@ namespace bluegrass {
 
 	void hci::inquiry(size_t max, std::vector<bdaddr_t>& devices) 
 	{
-		std::unique_lock<std::mutex>(m_);
+		std::unique_lock<std::mutex> lock {m_};
 		devices.clear();
 		
 		// allocate temp buffer for inquiry results before transferring to set
@@ -63,7 +63,7 @@ namespace bluegrass {
 
 	std::string hci::name(const device_t& dev) const
 	{
-		std::unique_lock<std::mutex>(m_);
+		std::unique_lock<std::mutex> lock {m_};
 		char cstr[64];
 		std::string str { "unknown" };
 	
@@ -76,7 +76,7 @@ namespace bluegrass {
 
 	int8_t hci::rssi(device_t& dev) const 
 	{
-		std::unique_lock<std::mutex>(m_);
+		std::unique_lock<std::mutex> lock {m_};
 		int8_t rssi;
 		int flag { 0 }, conn;
 		uint16_t handle;

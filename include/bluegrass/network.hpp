@@ -33,7 +33,7 @@ namespace bluegrass {
 		~network() = default;
 
 		template <async_t T>
-		bool insert(bdaddr_t addr, uint16_t port) 
+		bool connect(bdaddr_t addr, uint16_t port) 
 		{
 			bool success {false};
 
@@ -53,7 +53,7 @@ namespace bluegrass {
 		}
 
 		template <async_t T>
-		bool insert(socket&& sock)
+		bool connect(socket&& sock)
 		{
 			bool success {false};
 			
@@ -73,7 +73,7 @@ namespace bluegrass {
 		}
 
 		template <async_t T>
-		size_t size() const
+		size_t participants() const
 		{
 			if constexpr (T == CLIENT) {
 				return clients_.size();
