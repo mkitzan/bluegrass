@@ -91,7 +91,7 @@ namespace bluegrass {
 
 	async_socket::async_socket(socket&& client, service_handle svc, async_t type) : socket{std::move(client)}
 	{
-		services_.emplace(std::pair<int, comm_group>{client.handle_, comm_group{type, svc}});
+		services_.emplace(std::pair<int, comm_group>{handle_, comm_group{type, svc}});
 		async(0);
 	}
 
