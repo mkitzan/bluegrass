@@ -35,7 +35,7 @@ void serve(bluegrass::socket& sk) {
 void test(uint16_t n) {
 	cout << "\tCreating network\n" << flush;
 	try {
-		network s(serve, n);
+		network s(serve, 0x1001, n);
 		while (WAIT);
 		WAIT = true;
 	} catch (...) {

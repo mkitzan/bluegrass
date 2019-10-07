@@ -1,21 +1,17 @@
-#include <signal.h>
-#include <fcntl.h>
-
 #include <vector>
 
 #include "bluegrass/router.hpp"
 
 namespace bluegrass {
 	
-	router::router(uint16_t port, size_t max_neighbors, size_t queue_size, size_t thread_count) : 
-		network_ {[&](socket& conn){ connection(conn); }, max_neighbors, thread_count, queue_size}, 
+	router::router(uint16_t port, size_t max_neighbors, size_t thread_count) : 
+		network_ {[&](socket& conn){ connection(conn); }, port, max_neighbors, thread_count}, 
 		self_ {0, hci::access().self(), port}
 	{
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tFinding neighbors\n";
 		#endif
 		std::vector<bdaddr_t> neighbors;
-		network_.connect<SERVER>(ANY, port);
 		hci::access().inquiry(max_neighbors, neighbors);
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tFound " << neighbors.size() << " neighbors\n";
@@ -48,7 +44,7 @@ namespace bluegrass {
 					}
 				}
 
-				network_.connect<CLIENT>(std::move(neighbor));
+				network_.connect(std::move(neighbor));
 			} catch (std::runtime_error& e) {
 				#ifdef DEBUG
 				std::cout << self_.addr << "\tInvalid neighbor detected " << addr << std::endl;
@@ -97,7 +93,7 @@ namespace bluegrass {
 		++packet.payload.steps;
 
 		// forward packet which caused route change
-		for (auto it {network_.begin<CLIENT>()}; it != network_.end<CLIENT>(); ++it) {
+		for (auto it {network_.begin()}; it != network_.end(); ++it) {
 			if(it->send(&packet)) {
 				//++it;
 			} else {
@@ -191,7 +187,7 @@ namespace bluegrass {
 
 			if (info.utility == ONBOARD) {
 				onboard(conn, packet);
-				network_.connect<CLIENT>(std::move(conn));
+				network_.connect(std::move(conn));
 			} else if (info.utility == PUBLISH) {
 				publish(packet);
 			} else if (info.utility == SUSPEND) {

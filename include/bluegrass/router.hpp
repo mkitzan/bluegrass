@@ -25,7 +25,7 @@ namespace bluegrass {
 
 	class router {
 	public:
-		router(uint16_t, size_t=8, size_t=16, size_t=2);
+		router(uint16_t, size_t=16, size_t=2);
 
 		// router is not copyable or movable: need stable references
 		router(const router&) = delete;

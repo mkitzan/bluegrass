@@ -17,7 +17,6 @@ namespace bluegrass {
 	{
 		s.handle_ = -1;
 	}
-
 	
 	socket& socket::operator=(socket&& s)
 	{
@@ -66,7 +65,7 @@ namespace bluegrass {
 		return peer;
 	}
 
-	scoped_socket::scoped_socket(socket&& s) : socket{std::move(s)} {}
+	scoped_socket::scoped_socket(socket&& s) : socket {std::move(s)} {}
 
 	scoped_socket::~scoped_socket() 
 	{ 
@@ -95,11 +94,12 @@ namespace bluegrass {
 		async(0);
 	}
 
-	void async_socket::close() 
+	// uninstalls SIGIO and removes socket from sigio map
+	async_socket::~async_socket()
 	{
 		fcntl(handle_, F_SETSIG, 0);
-		c_close(handle_);
 		services_.erase(handle_);
+		close();
 	}
 
 	void async_socket::async(int flag)

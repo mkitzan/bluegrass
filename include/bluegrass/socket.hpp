@@ -6,7 +6,6 @@
 #include <fcntl.h>
 
 #include <map>
-#include <type_traits>
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/service.hpp"
@@ -29,9 +28,8 @@ namespace bluegrass {
 		socket(bdaddr_t, uint16_t);
 
 		socket(const socket&) = delete;
-		socket& operator=(const socket&) = delete;
-
 		socket(socket&&);
+		socket& operator=(const socket&) = delete;
 		socket& operator=(socket&&);
 
 		bool operator<(const socket&) const;
@@ -129,7 +127,9 @@ namespace bluegrass {
 
 		async_socket(socket&&, service_handle, async_t);
 
-		void close();
+		async_socket(async_socket&&) = default;
+
+		~async_socket();
 
 	private:
 		void async(int);
