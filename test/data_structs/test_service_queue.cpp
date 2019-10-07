@@ -28,7 +28,7 @@ void create_test1(char& data)
 	if (STR1[I]) { ++I; }
 }
 
-void utilize_test(char& data) 
+void utilize_test(const char& data) 
 {
 	cout << data << flush;
 }
@@ -69,9 +69,11 @@ bool test_no_queue()
 
 int main() 
 {
-	assert(test_ende_queues());
+	bool result = test_ende_queues();
+	assert(result);
 	cout << endl << flush;
-	assert(test_no_queue());
+	result = test_no_queue();
+	assert(result);
 	cout << endl << flush;
 	
 	return 0;

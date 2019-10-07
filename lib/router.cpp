@@ -99,7 +99,7 @@ namespace bluegrass {
 		// forward packet which caused route change
 		for (auto it {network_.begin<CLIENT>()}; it != network_.end<CLIENT>(); ++it) {
 			if(it->send(&packet)) {
-		//		++it;
+				//++it;
 			} else {
 				#ifdef DEBUG
 				std::cout << self_.addr << "\tLost neighbor detected " << std::endl;

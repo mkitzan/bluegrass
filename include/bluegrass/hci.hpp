@@ -27,8 +27,8 @@ namespace bluegrass {
 		// "hci" singleton accessor function
 		static hci& access() 
 		{
-			static hci hci;
-			return hci;
+			static hci hci_;
+			return hci_;
 		}
 		
 		hci(const hci&) = default;
