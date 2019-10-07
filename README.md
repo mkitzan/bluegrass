@@ -15,10 +15,9 @@ Bluegrass is built on top of the Blue-Z stack. It abstracts the core utilities a
 provide the low-level granular control the full Blue-Z stack provides: this isn't the library you're looking for if you need that. 
 Every `*.hpp` file is well documented in-source and the examples in the `test` folder should get a developer familiar with usage.
 
-Bluegrass provides tools to enable performant Bluetooth network programming. For example, `server.hpp` defines an entirely asynchronous 
-socket server through Linux asynchronous IO signals. Essentially this means a `server` object doesn't loop infinitely waiting for the next 
-server request, saving processor time while waiting for requests. When working on resource constrained systems, tools like `server.hpp` 
-will help you get the most out of your hardware. 
+Bluegrass provides tools to enable performant Bluetooth network programming. For example, `router.hpp` defines an entirely asynchronous 
+socket network node through Linux asynchronous IO signals. Essentially this means a `router` object doesn't loop infinitely waiting for the next
+server request, saving processor time while waiting for requests. `router` objects connect with other `router` objects on remote devices to build a Bluetooth network. When working on resource constrained systems, tools like `router.hpp` will help you get the most out of your hardware. 
 
 The `CMakeLists.txt` file will show you, by example, how to build/include the library in your own project. Run CMake to build the test 
 examples for your self to make sure everything is installed correctly. The file transfer example test requires some extra effort to setup. 
@@ -43,19 +42,13 @@ A Bluetooth connection, like an internet connection, requires creating a socket 
 
 ## Protocol
 
-There's a lot of different Bluetooth protocols used for many different applications, but Bluegrass supports two protocols:
-- L2CAP, is a connection-oriented protocol that transmits fixed-length datagrams with best-effort (analogous to UDP).
-- RFCOMM, is a connection-oriented protocol that reliably exchanges streams of data (analogous to TCP).
-
-When using Bluegrass many class templates take a `proto_t` template argument which specifies which protocol the class object will support.
-Both L2CAP and RFCOMM support different port numbers. L2CAP supports odd numbers between `4097 to 32767`, and RFCOMM supports all numbers 
-between `1 to 30`.
+There's a lot of different Bluetooth protocols used for many different applications, but Bluegrass supports one protocol: L2CAP. L2CAP is a connection-oriented protocol that transmits fixed-length datagrams with best-effort (analogous to UDP). L2CAP supports odd port numbers between `4097 to 32767`.
 
 ## Host Controller Interface
 
 All Bluetooth transmissions and requests go through the HCI. It's the computer's interface to the on-board Bluetooth hardware. From 
 a practical standpoint the HCI allows your to find out the local device's Bluetooth address, and the address and names of remote device's
-You will use an `hci_controller` object to query the addresses/names of remote nearby devices.
+You will use an `hci` object to query the addresses/names of remote nearby devices.
 
 # Bluetooth Setup
 
