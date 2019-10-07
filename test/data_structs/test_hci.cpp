@@ -1,5 +1,5 @@
 #include <iostream>
-#include <set>
+#include <vector>
 #include <string>
 
 #include "bluegrass/bluetooth.hpp"
@@ -9,7 +9,7 @@ using namespace std;
 using namespace bluegrass;
 
 int main() {
-	set<device_t> devices;
+	vector<device_t> devices;
 	// access HCI singleton connection
 	hci& controller = hci::access();
 	

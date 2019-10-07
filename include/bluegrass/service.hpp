@@ -81,7 +81,7 @@ namespace bluegrass {
 			}	
 		}
 		
-		// service is not copyable or movable
+		// service is not copyable or movable: need stable references
 		service(const service&) = delete;
 		service(service&&) = delete;
 		service& operator=(const service&) = delete;
@@ -108,7 +108,7 @@ namespace bluegrass {
 		typename std::enable_if_t<Q_TYPE == ENQUEUE, bool> = true>
 		bool enqueue(T& element) 
 		{
-			std::unique_lock<std::mutex> lock(m_);
+			std::unique_lock<std::mutex> lock {m_};
 			while (open_ && queue_.size() == max_) { 
 				enqcv_.wait(lock); 
 			}
@@ -131,7 +131,7 @@ namespace bluegrass {
 		typename std::enable_if_t<Q_TYPE == DEQUEUE, bool> = true>
 		bool dequeue(T& element) 
 		{
-			std::unique_lock<std::mutex> lock(m_);
+			std::unique_lock<std::mutex> lock {m_};
 			while (open_ && queue_.empty()) { 
 				deqcv_.wait(lock); 
 			}
@@ -153,7 +153,7 @@ namespace bluegrass {
 		 */
 		void shutdown() 
 		{
-			std::unique_lock<std::mutex> lock(m_);
+			std::unique_lock<std::mutex> lock {m_};
 			if (open_) {
 				open_ = false;
 				deqcv_.notify_all();
@@ -189,7 +189,7 @@ namespace bluegrass {
 		typename std::enable_if_t<Q_TYPE != ENQUEUE, bool> = true>
 		bool enqueue(T& element) 
 		{
-			std::unique_lock<std::mutex> lock(m_);	
+			std::unique_lock<std::mutex> lock {m_};	
 			while (open_ && queue_.size() == max_) { 
 				enqcv_.wait(lock); 
 			}
@@ -207,7 +207,7 @@ namespace bluegrass {
 		typename std::enable_if_t<Q_TYPE != DEQUEUE, bool> = true>
 		bool dequeue(T& element) 
 		{
-			std::unique_lock<std::mutex> lock(m_); 
+			std::unique_lock<std::mutex> lock {m_}; 
 			while (open_ && queue_.empty()) { 
 				deqcv_.wait(lock); 
 			}

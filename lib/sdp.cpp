@@ -51,15 +51,11 @@ namespace bluegrass {
 							switch(pattr->dtd) {
 							case SDP_UUID16:
 								resps.push_back(
-								{svc.id, 
-								(proto_t) sdp_uuid_to_proto(&pattr->val.uuid), 
-								pattr->val.uint16});
+								{svc.id, pattr->val.uint16});
 								break;
 							case SDP_UINT8:
 								resps.push_back(
-								{svc.id, 
-								(proto_t) sdp_uuid_to_proto(&pattr->val.uuid), 
-								pattr->val.uint16});
+								{svc.id, pattr->val.uint16});
 								break;
 							}
 						}
@@ -84,7 +80,6 @@ namespace bluegrass {
 		uuid_t svc_uuid, root_uuid, proto_uuid;
 		sdp_list_t *root_list, *sub_list, *proto_list, *access_list;
 		sdp_data_t *channel;
-		sdp_session_t *session;
 
 		// allocate data for service_t record and assign service_t ID
 		sdp_record_t* record = sdp_record_alloc();
@@ -97,13 +92,8 @@ namespace bluegrass {
 		sdp_set_browse_groups(record, root_list);
 
 		// allocate protocol specific data
-		if(svc.proto == L2CAP) {
-			sdp_uuid16_create(&proto_uuid, L2CAP_UUID);
-			channel = sdp_data_alloc(SDP_UINT16, &proto_uuid);
-		} else {
-			sdp_uuid16_create(&proto_uuid, RFCOMM_UUID);
-			channel = sdp_data_alloc(SDP_UINT8, &proto_uuid);
-		}
+		sdp_uuid16_create(&proto_uuid, L2CAP_UUID);
+		channel = sdp_data_alloc(SDP_UINT16, &proto_uuid);
 		sub_list = sdp_list_append(0, &proto_uuid);
 		proto_list = sdp_list_append(0, sub_list);
 

@@ -11,7 +11,6 @@ namespace bluegrass {
 	// "service_t" packages information about a Bluetooth service.
 	struct service_t {
 		uint8_t id;
-		proto_t proto;
 		uint16_t port;
 	};
 

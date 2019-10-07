@@ -1,6 +1,11 @@
 #ifndef __BLUEGRASS_BLUETOOTH__
 #define __BLUEGRASS_BLUETOOTH__
 
+// Ensure Blue-Z libraries are wrapped in "extern C {...}"
+#ifndef __cplusplus
+#define __cplusplus
+#endif
+
 #include <iostream>
 
 /*
@@ -31,14 +36,6 @@ namespace bluegrass {
 	static const bdaddr_t LOCAL {0, 0, 0, 0xFF, 0xFF, 0xFF};	
 	
 	/*
-	 * proto_t is a common template parameter which specifies a Bluetooth protocol.
-	 */
-	enum proto_t {
-		L2CAP = L2CAP_UUID,
-		RFCOMM = RFCOMM_UUID,
-	};
-			
-	/*
 	 * Prints a human readable Bluetooth device address_t 
 	 */
 	std::ostream& operator<<(std::ostream&, const bdaddr_t&);
@@ -52,13 +49,11 @@ namespace bluegrass {
 	{
 		return !(addr == other);
 	}
-	
-	struct addrcmp_t {
-		inline bool operator()(const bdaddr_t& addr, const bdaddr_t& other) const
-		{
-			return bacmp(&addr, &other) < 0;
-		}
-	};
+
+	inline bool operator<(const bdaddr_t& addr, const bdaddr_t& other)
+	{
+		return bacmp(&addr, &other) < 0;
+	}
 
 } // namespace bluegrass 
 

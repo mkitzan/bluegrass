@@ -1,5 +1,4 @@
 #include <iostream>
-#include <set>
 #include <vector>
 
 #include "bluegrass/bluetooth.hpp"
@@ -12,9 +11,9 @@ using namespace bluegrass;
 int main() {
 	// access HCI singleton connection
 	hci& controller = hci::access();
-	service_t svc {0xCF, L2CAP, 0x1001};
+	service_t svc {0xCF, 0x1001};
 	// containers for controller return data
-	set<device_t> devices;
+	vector<device_t> devices;
 	vector<service_t> services;
 	
 	controller.inquiry(32, devices);
@@ -26,7 +25,7 @@ int main() {
 		remote.search(svc, services);
 
 		for(auto& ser : services) {
-			cout << '\t' << ser.id << '\t' << ser.proto << '\t' << ser.port;
+			cout << '\t' << ser.id << '\t' << ser.port;
 		}
 
 		cout << endl << flush;
