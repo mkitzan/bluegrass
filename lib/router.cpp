@@ -6,12 +6,16 @@ namespace bluegrass {
 	
 	router::router(uint16_t port, size_t max_neighbors, size_t thread_count) : 
 		network_ {[&](socket& conn){ connection(conn); }, port, max_neighbors, thread_count}, 
-		self_ {0, hci::access().self(), port}
+		self_ {0, hci::access().self(), port}, 
+		length_ {NET_LEN}
 	{
+		// allocate trigger buffer
+		buffer_ = static_cast<uint8_t*>(::operator new(length_));
+
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tFinding neighbors\n";
 		#endif
-		std::vector<bdaddr_t> neighbors;
+		std::vector<bdaddr_t> neighbors {};
 		hci::access().inquiry(max_neighbors, neighbors);
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tFound " << neighbors.size() << " neighbors\n";
@@ -24,11 +28,11 @@ namespace bluegrass {
 				std::cout << self_.addr << "\tNeighbor detected " << addr << std::endl;
 				#endif
 				socket neighbor {addr, self_.port};
-				network_t packet {ONBOARD, 0, SVC_LEN, self_};
+				network_t packet {utility_t::ONBOARD, 0, NET_LEN, self_};
 				neighbor << &packet;
 
 				// receive all the services held by the neighbor
-				while (neighbor.receive(&packet) && packet.info.utility == ONBOARD) {
+				while (neighbor.receive(&packet) && packet.info.utility == utility_t::ONBOARD) {
 					++packet.payload.steps;
 					auto route {routes_.find(packet.info.service)};
 					#ifdef DEBUG
@@ -57,16 +61,18 @@ namespace bluegrass {
 	{
 		for (auto route : routes_) {
 			if (!route.second.steps) {
-				notify({SUSPEND, route.first, SVC_LEN, route.second});
+				notify({utility_t::SUSPEND, route.first, NET_LEN, route.second});
 			}
 		}
+		// clean up allocated trigger buffer
+		delete buffer_;
 	}
 
 	void router::publish(uint8_t service, uint16_t port) 
 	{
 		if (!available(service)) {
 			routes_.insert({service, {0, self_.addr, port}});
-			notify({PUBLISH, service, SVC_LEN, self_});
+			notify({utility_t::PUBLISH, service, NET_LEN, self_});
 		}
 	}
 
@@ -74,15 +80,9 @@ namespace bluegrass {
 	{
 		auto route = routes_.find(service);
 		if (available(route)) {
-			notify({SUSPEND, service, SVC_LEN, route->second});
+			notify({utility_t::SUSPEND, service, NET_LEN, route->second});
 			routes_.erase(route);
 		}
-	}
-
-	bool router::trigger(uint8_t)
-	{
-		// TODO: when trigger function is implemented
-		return true;
 	}
 
 	void router::notify(network_t packet) const
@@ -107,7 +107,18 @@ namespace bluegrass {
 
 	void router::trigger(const socket& conn, uint8_t length)
 	{
-		// TODO: forward service request to neighbor
+		// reallocate trigger buffer if needed
+		if (length_ < length) {
+			delete buffer_;
+			buffer_ = static_cast<uint8_t*>(::operator new(length));
+			length_ = length;
+		}
+
+		conn.receive(buffer_, length_);
+		
+		// TODO
+		// find route to service
+		// forward packet on route
 	}
 
 	void router::onboard(const socket& conn, network_t packet)
@@ -121,11 +132,11 @@ namespace bluegrass {
 			#ifdef DEBUG
 			std::cout << self_.addr << "\tForwarding service " << (int) route->first << " to new neighbor device\n";
 			#endif
-			packet = {{ONBOARD, route->first, SVC_LEN}, route->second};
+			packet = {{utility_t::ONBOARD, route->first, NET_LEN}, route->second};
 			conn << &packet;
 		}
 
-		packet.info = header_t {SUSPEND, 0, 0};
+		packet.info = header_t {utility_t::SUSPEND, 0, 0};
 		packet.payload = service_t {};
 		conn << &packet;
 	}
@@ -179,18 +190,20 @@ namespace bluegrass {
 		header_t info {};
 		conn.receive(&info, MSG_PEEK);
 
-		if (info.utility == TRIGGER) {
+		if (info.utility == utility_t::TRIGGER) {
 			trigger(conn, info.length);
 		} else {
 			network_t packet;
 			conn >> &packet;
 
-			if (info.utility == ONBOARD) {
+			if (info.utility == utility_t::ONBOARD) {
 				onboard(conn, packet);
+				// onboard connections are generated through "accept" calls
+				//	safe to move into the network
 				network_.connect(std::move(conn));
-			} else if (info.utility == PUBLISH) {
+			} else if (info.utility == utility_t::PUBLISH) {
 				publish(packet);
-			} else if (info.utility == SUSPEND) {
+			} else if (info.utility == utility_t::SUSPEND) {
 				suspend(packet);
 			}
 		}

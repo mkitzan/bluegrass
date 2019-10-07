@@ -129,7 +129,8 @@ namespace bluegrass {
 	void async_socket::sigio(int signal, siginfo_t* info, void* context) 
 	{
 		auto handle {services_.at(info->si_fd)};
-		if (std::get<0>(handle) == SERVER) {
+		
+		if (std::get<0>(handle) == async_t::SERVER) {
 			socket temp {c_accept(info->si_fd, NULL, NULL)};
 			// make queue_size large enough to prevent blocking in interrupt
 			std::get<1>(handle).enqueue(temp);

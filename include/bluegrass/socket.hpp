@@ -105,7 +105,7 @@ namespace bluegrass {
 	};
 
 	// Enum to select the behavior of SIGIO signals for async_socket 
-	enum async_t {
+	enum class async_t : bool {
 		SERVER,
 		CLIENT,
 	};
