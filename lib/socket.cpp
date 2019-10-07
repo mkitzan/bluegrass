@@ -84,14 +84,15 @@ namespace bluegrass {
 		}
 		// create and register the server socket
 		flag |= c_bind(handle_, (const struct sockaddr*) &peer, sizeof(peer));
-		async(flag);
+		flag |= c_listen(handle_, 4);
 		services_.emplace(std::pair<int, comm_group>{handle_, comm_group{type, svc}});
+		async(flag);
 	}
 
 	async_socket::async_socket(socket&& client, service_handle svc, async_t type) : socket{std::move(client)}
 	{
-		async(0);
 		services_.emplace(std::pair<int, comm_group>{client.handle_, comm_group{type, svc}});
+		async(0);
 	}
 
 	void async_socket::close() 
@@ -112,7 +113,6 @@ namespace bluegrass {
 		flag |= fcntl(handle_, F_SETFL, O_ASYNC | O_NONBLOCK);
 		flag |= fcntl(handle_, F_SETOWN, getpid());
 		flag |= fcntl(handle_, F_SETSIG, SIGIO);
-		flag |= c_listen(handle_, 4);
 		
 		if (flag == -1) {
 			c_close(handle_);

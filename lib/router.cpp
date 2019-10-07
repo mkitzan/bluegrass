@@ -1,3 +1,6 @@
+#include <signal.h>
+#include <fcntl.h>
+
 #include <vector>
 
 #include "bluegrass/router.hpp"
@@ -12,7 +15,7 @@ namespace bluegrass {
 		std::cout << self_.addr << "\tFinding neighbors\n";
 		#endif
 		std::vector<bdaddr_t> neighbors;
-		network_.connect<SERVER>(self_.addr, port);
+		network_.connect<SERVER>(ANY, port);
 		hci::access().inquiry(max_neighbors, neighbors);
 		#ifdef DEBUG
 		std::cout << self_.addr << "\tFound " << neighbors.size() << " neighbors\n";

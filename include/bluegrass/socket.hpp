@@ -17,8 +17,9 @@ namespace bluegrass {
 	 * "socket" wraps a Bluetooth socket and provides send and receive functionality.
 	 */
 	class socket {
-		friend class server;
 		friend class async_socket;
+		friend class server;
+		friend class router;
 		
 	public:
 		// default constructor does not create kernel level socket
