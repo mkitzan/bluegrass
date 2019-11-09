@@ -100,7 +100,7 @@ namespace bluegrass {
 				//++it;
 			} else {
 				#ifdef DEBUG
-				std::cout << addr_ << "\tLost neighbor detected " << std::endl;
+				std::cout << addr_ << "\tLost neighbor detected\n";
 				#endif
 				// TODO: Lost neighbor logic
 			}
@@ -127,7 +127,7 @@ namespace bluegrass {
 	void router::onboard(socket const& conn, network_t packet)
 	{
 		#ifdef DEBUG
-		std::cout << addr_ << "\tNew connection from " << packet.payload.addr << " onboard service\n";
+		std::cout << addr_ << "\tNew connection for onboard service\n";
 		#endif
 
 		// send packets to new router containing service info
@@ -147,14 +147,14 @@ namespace bluegrass {
 	void router::publish(socket const& conn, network_t packet) 
 	{
 		#ifdef DEBUG
-		std::cout << addr_ << "\tNew connection from " << packet.payload.addr << " publish service " << (int) packet.info.service << std::endl;
+		std::cout << addr_ << "\tNew connection publish service " << (int) packet.info.service << std::endl;
 		#endif
 		auto route {routes_.find(packet.info.service)};
 
 		// determine if new service is an improvement over current route
 		if (!available(route) || route->second.steps > packet.payload) {
 			#ifdef DEBUG
-			std::cout << addr_ << "\tNew service is best route\t" << (int) packet.payload << '\t' << packet.payload.addr << '\t' << (int) packet.payload.port << std::endl;
+			std::cout << addr_ << "\tNew service is best route\n";
 			#endif
 			routes_.emplace(packet.info.service, service_t{packet.payload, *clients_.find((async_socket&) conn)});
 			notify(packet);
