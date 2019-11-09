@@ -38,7 +38,7 @@ namespace bluegrass {
 	/*
 	 * Prints a human readable Bluetooth device address_t 
 	 */
-	std::ostream& operator<<(std::ostream&, const bdaddr_t&);
+	std::ostream& operator<<(std::ostream&, bdaddr_t const&);
 
 	inline bool operator==(const bdaddr_t addr, const bdaddr_t other)
 	{
@@ -50,7 +50,7 @@ namespace bluegrass {
 		return !(addr == other);
 	}
 
-	inline bool operator<(const bdaddr_t& addr, const bdaddr_t& other)
+	inline bool operator<(bdaddr_t const& addr, bdaddr_t const& other)
 	{
 		return bacmp(&addr, &other) < 0;
 	}

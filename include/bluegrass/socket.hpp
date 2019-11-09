@@ -16,10 +16,7 @@ namespace bluegrass {
 	 * "socket" wraps a Bluetooth socket and provides send and receive functionality.
 	 */
 	class socket {
-		friend class async_socket;
-		friend class server;
-		friend class router;
-		
+		friend class async_socket;		
 	public:
 		// default constructor does not create kernel level socket
 		socket() = default;
@@ -27,12 +24,12 @@ namespace bluegrass {
 		// creates a kernel level socket to provided address and port
 		socket(bdaddr_t, uint16_t);
 
-		socket(const socket&) = delete;
+		socket(socket const&) = delete;
 		socket(socket&&);
-		socket& operator=(const socket&) = delete;
+		socket& operator=(socket const&) = delete;
 		socket& operator=(socket&&);
 
-		bool operator<(const socket&) const;
+		bool operator<(socket const&) const;
 
 		// safely closes socket if active
 		void close();
@@ -75,7 +72,7 @@ namespace bluegrass {
 
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		friend const socket& operator<<(const socket& s, T* data) 
+		friend socket const& operator<<(socket const& s, T* data) 
 		{
 			s.send(data);
 			return s;
@@ -83,7 +80,7 @@ namespace bluegrass {
 
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		friend const socket& operator>>(const socket& s, T* data) 
+		friend socket const& operator>>(socket const& s, T* data) 
 		{
 			s.receive(data);
 			return s;
@@ -118,20 +115,21 @@ namespace bluegrass {
 	 * client onto the "service" it was constructed with when the signal is triggered.
 	 */
 	class async_socket : public socket {
-		using service_handle = service<socket, ENQUEUE>&;
-		using comm_group = std::pair<async_t, service_handle>;
-		using connections = std::map<int, std::pair<async_t, service_handle>>;
-
 	public:
-		async_socket(bdaddr_t, uint16_t, service_handle, async_t);
+		using service_handle = service<socket, ENQUEUE>;
 
-		async_socket(socket&&, service_handle, async_t);
+		async_socket(bdaddr_t, uint16_t, service_handle&, async_t);
+
+		async_socket(socket&&, service_handle&, async_t);
 
 		async_socket(async_socket&&) = default;
 
 		~async_socket();
 
 	private:
+		using comm_group = std::pair<async_t, service_handle&>;
+		using connections = std::map<int, std::pair<async_t, service_handle&>>;
+
 		void async(int);
 
 		// sigio signal handler hook

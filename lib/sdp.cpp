@@ -20,7 +20,7 @@ namespace bluegrass {
 	}
 
 	// Majority of code was ported from Albert Huang's: "The Use of Bluetooth in Linux and Location aware Computing"
-	void sdp::search(const service_t& svc, std::vector<service_t>& resps) const 
+	void sdp::search(service_t const& svc, std::vector<service_t>& resps) const
 	{
 		uuid_t id;
 		sdp_list_t *resp, *search, *attr, *proto;
@@ -74,8 +74,8 @@ namespace bluegrass {
 	}
 
 	// Majority of code was ported from Albert Huang's: "The Use of Bluetooth in Linux and Location aware Computing"
-	bool sdp::advertise(const service_t& svc, const std::string& name, 
-	const std::string& description, const std::string& provider) {
+	bool sdp::advertise(service_t const& svc, std::string const& name, 
+	std::string const& description, std::string const& provider) {
 		bool success = true;
 		uuid_t svc_uuid, root_uuid, proto_uuid;
 		sdp_list_t *root_list, *sub_list, *proto_list, *access_list;

@@ -5,7 +5,6 @@
 #include "bluegrass/service.hpp"
 #include "bluegrass/hci.hpp"
 #include "bluegrass/socket.hpp"
-#include "bluegrass/network.hpp"
 
 using namespace std;
 using namespace bluegrass;
@@ -32,20 +31,17 @@ void serve(bluegrass::socket& sk) {
 	WAIT = false;
 }
 
-void test(uint16_t n) {
+int main() {
+	cout << "Starting L2CAP network test\n";
 	cout << "\tCreating network\n" << flush;
 	try {
-		network s(serve, 0x1001, n);
+		async_socket::service_handle s {serve, 2, 1};
+		async_socket as(ANY, 0x1001, s, async_t::SERVER);
 		while (WAIT);
 		WAIT = true;
 	} catch (...) {
 		cout << "\tServer construction failed\n";
 	}
-}
-
-int main() {
-	cout << "Starting L2CAP network test\n";
-	test(0x1001);
 	cout << "L2CAP network test complete\n" << flush;
 	
 	return 0;

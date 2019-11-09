@@ -31,9 +31,9 @@ namespace bluegrass {
 			return hci_;
 		}
 		
-		hci(const hci&) = default;
+		hci(hci const&) = default;
 		hci(hci&&) = default;
-		hci& operator=(const hci&) = default;
+		hci& operator=(hci const&) = default;
 		hci& operator=(hci&&) = default;
 		
 		/*
@@ -49,10 +49,10 @@ namespace bluegrass {
 		 * of a nearby Bluetooth devices retrieving its human readable device name. 
 		 * If a Bluetooth device is unreachable "unknown" will be returned.
 		 */
-		std::string name(const device_t& dev) const;
+		std::string name(device_t const& dev) const;
 		
 		// "self" returns the Bluetooth device address of the local device.
-		inline bdaddr_t self() const 
+		inline bdaddr_t self() const
 		{
 			bdaddr_t self;
 			hci_devba(device_, &self);

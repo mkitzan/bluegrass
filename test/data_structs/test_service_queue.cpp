@@ -28,7 +28,7 @@ void create_test1(char& data)
 	if (STR1[I]) { ++I; }
 }
 
-void utilize_test(const char& data) 
+void utilize_test(char const& data) 
 {
 	cout << data << flush;
 }

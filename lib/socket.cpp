@@ -25,7 +25,7 @@ namespace bluegrass {
 		return *this;
 	}
 
-	bool socket::operator<(const socket& other) const
+	bool socket::operator<(socket const& other) const
 	{
 		return handle_ < other.handle_;
 	}
@@ -72,7 +72,7 @@ namespace bluegrass {
 		close(); 
 	}
 
-	async_socket::async_socket(bdaddr_t addr, uint16_t port, service_handle svc, async_t type)
+	async_socket::async_socket(bdaddr_t addr, uint16_t port, service_handle& svc, async_t type)
 	{
 		int flag {};
 		auto peer {setup(addr, port)};
@@ -88,7 +88,7 @@ namespace bluegrass {
 		async(flag);
 	}
 
-	async_socket::async_socket(socket&& client, service_handle svc, async_t type) : socket{std::move(client)}
+	async_socket::async_socket(socket&& client, service_handle& svc, async_t type) : socket{std::move(client)}
 	{
 		services_.emplace(std::pair<int, comm_group>{handle_, comm_group{type, svc}});
 		async(0);
@@ -141,6 +141,6 @@ namespace bluegrass {
 		}
 	}
 
-	std::map<int, std::pair<async_t, service<socket, ENQUEUE>&>> async_socket::services_;
+	std::map<int, std::pair<async_t, async_socket::service_handle&>> async_socket::services_;
 
 } // namespace bluegrass

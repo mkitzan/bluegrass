@@ -3,10 +3,11 @@
 
 #include <iostream>
 #include <map>
+#include <set>
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/hci.hpp"
-#include "bluegrass/network.hpp"
+#include "bluegrass/socket.hpp"
 
 namespace bluegrass {
 
@@ -15,9 +16,9 @@ namespace bluegrass {
 		router(uint16_t, size_t=16, size_t=2);
 
 		// router is not copyable or movable: need stable references
-		router(const router&) = delete;
+		router(router const&) = delete;
 		router(router&&) = delete;
-		router& operator=(const router&) = delete;
+		router& operator=(router const&) = delete;
 		router& operator=(router&&) = delete;
 		
 		~router();
@@ -27,13 +28,13 @@ namespace bluegrass {
 			return routes_.find(service) != routes_.end();
 		}
 
-		void publish(uint8_t, uint16_t);
+		void publish(uint8_t, async_socket const&);
 
 		void suspend(uint8_t);
 
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		bool trigger(uint8_t service, const T& payload)
+		bool trigger(uint8_t service, T const& payload)
 		{
 			// TODO
 			// be sure to offset length with header_t size
@@ -65,14 +66,18 @@ namespace bluegrass {
 		// meta packet payload for maintaining network state
 		struct service_t {
 			uint8_t steps;
-			bdaddr_t addr;
-			uint16_t port;
+			async_socket const& conn;
 		};
 		
 		// meta packet definition 
-		using network_t = packet_t<service_t>;
+		using network_t = packet_t<uint8_t>;
 
 		static constexpr uint8_t NET_LEN = static_cast<uint8_t>(sizeof(network_t));
+
+		inline bool available(std::set<async_socket>::const_iterator svc) const
+		{
+			return svc != clients_.end();
+		}
 
 		inline bool available(std::map<uint8_t, service_t>::const_iterator svc) const
 		{
@@ -81,19 +86,25 @@ namespace bluegrass {
 
 		void notify(network_t) const;
 
-		void publish(network_t);
+		void publish(socket const&, network_t);
 
 		void suspend(network_t);
 
-		void onboard(const socket&, network_t);
+		void onboard(socket const&, network_t);
 
-		void trigger(const socket&, uint8_t);
+		void trigger(socket const&, uint8_t, uint8_t);
 
 		void connection(socket&);
 
-		network network_;
+		async_socket::service_handle service_;
+
+		bdaddr_t addr_;
+		uint16_t port_;
+		async_socket server_;
+
+		std::set<async_socket, std::less<socket>> clients_;
 		std::map<uint8_t, service_t> routes_;
-		const service_t self_;
+
 		uint8_t length_;
 		uint8_t* buffer_;
 	};

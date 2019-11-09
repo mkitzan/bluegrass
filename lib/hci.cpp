@@ -2,7 +2,7 @@
 
 namespace bluegrass {
 
-	inline bool operator<(const device_t& dev, const device_t& other)
+	inline bool operator<(device_t const& dev, device_t const& other)
 	{
 		return (long long unsigned int) dev.addr.b < (long long unsigned int) other.addr.b;
 	}
@@ -61,7 +61,7 @@ namespace bluegrass {
 		::operator delete[](inquiries);
 	}
 
-	std::string hci::name(const device_t& dev) const
+	std::string hci::name(device_t const& dev) const
 	{
 		std::unique_lock<std::mutex> lock {m_};
 		char cstr[64];
@@ -74,7 +74,7 @@ namespace bluegrass {
 		return str;
 	}
 
-	int8_t hci::rssi(device_t& dev) const 
+	int8_t hci::rssi(device_t& dev) const
 	{
 		std::unique_lock<std::mutex> lock {m_};
 		int8_t rssi;

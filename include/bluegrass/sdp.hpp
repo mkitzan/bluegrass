@@ -24,9 +24,9 @@ namespace bluegrass {
 		// "sdp" constructs an SDP session with a remote device's SDP server.
 		sdp(bdaddr_t);
 		
-		sdp(const sdp&) = delete;
+		sdp(sdp const&) = delete;
 		sdp(sdp&&) = default;
-		sdp& operator=(const sdp&) = delete;
+		sdp& operator=(sdp const&) = delete;
 		sdp& operator=(sdp&&) = default;
 		
 		// closes sdp session
@@ -37,13 +37,13 @@ namespace bluegrass {
 		 * "svc" service_t on the remote device's SDP server. On return the "resps" 
 		 * vector is filled with matching service_ts.
 		 */
-		void search(const service_t&, std::vector<service_t>&) const;
+		void search(service_t const&, std::vector<service_t>&) const;
 		
 		/*
 		 * "advertise" constructs a Bluetooth service record and registers it on the 
 		 * Bluetooth device's local SDP server.
 		 */
-		bool advertise(const service_t&, const std::string&, const std::string&, const std::string&);
+		bool advertise(service_t const&, std::string const&, std::string const&, std::string const&);
 	
 	private:
 		sdp_session_t* session_;

@@ -82,9 +82,9 @@ namespace bluegrass {
 		}
 		
 		// service is not copyable or movable: need stable references
-		service(const service&) = delete;
+		service(service const&) = delete;
 		service(service&&) = delete;
-		service& operator=(const service&) = delete;
+		service& operator=(service const&) = delete;
 		service& operator=(service&&) = delete;
 
 		// RAII destructor performs shutdown and join
