@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <memory>
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/hci.hpp"
@@ -36,9 +37,16 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool trigger(uint8_t service, T const& payload)
 		{
-			// TODO
-			// be sure to offset length with header_t size
-			return true;
+			bool result {false};
+
+			if (available(service)) {
+				auto route {routes_.find(service)->second};
+				packet_t<T> packet {{utility_t::TRIGGER, service, sizeof(T)}, payload}; 
+				
+				result = route.conn.send(&packet, sizeof(packet_t<T>));
+			}
+			
+			return result;
 		}
 
 	private:
@@ -106,7 +114,7 @@ namespace bluegrass {
 		std::map<uint8_t, service_t> routes_;
 
 		uint8_t length_;
-		uint8_t* buffer_;
+		std::unique_ptr<uint8_t*> buffer_;
 	};
 
 } // namespace bluegrass 

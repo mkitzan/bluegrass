@@ -12,23 +12,21 @@ namespace bluegrass {
 		length_ {NET_LEN}
 	{
 		// allocate trigger buffer
-		buffer_ = static_cast<uint8_t*>(::operator new(length_));
-
-		#ifdef DEBUG
+		buffer_ = std::make_unique<uint8_t*>(new uint8_t[length_]);
+#ifdef DEBUG
 		std::cout << addr_ << "\tFinding neighbors\n";
-		#endif
+#endif
 		std::vector<bdaddr_t> neighbors {};
 		hci::access().inquiry(max_neighbors, neighbors);
-		#ifdef DEBUG
+#ifdef DEBUG
 		std::cout << addr_ << "\tFound " << neighbors.size() << " neighbors\n";
-		#endif
-
+#endif
 		// onboard to router / build best routes
 		for (auto addr : neighbors) {
 			try {
-				#ifdef DEBUG
+#ifdef DEBUG
 				std::cout << addr_ << "\tNeighbor detected " << addr << std::endl;
-				#endif
+#endif
 				const async_socket& neighbor {*clients_.emplace(async_socket{addr, port_, service_, async_t::CLIENT}).first};
 				network_t packet {utility_t::ONBOARD, 0, NET_LEN, 0};
 				neighbor.receive(&packet);
@@ -37,23 +35,23 @@ namespace bluegrass {
 				while (neighbor.receive(&packet) && packet.info.utility == utility_t::ONBOARD) {
 					++packet.payload;
 					auto route {routes_.find(packet.info.service)};
-					#ifdef DEBUG
+#ifdef DEBUG
 					std::cout << addr_ << "\tReceived service " << (int) packet.info.service << " " << addr << std::endl;
-					#endif
-
+#endif
 					// determine if new service is an improvement over current route
 					if (!available(route) || route->second.steps > packet.payload) {
-						#ifdef DEBUG
+#ifdef DEBUG
 						std::cout << addr_ << "\tUpdating service " << (int) packet.info.service << " " << addr << std::endl;
-						#endif
+#endif
 						routes_.emplace(packet.info.service, service_t{packet.payload, neighbor});
 					}
 				}
 
 			} catch (std::runtime_error& e) {
-				#ifdef DEBUG
+#ifdef DEBUG
 				std::cout << addr_ << "\tInvalid neighbor detected " << addr << std::endl;
-				#endif
+#endif
+				// TODO: immediate neighbor loss handler
 			}
 		}
 	}
@@ -66,13 +64,12 @@ namespace bluegrass {
 			}
 		}
 		// clean up allocated trigger buffer
-		delete buffer_;
+		//delete buffer_;
 	}
 
 	void router::publish(uint8_t service, async_socket const& handler) 
 	{
 		if (!available(service)) {
-			// TODO: fix ctor
 			routes_.insert({service, {0, handler}});
 			notify(network_t{utility_t::PUBLISH, service, NET_LEN, 0});
 		}
@@ -89,19 +86,19 @@ namespace bluegrass {
 
 	void router::notify(network_t packet) const
 	{
-		#ifdef DEBUG
+#ifdef DEBUG
 		std::cout << addr_ << "\tNotifying neighbors\n";
-		#endif
+#endif
 		++packet.payload;
 
 		// forward packet which caused route change
 		for (auto it {clients_.begin()}; it != clients_.end(); ++it) {
-			if(it->send(&packet)) {
+			if (it->send(&packet)) {
 				//++it;
 			} else {
-				#ifdef DEBUG
+#ifdef DEBUG
 				std::cout << addr_ << "\tLost neighbor detected\n";
-				#endif
+#endif
 				// TODO: Lost neighbor logic
 			}
 		}
@@ -112,29 +109,27 @@ namespace bluegrass {
 		// reallocate trigger buffer if needed
 		// TODO: consider scaling buffer size to accommodate 
 		if (length_ < length) {
-			delete buffer_;
-			buffer_ = static_cast<uint8_t*>(::operator new(length));
+			buffer_ = std::make_unique<uint8_t*>(new uint8_t[length]);
 			length_ = length;
 		}
 
 		// TODO: buffer overflow vector test this
-		conn.receive(buffer_, length);
+		conn.receive(*buffer_, length);
 		
 		auto route {routes_.find(service)->second};
-		route.conn.send(buffer_, length);
+		route.conn.send(*buffer_, length);
 	}
 
 	void router::onboard(socket const& conn, network_t packet)
 	{
-		#ifdef DEBUG
+#ifdef DEBUG
 		std::cout << addr_ << "\tNew connection for onboard service\n";
-		#endif
-
+#endif
 		// send packets to new router containing service info
 		for (auto route {routes_.begin()}; route != routes_.end(); ++route) {
-			#ifdef DEBUG
+#ifdef DEBUG
 			std::cout << addr_ << "\tForwarding service " << (int) route->first << " to new neighbor device\n";
-			#endif
+#endif
 			packet = {{utility_t::ONBOARD, route->first, NET_LEN}, route->second.steps};
 			conn << &packet;
 		}
@@ -146,16 +141,16 @@ namespace bluegrass {
 
 	void router::publish(socket const& conn, network_t packet) 
 	{
-		#ifdef DEBUG
+#ifdef DEBUG
 		std::cout << addr_ << "\tNew connection publish service " << (int) packet.info.service << std::endl;
-		#endif
+#endif
 		auto route {routes_.find(packet.info.service)};
 
 		// determine if new service is an improvement over current route
 		if (!available(route) || route->second.steps > packet.payload) {
-			#ifdef DEBUG
+#ifdef DEBUG
 			std::cout << addr_ << "\tNew service is best route\n";
-			#endif
+#endif
 			routes_.emplace(packet.info.service, service_t{packet.payload, *clients_.find((async_socket&) conn)});
 			notify(packet);
 		}
@@ -166,19 +161,18 @@ namespace bluegrass {
 		auto route {routes_.find(packet.info.service)};
 
 		if (available(route)) {
-			#ifdef DEBUG
+#ifdef DEBUG
 			std::cout << addr_ << "\tNew connection to suspend service " << (int) packet.info.service << std::endl;
-			#endif
-
+#endif
 			if (route->second.steps) {
-				#ifdef DEBUG
+#ifdef DEBUG
 				std::cout << addr_ << "\tService is dropped " << (int) packet.info.service << std::endl;
-				#endif
+#endif
 				routes_.erase(route);
 			} else {
-				#ifdef DEBUG
+#ifdef DEBUG
 				std::cout << addr_ << "\tDevice offers service being dropped: advertising device's service\n";
-				#endif
+#endif
 				packet.payload = route->second.steps;
 			}
 			
