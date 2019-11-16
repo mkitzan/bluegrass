@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cstdlib>
+#include <cstring>
 
 #include "bluegrass/bluetooth.hpp"
 #include "bluegrass/router.hpp"
@@ -21,36 +23,37 @@ void chat(bluegrass::socket& conn)
 	std::cout << '[' << m.usr << "]\t" << m.msg << std::endl;
 }
 
-int main() 
+int main(int argc, char** argv) 
 {
+	if (argc != 3) {
+		std::cout << "./router_test <id> <username>\n";
+		exit(1);
+	}
+
 	router network {0x1001};
 	async_socket::service_handle chat_queue {chat, 2, 1};
 	async_socket chat_socket {ANY, 0x1003, chat_queue, async_t::SERVER};
 
-	uint8_t svc;
+	uint8_t self {static_cast<uint8_t>(atoi(argv[1]))}, svc;
 	message_t message;
-
-	std::cout << "Enter service id: ";
-	std::cin >> &svc;
-	std::cout << "Enter user name: ";
-	std::cin >> message.usr;
+	strncpy(message.usr, argv[2], 8);
 	message.usr[7] = '\0';
 
-	network.publish(svc, chat_socket);
+	network.publish(self, chat_socket);
 
 	for (;;) {
 		std::cin.clear();
-		std::cin >> &svc;
-		std::cin.clear();
-
-		std::cout << "Enter service id: ";
-		if (std::cin >> &svc && network.available(svc)) {
-			std::cout << "Enter message: ";
-			std::cin >> message.msg;
-			message.msg[63] = '\0';
-			network.trigger(svc, message);
-		} else {
-			std::cout << "Service unavailable\n";
+		if (std::cin >> &svc && svc == self) {
+			std::cout << "Enter service id: ";
+			std::cin.clear();
+			if (std::cin >> &svc && network.available(svc)) {
+				std::cout << "Enter message: ";
+				std::cin >> message.msg;
+				message.msg[63] = '\0';
+				network.trigger(svc, message);
+			} else {
+				std::cout << "Service unavailable\n";
+			}
 		}
 	}
 
