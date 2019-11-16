@@ -39,9 +39,9 @@ int main()
 	network.publish(svc, chat_socket);
 
 	for (;;) {
-		cin.clear();
+		std::cin.clear();
 		std::cin >> &svc;
-		cin.clear();
+		std::cin.clear();
 
 		std::cout << "Enter service id: ";
 		if (std::cin >> &svc && network.available(svc)) {
