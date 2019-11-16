@@ -19,7 +19,7 @@ int main()
 	cout << "Constructing router\n";
 	router network {0x1001};
 	async_socket::service_handle s {dummy, 1, 1};
-	async_socket as {ANY, 0x1003, s, async_t::CLIENT};
+	async_socket as {ANY, 0x1003, s, async_t::SERVER};
 	int svc {};
 
 	for (;;) {

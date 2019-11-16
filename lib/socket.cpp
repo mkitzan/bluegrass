@@ -81,16 +81,22 @@ namespace bluegrass {
 			c_close(handle_);
 			throw std::runtime_error("Failed creating client_socket");
 		}
+		
 		// create and register the server socket
-		flag |= c_bind(handle_, (const struct sockaddr*) &peer, sizeof(peer));
-		flag |= c_listen(handle_, 4);
-		services_.emplace(std::pair<int, comm_group>{handle_, comm_group{type, svc}});
+		if (type == async_t::SERVER) {			
+			flag |= c_bind(handle_, (const struct sockaddr*) &peer, sizeof(peer));
+			flag |= c_listen(handle_, 4);
+		} else {
+			flag |= c_connect(handle_, (const struct sockaddr*) &peer, sizeof(peer))
+		}
+
+		services_.emplace(handle_, comm_group{type, svc});
 		async(flag);
 	}
 
 	async_socket::async_socket(socket&& client, service_handle& svc, async_t type) : socket{std::move(client)}
 	{
-		services_.emplace(std::pair<int, comm_group>{handle_, comm_group{type, svc}});
+		services_.emplace(handle_, comm_group{type, svc});
 		async(0);
 	}
 
@@ -115,6 +121,7 @@ namespace bluegrass {
 		flag |= fcntl(handle_, F_SETSIG, SIGIO);
 		
 		if (flag == -1) {
+			services_.erase(handle_);
 			c_close(handle_);
 			throw std::runtime_error("Failed creating async_socket");
 		}

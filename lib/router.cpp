@@ -27,7 +27,7 @@ namespace bluegrass {
 #ifdef DEBUG
 				std::cout << addr_ << "\tNeighbor detected " << addr << std::endl;
 #endif
-				const async_socket& neighbor {*clients_.emplace(async_socket{addr, port_, service_, async_t::CLIENT}).first};
+				const async_socket& neighbor {*(clients_.emplace(addr, port_, service_, async_t::CLIENT).first)};
 				network_t packet {utility_t::ONBOARD, 0, NET_LEN, 0};
 				neighbor.send(&packet);
 
@@ -46,12 +46,10 @@ namespace bluegrass {
 						routes_.emplace(packet.info.service, service_t{packet.payload, neighbor});
 					}
 				}
-
 			} catch (std::runtime_error& e) {
 #ifdef DEBUG
 				std::cout << addr_ << "\tInvalid neighbor detected " << addr << std::endl;
 #endif
-				// TODO: immediate neighbor loss handler
 			}
 		}
 	}
@@ -193,7 +191,7 @@ namespace bluegrass {
 				onboard(conn, packet);
 				// onboard connections are generated through "accept" calls
 				//	safe to move into the network
-				clients_.emplace(async_socket{std::move(conn), service_, async_t::CLIENT});
+				clients_.emplace(std::move(conn), service_, async_t::CLIENT);
 			} else if (info.utility == utility_t::PUBLISH) {
 				publish(conn, packet);
 			} else if (info.utility == utility_t::SUSPEND) {
