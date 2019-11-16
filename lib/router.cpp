@@ -7,12 +7,12 @@ namespace bluegrass {
 	router::router(uint16_t port, size_t max_neighbors, size_t thread_count) :
 		addr_ {hci::access().self()},
 		port_ {port},
-		service_ {[&](socket& conn){ connection(conn); }, thread_count, max_neighbors},
+		service_ {[&](socket& conn){ connection(conn); }, max_neighbors, thread_count},
 		server_ {ANY, port_, service_, async_t::SERVER},
 		length_ {NET_LEN}
 	{
 		// allocate trigger buffer
-		buffer_ = std::make_unique<uint8_t*>(new uint8_t[length_]);
+		buffer_ = std::make_unique<uint8_t*>(static_cast<uint8_t*>(::operator new[](length_)));
 #ifdef DEBUG
 		std::cout << addr_ << "\tFinding neighbors\n";
 #endif
@@ -119,7 +119,7 @@ namespace bluegrass {
 	{
 		// reallocate trigger buffer if needed
 		if (length_ < length) {
-			buffer_ = std::make_unique<uint8_t*>(new uint8_t[length]);
+			buffer_ = std::make_unique<uint8_t*>(static_cast<uint8_t*>(::operator new[](length)));
 			length_ = length;
 		}
 
@@ -172,7 +172,7 @@ namespace bluegrass {
 
 		if (available(route)) {
 #ifdef DEBUG
-			std::cout << addr_ << "\tNew connection to suspend service " << (int) packet.info.service << std::endl;
+			std::cout << addr_ << "\tNew connection suspend service " << (int) packet.info.service << std::endl;
 #endif
 			if (route->second.steps) {
 #ifdef DEBUG

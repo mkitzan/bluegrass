@@ -6,7 +6,8 @@
 using namespace std;
 using namespace bluegrass;
 
-int main() {
+int main() 
+{
 #ifdef DEBUG
 	cout << "Constructing router\n";
 	router network {0x1001};

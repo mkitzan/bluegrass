@@ -8,7 +8,8 @@
 using namespace std;
 using namespace bluegrass;
 
-int main() {
+int main() 
+{
 	// access HCI singleton connection
 	hci& controller = hci::access();
 	service_t svc {0xCF, 0x1001};

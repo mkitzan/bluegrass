@@ -10,7 +10,8 @@ using namespace std;
 using namespace bluegrass;
 
 // this routine sends "zimmermann.txt" to the client Bluetooth device
-void transfer(bluegrass::socket& conn) {	
+void transfer(bluegrass::socket& conn) 
+{	
 	scoped_socket us(std::move(conn));
 	
 	bdaddr_t peer {0};
@@ -43,7 +44,8 @@ void transfer(bluegrass::socket& conn) {
 	cout << '[' << peer<< ']' << " file transfer complete\n" << endl << flush;
 }
 
-int main() {	
+int main() 
+{	
 	try {
 		cout << "Creating network\n" << flush;
 		async_socket::service_handle s {transfer, 2, 1};

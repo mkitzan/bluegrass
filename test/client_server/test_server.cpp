@@ -11,7 +11,8 @@ using namespace bluegrass;
 
 bool WAIT = true;
 
-void serve(bluegrass::socket& sk) {
+void serve(bluegrass::socket& sk) 
+{
 	bdaddr_t addr {0};
 	scoped_socket us(std::move(sk));
 	
@@ -31,7 +32,8 @@ void serve(bluegrass::socket& sk) {
 	WAIT = false;
 }
 
-int main() {
+int main() 
+{
 	cout << "Starting L2CAP network test\n";
 	cout << "\tCreating network\n" << flush;
 	try {

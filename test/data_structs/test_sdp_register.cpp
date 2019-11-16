@@ -7,7 +7,8 @@
 using namespace std;
 using namespace bluegrass;
 
-int main() {
+int main() 
+{
 	// create an sdp object to local SDP server
 	sdp local {};
 	service_t svc {0xCF, 0x1001};

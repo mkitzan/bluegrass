@@ -8,7 +8,8 @@
 using namespace std;
 using namespace bluegrass;
 
-int main() {
+int main() 
+{
 	vector<device_t> devices;
 	// access HCI singleton connection
 	hci& controller = hci::access();

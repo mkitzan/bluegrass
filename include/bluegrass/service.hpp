@@ -44,7 +44,7 @@ namespace bluegrass {
 	public:
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != NOQUEUE, bool> = true>
-		service(std::function<void(T&)> routine, size_t thread_count, size_t queue_size) : 
+		service(std::function<void(T&)> routine, size_t queue_size, size_t thread_count) : 
 			max_ {queue_size} 
 		{		
 			// reserved vector will ensure stable threads
@@ -65,7 +65,7 @@ namespace bluegrass {
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == NOQUEUE, bool> = true>
 		service(std::function<void(T&)> enq_routine, std::function<void(T&)> deq_routine,
-			size_t enq_threads, size_t deq_threads, size_t queue_size) : 
+			size_t queue_size, size_t enq_threads, size_t deq_threads) : 
 			max_ {queue_size} 
 		{	
 			// reserved vector will ensure stable threads
@@ -223,9 +223,11 @@ namespace bluegrass {
 		
 		mutable std::condition_variable enqcv_, deqcv_;
 		mutable std::mutex m_;
+
 		std::queue<T> queue_;
 		std::vector<std::thread> threads_;
-		const std::size_t max_;
+
+		const size_t max_;
 		bool open_ {true};
 	};
 

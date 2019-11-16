@@ -10,7 +10,8 @@
 using namespace std;
 using namespace bluegrass;
 
-int main() {
+int main() 
+{
 	vector<device_t> devices;
 	struct packet_t packet {0, 0};
 	
