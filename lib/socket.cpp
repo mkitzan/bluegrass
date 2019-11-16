@@ -81,13 +81,13 @@ namespace bluegrass {
 			c_close(handle_);
 			throw std::runtime_error("Failed creating client_socket");
 		}
-		
+
 		// create and register the server socket
 		if (type == async_t::SERVER) {			
 			flag |= c_bind(handle_, (const struct sockaddr*) &peer, sizeof(peer));
 			flag |= c_listen(handle_, 4);
 		} else {
-			flag |= c_connect(handle_, (const struct sockaddr*) &peer, sizeof(peer))
+			flag |= c_connect(handle_, (const struct sockaddr*) &peer, sizeof(peer));
 		}
 
 		services_.emplace(handle_, comm_group{type, svc});
