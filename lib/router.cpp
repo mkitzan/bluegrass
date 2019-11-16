@@ -5,9 +5,9 @@
 namespace bluegrass {
 	
 	router::router(uint16_t port, size_t max_neighbors, size_t thread_count) :
-		service_ {[&](socket& conn){ connection(conn); }, thread_count, max_neighbors},
 		addr_ {hci::access().self()},
 		port_ {port},
+		service_ {[&](socket& conn){ connection(conn); }, thread_count, max_neighbors},
 		server_ {ANY, port_, service_, async_t::SERVER},
 		length_ {NET_LEN}
 	{
@@ -56,7 +56,7 @@ namespace bluegrass {
 
 	router::~router() 
 	{
-		for (auto route : routes_) {
+		for (auto const& route : routes_) {
 			if (!route.second.steps) {
 				notify(network_t{utility_t::SUSPEND, route.first, NET_LEN, 0});
 			}
@@ -80,7 +80,7 @@ namespace bluegrass {
 		}
 	}
 
-	void router::notify(network_t packet) const
+	void router::notify(network_t packet)
 	{
 #ifdef DEBUG
 		std::cout << addr_ << "\tNotifying neighbors\n";
@@ -88,14 +88,29 @@ namespace bluegrass {
 		++packet.payload;
 
 		// forward packet which caused route change
-		for (auto it {clients_.begin()}; it != clients_.end(); ++it) {
+		for (auto it {clients_.begin()}; it != clients_.end();) {
 			if (it->send(&packet)) {
-				//++it;
+				++it;
 			} else {
 #ifdef DEBUG
 				std::cout << addr_ << "\tLost neighbor detected\n";
 #endif
-				// TODO: Lost neighbor logic
+				std::vector<uint8_t> lost {};
+				for (auto route {routes_.begin()}; route != routes_.end();) {
+					if (route->second.conn != *it) {
+						++it;
+					} else {
+						lost.push_back(route->first);
+						route = routes_.erase(route);
+					}
+				}
+
+				// erase after finding all lost services to prevent inf recursion
+				it = clients_.erase(it);
+
+				for (auto s : lost) {
+					notify(network_t{utility_t::SUSPEND, s, NET_LEN, 0});
+				}
 			}
 		}
 	}
@@ -103,7 +118,6 @@ namespace bluegrass {
 	void router::trigger(socket const& conn, uint8_t length, uint8_t service)
 	{
 		// reallocate trigger buffer if needed
-		// TODO: consider scaling buffer size to accommodate 
 		if (length_ < length) {
 			buffer_ = std::make_unique<uint8_t*>(new uint8_t[length]);
 			length_ = length;
@@ -122,17 +136,17 @@ namespace bluegrass {
 		std::cout << addr_ << "\tNew connection for onboard service\n";
 #endif
 		// send packets to new router containing service info
-		for (auto route {routes_.begin()}; route != routes_.end(); ++route) {
+		for (auto const& route : routes_) {
 #ifdef DEBUG
-			std::cout << addr_ << "\tForwarding service " << (int) route->first << " to new neighbor device\n";
+			std::cout << addr_ << "\tForwarding service " << (int) route.first << " to new neighbor device\n";
 #endif
-			packet = {{utility_t::ONBOARD, route->first, NET_LEN}, route->second.steps};
-			conn << &packet;
+			packet = {{utility_t::ONBOARD, route.first, NET_LEN}, route.second.steps};
+			conn.send(&packet);
 		}
 
 		packet.info = header_t {utility_t::SUSPEND, 0, 0};
 		packet.payload = 0;
-		conn << &packet;
+		conn.send(&packet);
 	}
 
 	void router::publish(socket const& conn, network_t packet) 
@@ -189,8 +203,7 @@ namespace bluegrass {
 
 			if (info.utility == utility_t::ONBOARD) {
 				onboard(conn, packet);
-				// onboard connections are generated through "accept" calls
-				//	safe to move into the network
+				// onboard connections are from "accept" calls: safe to move into the network
 				clients_.emplace(std::move(conn), service_, async_t::CLIENT);
 			} else if (info.utility == utility_t::PUBLISH) {
 				publish(conn, packet);

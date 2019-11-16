@@ -19,7 +19,7 @@ namespace bluegrass {
 		friend class async_socket;		
 	public:
 		// default constructor does not create kernel level socket
-		socket() = default;
+		socket() : handle_ {-1} {};
 		
 		// creates a kernel level socket to provided address and port
 		socket(bdaddr_t, uint16_t);
@@ -30,6 +30,8 @@ namespace bluegrass {
 		socket& operator=(socket&&);
 
 		bool operator<(socket const&) const;
+		bool operator==(socket const&) const;
+		bool operator!=(socket const&) const;
 
 		// safely closes socket if active
 		void close();
@@ -39,11 +41,7 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool receive(T* data, int flags=0) const
 		{
-			int state {-1};
-			if (handle_ != -1) {
-				state = c_recv(handle_, (void*) data, sizeof(T), flags);
-			}
-			return state != -1;
+			return c_recv(handle_, (void*) data, sizeof(T), flags) != -1;
 		}
 		
 		// receives data from the socket into data reference.
@@ -54,11 +52,7 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool send(const T* data) const
 		{
-			int state {-1};
-			if (handle_ != -1) {
-				state = c_send(handle_, (void*) data, sizeof(T), 0);
-			}
-			return state != -1;
+			return c_send(handle_, (void*) data, sizeof(T), 0) != -1;
 		}
 		
 		// sends data in data reference to peer socket.
@@ -86,7 +80,7 @@ namespace bluegrass {
 			return s;
 		}
 
-		int handle_ {-1};
+		int handle_;
 	};
 	
 	/*

@@ -30,6 +30,16 @@ namespace bluegrass {
 		return handle_ < other.handle_;
 	}
 
+	bool socket::operator==(socket const& other) const
+	{
+		return handle_ == other.handle_;
+	}
+
+	bool socket::operator!=(socket const& other) const
+	{
+		return !(handle_ == other.handle_);
+	}
+
 	void socket::close() 
 	{
 		if (handle_ != -1) {

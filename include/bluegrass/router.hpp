@@ -38,12 +38,11 @@ namespace bluegrass {
 		bool trigger(uint8_t service, T const& payload)
 		{
 			bool result {false};
+			auto route {routes_.find(service)};
 
-			if (available(service)) {
-				auto route {routes_.find(service)->second};
+			if (available(route)) {
 				packet_t<T> packet {{utility_t::TRIGGER, service, sizeof(T)}, payload}; 
-				
-				result = route.conn.send(&packet, sizeof(packet_t<T>));
+				result = route->second.conn.send(&packet, sizeof(packet_t<T>));
 			}
 			
 			return result;
@@ -92,7 +91,7 @@ namespace bluegrass {
 			return svc != routes_.end();
 		}
 
-		void notify(network_t) const;
+		void notify(network_t);
 
 		void publish(socket const&, network_t);
 
@@ -104,10 +103,10 @@ namespace bluegrass {
 
 		void connection(socket&);
 
-		async_socket::service_handle service_;
-
 		bdaddr_t addr_;
 		uint16_t port_;
+
+		async_socket::service_handle service_;
 		async_socket server_;
 
 		std::set<async_socket, std::less<socket>> clients_;
