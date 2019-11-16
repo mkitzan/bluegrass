@@ -10,7 +10,8 @@
 using namespace std;
 using namespace bluegrass;
 
-void test(uint16_t n) {
+void test(uint16_t n) 
+{
 	vector<device_t> devices;
 	
 	hci& controller = hci::access();
@@ -37,7 +38,8 @@ void test(uint16_t n) {
 	}
 }
 
-int main() {
+int main() 
+{
 	cout << "Starting L2CAP client test\n";
 	test(0x1001);
 	cout << "L2CAP server test complete\n\n" << flush;
