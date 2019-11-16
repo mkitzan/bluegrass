@@ -15,7 +15,7 @@ void dummy(bluegrass::socket& conn)
 
 int main() 
 {
-	#ifndef DEBUG
+#ifndef DEBUG
 	cout << "Constructing router\n";
 	router network {0x1001};
 	async_socket::service_handle s {dummy, 1, 1};
@@ -38,9 +38,8 @@ int main()
 		cin.clear();
 	}
 	cout << "Destructing router\n";
-	#else
+#else
 	std::cout << "DEBUG must not be defined to run the active router test\n\tRun: \"cmake ../bluegrass\"\n";
-	#endif
-
+#endif
 	return 0;
 }

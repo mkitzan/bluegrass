@@ -29,7 +29,7 @@ namespace bluegrass {
 #endif
 				const async_socket& neighbor {*clients_.emplace(async_socket{addr, port_, service_, async_t::CLIENT}).first};
 				network_t packet {utility_t::ONBOARD, 0, NET_LEN, 0};
-				neighbor.receive(&packet);
+				neighbor.send(&packet);
 
 				// receive all the services held by the neighbor
 				while (neighbor.receive(&packet) && packet.info.utility == utility_t::ONBOARD) {
@@ -63,8 +63,6 @@ namespace bluegrass {
 				notify(network_t{utility_t::SUSPEND, route.first, NET_LEN, 0});
 			}
 		}
-		// clean up allocated trigger buffer
-		//delete buffer_;
 	}
 
 	void router::publish(uint8_t service, async_socket const& handler) 
