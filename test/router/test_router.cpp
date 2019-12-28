@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 	async_socket::service_handle chat_queue {chat, 2, 1};
 	async_socket chat_socket {ANY, 0x1003, chat_queue, async_t::SERVER};
 
-	uint8_t self {static_cast<uint8_t>(atoi(argv[1]))}, svc;
+	int self {atoi(argv[1])}, svc;
 	message_t message;
 	strncpy(message.usr, argv[2], 8);
 	message.usr[7] = '\0';
@@ -43,10 +43,10 @@ int main(int argc, char** argv)
 
 	for (;;) {
 		std::cin.clear();
-		if (std::cin >> &svc && svc == self) {
+		if (std::cin >> svc && svc == self) {
 			std::cout << "Enter service id: ";
 			std::cin.clear();
-			if (std::cin >> &svc && network.available(svc)) {
+			if (std::cin >> svc && network.available(svc)) {
 				std::cout << "Enter message: ";
 				std::cin >> message.msg;
 				message.msg[63] = '\0';
