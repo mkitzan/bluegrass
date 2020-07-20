@@ -143,7 +143,7 @@ namespace bluegrass {
 	 * However, a single signal handler must be used for all SIGIO signals. 
 	 * The correct queue for the signaling socket must be found be traversing the map.
 	 */
-	void async_socket::sigio(int signal, siginfo_t* info, void* context) 
+	void async_socket::sigio([[maybe_unused]] int signal, siginfo_t* info, [[maybe_unused]] void* context) 
 	{
 		auto handle {services_.at(info->si_fd)};
 		

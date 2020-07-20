@@ -8,7 +8,7 @@
 using namespace std;
 using namespace bluegrass;
 
-void dummy(bluegrass::socket& conn) 
+void dummy([[maybe_unused]] bluegrass::socket& conn) 
 {
 	cout << "In dummy\n";
 }
