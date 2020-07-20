@@ -34,7 +34,7 @@ find_package(Threads)
 
 add_compile_options(-O3 -Wall -Wextra)
 
-add_library(bluegrass lib/bluetooth.cpp lib/hci.cpp lib/sdp.cpp lib/socket lib/router)
+add_library(bluegrass lib/bluetooth.cpp lib/hci.cpp lib/sdp.cpp lib/socket.cpp lib/router.cpp)
 target_include_directories(bluegrass PUBLIC include ${BLUEZ_INCLUDE_DIRS})
 target_link_libraries(bluegrass -lbluetooth ${BLUEZ_LIBRARY_DIRS})
 

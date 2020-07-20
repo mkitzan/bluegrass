@@ -37,7 +37,7 @@ int main()
 	cout << "Starting L2CAP network test\n";
 	cout << "\tCreating network\n" << flush;
 	try {
-		async_socket::service_handle s {serve, 2, 1};
+		async_socket::service_handle s {serve, 1};
 		async_socket as(ANY, 0x1001, s, async_t::SERVER);
 		while (WAIT);
 		WAIT = true;

@@ -7,7 +7,7 @@ namespace bluegrass {
 	router::router(uint16_t port, size_t max_neighbors, size_t thread_count) :
 		addr_ {hci::access().self()},
 		port_ {port},
-		service_ {[&](socket& conn){ connection(conn); }, max_neighbors, thread_count},
+		service_ {[&](socket& conn){ connection(conn); }, thread_count},
 		server_ {ANY, port_, service_, async_t::SERVER},
 		length_ {NET_LEN}
 	{

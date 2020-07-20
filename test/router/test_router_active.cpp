@@ -8,8 +8,9 @@
 using namespace std;
 using namespace bluegrass;
 
-void dummy([[maybe_unused]] bluegrass::socket& conn) 
+void dummy(bluegrass::socket& conn) 
 {
+	scoped_socket us(std::move(conn));
 	cout << "In dummy\n";
 }
 
@@ -18,7 +19,7 @@ int main()
 #ifndef DEBUG
 	cout << "Constructing router\n";
 	router network {0x1001};
-	async_socket::service_handle s {dummy, 1, 1};
+	async_socket::service_handle s {dummy, 1};
 	async_socket as {ANY, 0x1003, s, async_t::SERVER};
 	int svc {};
 

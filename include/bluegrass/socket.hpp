@@ -41,22 +41,22 @@ namespace bluegrass {
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
 		bool receive(T* data, int flags=0) const
 		{
-			return c_recv(handle_, (void*) data, sizeof(T), flags) != -1;
+			if (handle_ != -1) {			
+				return c_recv(handle_, (void*) data, sizeof(T), flags/* | MSG_DONTWAIT*/) != -1;
+			}
+			return false;
 		}
-		
-		// receives data from the socket into data reference.
-		bool receive(void*, size_t, int=0) const;
 		
 		// sends data in data reference to peer socket. 
 		template <class T, 
 		typename std::enable_if_t<std::is_trivial_v<T>, bool> = true>
-		bool send(const T* data) const
+		bool send(const T* data, int flags=0) const
 		{
-			return c_send(handle_, (void*) data, sizeof(T), 0) != -1;
+			if (handle_ != -1) {
+				return c_send(handle_, (void*) data, sizeof(T), flags | MSG_DONTWAIT) != -1;
+			}
+			return false;	
 		}
-		
-		// sends data in data reference to peer socket.
-		bool send(const void*, size_t) const;
 
 	private:
 		socket(int);

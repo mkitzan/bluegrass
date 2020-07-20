@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	}
 
 	router network {0x1001};
-	async_socket::service_handle chat_queue {chat, 2, 1};
+	async_socket::service_handle chat_queue {chat, 1};
 	async_socket chat_socket {ANY, 0x1003, chat_queue, async_t::SERVER};
 
 	int self {atoi(argv[1])}, svc;

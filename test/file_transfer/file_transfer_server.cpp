@@ -48,7 +48,7 @@ int main()
 {	
 	try {
 		cout << "Creating network\n" << flush;
-		async_socket::service_handle s {transfer, 2, 1};
+		async_socket::service_handle s {transfer, 1};
 		async_socket as(ANY, 0x1001, s, async_t::SERVER);
 		cout << "Server construction succeeded\n" << flush;
 		// this example waits, but a real system could do other work (the network is async)

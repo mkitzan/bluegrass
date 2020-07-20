@@ -47,24 +47,6 @@ namespace bluegrass {
 		}
 	}
 
-	bool socket::receive(void* data, size_t length, int flags) const
-	{
-		int state {-1};
-		if (handle_ != -1) {
-			state = c_recv(handle_, data, length, flags);
-		}
-		return state != -1;
-	}
-
-	bool socket::send(const void* data, size_t length) const
-	{
-		int state {-1};
-		if (handle_ != -1) {
-			state = c_send(handle_, data, length, 0);
-		}
-		return state != -1;
-	}
-
 	sockaddr_l2 socket::setup(bdaddr_t addr, uint16_t port) 
 	{
 		sockaddr_l2 peer {};

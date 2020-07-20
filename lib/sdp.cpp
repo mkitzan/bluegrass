@@ -1,5 +1,4 @@
 #include "bluegrass/sdp.hpp"
-#include "bluegrass/system.hpp"
 #include "bluegrass/bluetooth.hpp"
 
 namespace bluegrass {

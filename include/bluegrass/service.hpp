@@ -44,8 +44,7 @@ namespace bluegrass {
 	public:
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE != NOQUEUE, bool> = true>
-		service(std::function<void(T&)> routine, size_t queue_size, size_t thread_count) : 
-			max_ {queue_size} 
+		service(std::function<void(T&)> routine, size_t thread_count) 
 		{		
 			// reserved vector will ensure stable threads
 			threads_.reserve(thread_count);
@@ -65,8 +64,7 @@ namespace bluegrass {
 		template <queue_t Q_TYPE = Q, 
 		typename std::enable_if_t<Q_TYPE == NOQUEUE, bool> = true>
 		service(std::function<void(T&)> enq_routine, std::function<void(T&)> deq_routine,
-			size_t queue_size, size_t enq_threads, size_t deq_threads) : 
-			max_ {queue_size} 
+			size_t enq_threads, size_t deq_threads) 
 		{	
 			// reserved vector will ensure stable threads
 			threads_.reserve(enq_threads + deq_threads);
@@ -109,10 +107,7 @@ namespace bluegrass {
 		bool enqueue(T& element) 
 		{
 			std::unique_lock<std::mutex> lock {m_};
-			while (open_ && queue_.size() == max_) { 
-				enqcv_.wait(lock); 
-			}
-			
+
 			if (open_) {
 				queue_.push(std::move(element));
 				deqcv_.notify_one();
@@ -139,7 +134,6 @@ namespace bluegrass {
 			if (!queue_.empty()) {
 				element = std::move(queue_.front());
 				queue_.pop();
-				enqcv_.notify_one();
 			}
 			
 			return open_ || !queue_.empty();
@@ -157,7 +151,6 @@ namespace bluegrass {
 			if (open_) {
 				open_ = false;
 				deqcv_.notify_all();
-				enqcv_.notify_all();
 			}
 		}
 		
@@ -189,10 +182,7 @@ namespace bluegrass {
 		typename std::enable_if_t<Q_TYPE != ENQUEUE, bool> = true>
 		bool enqueue(T& element) 
 		{
-			std::unique_lock<std::mutex> lock {m_};	
-			while (open_ && queue_.size() == max_) { 
-				enqcv_.wait(lock); 
-			}
+			std::unique_lock<std::mutex> lock {m_};
 			
 			if (open_) {
 				queue_.push(std::move(element));
@@ -215,19 +205,17 @@ namespace bluegrass {
 			if (!queue_.empty()) {
 				element = std::move(queue_.front());
 				queue_.pop();
-				enqcv_.notify_one();
 			}
 			
 			return open_ || !queue_.empty();
 		}
 		
-		mutable std::condition_variable enqcv_, deqcv_;
+		mutable std::condition_variable deqcv_;
 		mutable std::mutex m_;
 
 		std::queue<T> queue_;
 		std::vector<std::thread> threads_;
 
-		const size_t max_;
 		bool open_ {true};
 	};
 
